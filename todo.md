@@ -10,6 +10,12 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
 - [x] **Hello-world landing page on Vercel** — ✅ done (v0.4.0): Next 16 scaffold deployed via
   Vercel CI/CD; `https://guasi.tw` live over TLS, `www`→apex. Smoke-tested the Vercel + domain
   wiring. (Spec §12; [walking-skeleton spec](docs/superpowers/specs/2026-06-15-walking-skeleton-design.md))
+- [x] **DB skeleton — Neon + Prisma + `/api/health`** — ✅ done (v0.5.0): Neon Postgres via Prisma
+  (pooled/direct URLs), `migrate deploy` in the build, trivial `HealthCheck` model + first migration,
+  token-gated `/api/health`, per-preview Neon branching, and a post-deploy smoke test (first GitHub
+  Action). ([db-skeleton spec](docs/superpowers/specs/2026-06-15-db-skeleton-design.md))
+- [ ] **Auth.js (site login)** — Google OAuth + email magic-link/OTP via the Prisma adapter; Resend
+  on `send.guasi.tw` for transactional mail. The next infra milestone before product features. (Spec §12)
 - [ ] **Enable Vercel Web Analytics (operator-only)** — turn on Vercel Web Analytics to
   monitor traffic per URL / per `/[handle]` page for *operational* purposes (not a
   user-facing view count). Note: it's **client-side, so it counts CDN-cached views** (server

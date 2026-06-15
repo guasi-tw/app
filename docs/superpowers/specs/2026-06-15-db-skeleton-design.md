@@ -1,7 +1,7 @@
 # DB Skeleton — Neon + Prisma + Migrations + `/api/health` (Milestone 2)
 
 **Date:** 2026-06-15
-**Status:** Approved — in progress (Phase A–B, operator-driven)
+**Status:** ✅ Complete (2026-06-15, v0.5.0) — all phases done; done-definition met
 **Type:** Execution spec (per-session tracker), not a product design spec.
 **North star:** [`docs/deployment.md`](../../deployment.md) §5 (the unchecked scaffold items) — the
 *principle & goal* this milestone executes against. Where this spec and `deployment.md` ever
@@ -154,10 +154,11 @@ We **adopt the integration's native env-var names** (Option 1, decided 2026-06-1
   test *signals* a broken prod (red commit check / notification) but can't auto-roll-back. For
   **previews** it *is* a pre-merge gate. (A true prod gate would need Vercel deployment Checks /
   promotion gating — deferred.)
-- `[gotcha]` **`deployment_status`-triggered workflows only run from the file on the default branch
-  (`main`).** So the workflow won't fire until `smoke.yml` is merged to `main`; the *first* real run
-  is on the deploy *after* merge (same chicken-and-egg as the Vercel import in Milestone 1). Verify
-  the preview path on the next PR.
+- `[note]` **Correction (observed 2026-06-15):** `deployment_status` workflows fire from the
+  **deployed ref's** `smoke.yml`, *not* only the default branch — the workflow ran on this PR's own
+  preview deploys *before* merge (the pre-bypass ones failed on the SSO wall, then went green). So
+  there's **no chicken-and-egg**: the smoke test gates previews from the feature branch immediately.
+  (Earlier assumption that it only runs from `main` was wrong.)
 - **Secret:** add **`HEALTH_CHECK_SECRET`** as a **GitHub Actions secret** (matches the Vercel
   prod+preview value, §3.7) so the workflow can hit the gated endpoint.
 - **Alternative considered:** run the smoke test as the last Vercel **build** step — rejected: at
@@ -274,10 +275,11 @@ liveness probe — decided then, not now (**[OPEN]**).
          directly. Without `x-health-token` → 401. *(`x-vercel-protection-bypass` required — previews
          sit behind Vercel Auth, §3.9; or verify in-browser while logged into Vercel.)*
       5. **Cleanup:** after merge/close, the `preview/<git-branch>` branch is auto-deleted in Neon.
-- [ ] **Production:** squash-merge → `main` build runs `migrate deploy` against the production
-      branch; **`https://guasi.tw/api/health`** returns `ok` **with the token** (and **401 without**).
-- [ ] **Smoke test:** confirm `smoke.yml` runs green on the production deploy *after merge* (and on
-      the next PR's preview) — `[gotcha]` it can't fire until the workflow is on `main` (§3.8).
+- [x] **Production:** squash-merge → `main` build ran `migrate deploy` against the production branch;
+      **`https://guasi.tw/api/health`** returns 200 **with token** / **401 without** (`{"status":
+      "unauthorized"}`); apex + `www` 200. Verified via the prod smoke run (4/4) + independent probes.
+- [x] **Smoke test:** `smoke.yml` ran **green on the production deploy** (4/4, run `27579356946`) and
+      fired on preview deploys too (pre-bypass ones failed correctly, then green) — §3.8 note.
 - [ ] Tick the `deployment.md` §5 DB checkboxes; add a **devlog** entry for the session.
 
 ## 7. Done-definition (acceptance)
@@ -292,6 +294,12 @@ Complete when **all** hold:
    asserting `/api/health` 200-with-token / 401-without, and (prod) apex + `www` 200.
 5. `deployment.md` §5 DB/migration/branching/`/api/health` checkboxes are ticked, and the **devlog**
    has an entry for the session.
+
+**✅ Met 2026-06-15** — (1) build runs `migrate deploy`; (2) prod `/api/health` 200-with-token /
+401-without; (3) preview ran against its own auto-branched Neon DB (smoke green post-bypass; `rows`
+exposes per-branch isolation); (4) prod smoke **4/4** + preview smoke green; (5) `deployment.md` §5
+ticked + devlog entry. **Remaining manual confirm:** preview branch auto-deletes after merge (Neon
+dashboard).
 
 ## 8. Open questions
 
@@ -315,6 +323,7 @@ Complete when **all** hold:
 | 2026-06-15 | Refined pre-approval: `/api/health` token-gated (§3.7); env-var names (later revised); added post-deploy smoke test as first GitHub Action (§3.8). **Spec approved**; starting Phase A–B (operator-driven). | — |
 | 2026-06-15 | Phase A–B: Neon project (default branch `production`) + `dev` branch created; **Neon-managed Vercel integration** connected to the existing standalone project (connect-existing lives on the Neon side; Vercel's "Storage→Create" only makes a *new* managed DB). **Adopted native env names `DATABASE_URL`/`DATABASE_URL_UNPOOLED`** (Option 1). Confirmed: Prod+Dev have vars; **preview branching is automatic** (always-on, no toggle) + obsolete-branch auto-delete ON. **A–B done.** Remaining operator TODO: set `HEALTH_CHECK_SECRET` in Vercel + GitHub. Starting Phase C. | — |
 | 2026-06-15 | Learned the integration auto-creates a **`vercel-dev`** branch (backs Vercel Development env) → use it for local dev, delete redundant manual `dev` (§3.5 revised). `prisma@latest`=7.8.0 but **pinned 6.19.3** (clean audit, spec-aligned — §4). **Phase C done:** schema + `HealthCheck` model + first migration (applied to `vercel-dev`), `lib/db` client, token-gated `/api/health`, smoke script + GitHub Action; full build green; **local smoke 2/2**. `HEALTH_CHECK_SECRET` set in Vercel (3 envs) + GitHub repo secret. Opening PR → Phase D. | — |
+| 2026-06-15 | PR #3 (3 commits). Discovered **preview Deployment Protection** (Vercel SSO) → added `x-vercel-protection-bypass` to smoke (§3.9). Added `rows` (HealthCheck count) to `/api/health` so per-branch isolation shows in the response. Merged. **Phase D done:** prod smoke **4/4** + independent probes (`guasi.tw` 200, `/api/health` 401-without-token); preview smoke green post-bypass. Corrected the `deployment_status`-only-on-`main` gotcha (it fires per deployed ref — §3.8). **Milestone 2 complete.** | v0.5.0 |
 
 ## Cross-references
 - [`docs/deployment.md`](../../deployment.md) — north-star (§1 model, §2 CI/CD + branching gotcha, §5 checklist).

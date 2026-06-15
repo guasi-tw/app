@@ -10,23 +10,27 @@ that cost many KOLs their primary accounts.
 
 ## Current status
 
-**Phase: implementation started — walking skeleton live (v0.4.0, 2026-06-15).** Design + pitch
-are complete; the first code has shipped.
+> **Where we are right now lives in two maintained sources — this section does *not* restate the
+> version/phase, to avoid drift:**
+> - **What's shipped** → [`docs/devlog.md`](docs/devlog.md) — the TL;DR table (newest-first; the top
+>   row is the current state).
+> - **What's next** → [`todo.md`](todo.md) — the working roadmap.
+>
+> Implementation is underway (first code shipped 2026-06-15). Below are only the *stable* facts.
 
 - **Repo:** private GitHub repo **`guasi-tw/app`** (remote wired). Work via PRs off `main`
   (squash-merge); `main` is the production branch.
-- **Live:** **https://guasi.tw** serves a Next.js hello-world on **Vercel** (project
-  **`guasi-app`**). CI/CD = Vercel's GitHub integration — **push `main` → production**,
-  **PR → preview** (no GitHub Actions yet).
-- **Code shape:** flat **modular monolith** — `app/` (Next 16 + React 19 + TS, App Router) at
-  the repo root; `lib/*` and `prisma/` arrive when product code lands. (Monorepo/Turborepo
-  considered + rejected for now — one deployable; see [`docs/deployment.md`](docs/deployment.md) §3.)
+- **Hosting / CI/CD:** **Vercel** (project **`guasi-app`**), domain **https://guasi.tw**. Vercel's
+  GitHub integration is the pipeline — **push `main` → production**, **PR → preview**. A post-deploy
+  smoke test runs as a GitHub Action (`deployment_status`).
+- **Code shape:** flat **modular monolith** at the repo root — `app/` (Next 16 + React 19 + TS, App
+  Router) + `lib/*` + `prisma/`. (Monorepo/Turborepo considered + rejected for now — one deployable;
+  see [`docs/deployment.md`](docs/deployment.md) §3.)
 - **DNS/email caveat:** `guasi.tw` DNS is at **GoDaddy**, and the zone also runs **iCloud Custom
   Email Domain** (MX/SPF/DKIM/DMARC) — don't touch those records when changing web hosting.
 
-**Next milestone:** Neon Postgres + first Prisma migration + a `/api/health` route (app→DB
-proof), then MVP features. Use **superpowers:writing-plans** against the design spec to turn it
-into an implementation plan before building features.
+When starting feature work, use **superpowers:writing-plans** against the design spec to turn it
+into an implementation plan first.
 
 ## Docs
 
@@ -37,6 +41,7 @@ into an implementation plan before building features.
 - [`docs/platform-verification.md`](docs/platform-verification.md) — empirical capability matrix for reading the **author** and **code-bearing text** on Threads / IG / miin.cc, across post & bio methods. How-to recipes, the URL-handle spoof proof, Vercel render weights, and an evidence log (verified 2026-06-15). Source of truth for platform read mechanics.
 - [`docs/deployment.md`](docs/deployment.md) — deployment model (one Vercel app + managed Neon/Blob), CI/CD via Vercel's git integration, modular-monolith→Turborepo repo strategy, and repo/naming conventions. The north-star plan for infra; §5 is the scaffold checklist.
 - [`docs/superpowers/specs/2026-06-15-walking-skeleton-design.md`](docs/superpowers/specs/2026-06-15-walking-skeleton-design.md) — the scaffold + Vercel CI/CD + `guasi.tw` domain milestone (shipped as v0.4.0); a per-session execution tracker (checkboxes + session log) against `deployment.md`.
+- [`docs/superpowers/specs/2026-06-15-db-skeleton-design.md`](docs/superpowers/specs/2026-06-15-db-skeleton-design.md) — the Neon + Prisma + migrations + token-gated `/api/health` milestone (shipped as v0.5.0); execution tracker incl. preview-branching + the first GitHub Action (smoke test).
 - [`docs/services.md`](docs/services.md) — single inventory of every external service/account (status + role + scope); the "what we use," paired with the cost ledger below.
 - [`docs/operating-costs.md`](docs/operating-costs.md) — running ledger of operational costs (Vercel Pro, domain, future services).
 - [`docs/devlog.md`](docs/devlog.md) — running log of decisions and learnings, newest first.

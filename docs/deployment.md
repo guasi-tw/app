@@ -101,9 +101,9 @@ The "walking skeleton" that proves the whole pipeline before any feature work (a
 - [x] Private repo **`guasi-tw/app`** created → remote added → `main` pushed.
 - [x] **Next.js hello-world scaffolded** (flat monolith, Next 16; build green) — see [`superpowers/specs/2026-06-15-walking-skeleton-design.md`](superpowers/specs/2026-06-15-walking-skeleton-design.md).
 - [x] Imported to Vercel project (`guasi-app`); **production domain `guasi.tw`** attached, SSL issued, `www` 308-redirects to apex. `push main → prod` + `PR → preview` verified.
-- [ ] Neon DB provisioned; **one trivial Prisma model + migration** via `prisma migrate deploy` (direct URL) in the pipeline.
-- [ ] **Preview deploy** (branch) + **prod deploy** (main) both verified, with **Neon branching** for the preview DB.
-- [ ] (Optional) `/api/health` route hitting the DB — proves app→Neon end-to-end.
+- [x] Neon DB provisioned; **one trivial Prisma model + migration** via `prisma migrate deploy` (direct URL) in the pipeline. *(v0.5.0 — `HealthCheck` model; see [`superpowers/specs/2026-06-15-db-skeleton-design.md`](superpowers/specs/2026-06-15-db-skeleton-design.md).)*
+- [x] **Preview deploy** (branch) + **prod deploy** (main) both verified, with **Neon branching** for the preview DB (auto per-preview branch via the Neon–Vercel integration).
+- [x] `/api/health` route hitting the DB — proves app→Neon end-to-end (token-gated; prod smoke 4/4).
 
 Outcome: CI/CD, migrations, env-var wiring, and domain binding all verified on an empty app — so the first real feature deploys with zero infra unknowns.
 

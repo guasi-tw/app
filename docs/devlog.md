@@ -14,6 +14,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.5.0](#v050--db-skeleton-neon--prisma--token-gated-apihealth-2026-06-15-1502) | **DB skeleton.** Neon Postgres + Prisma wired in; `prisma migrate deploy` in the build; trivial `HealthCheck` model + first migration; **token-gated `/api/health`** (401 before any DB call); per-preview **Neon branching**; repo's **first GitHub Action** (post-deploy smoke test). Gotchas: preview deploys sit behind **Vercel SSO** (need automation-bypass); `prisma@latest`=7.x → pinned 6.x for clean audit. |
 | [v0.4.1](#v041--post-launch-ops--decisions-2026-06-15-1229) | Post-launch ops + decisions: Vercel **Ignored Build Step** (skip docs-only deploys, verified live), README **live-status badges**, started the **cost ledger** + **services inventory**, and **locked the email architecture** (Resend on `send.guasi.tw`; iCloud for receiving). Gotcha: Vercel Hobby can't deploy an **org-owned private repo** → Pro. |
 | [v0.4.0](#v040--walking-skeleton-scaffold-vercel-cicd--guasitw-live-2026-06-15) | **First code.** Flat modular-monolith Next.js scaffold (Next 16 + React 19 + TS) + hello-world landing; **Vercel CI/CD** wired (`push main`→prod, PR→preview); **`guasi.tw` live** (GoDaddy DNS → Vercel, SSL, `www`→apex). postcss advisory cleared via `overrides`. |
 | [v0.3.0-design](#v030-design--routing-id-provisioning--platform-verification-2026-06-15) | Designed URL routing + proof-gated ID provisioning & squatting protection; **empirically verified** platform read-mechanics (Threads/IG crawler-UA SSR; miin's public JSON API) and the URL-handle spoof defense; created [`platform-verification.md`](platform-verification.md); slimmed the routing spec's §5 to a pointer. |
@@ -22,6 +23,65 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
 
 ---
+
+## v0.5.0 — DB skeleton: Neon + Prisma + token-gated /api/health (2026-06-15 15:02)
+
+**Review:** not yet
+
+**Design docs:**
+- DB Skeleton (Milestone 2): [Spec](superpowers/specs/2026-06-15-db-skeleton-design.md)
+
+**What was built:**
+- **Neon Postgres + Prisma 6.19.3** wired into the app — pooled `DATABASE_URL` for runtime queries,
+  direct `DATABASE_URL_UNPOOLED` for migrations; `lib/db/client.ts` Prisma singleton (opens the
+  `lib/*` seam).
+- **Migrations in the pipeline** — `build: prisma migrate deploy && next build`, `postinstall:
+  prisma generate` (both in `package.json`, no Vercel dashboard override).
+- **Trivial `HealthCheck` model + first migration** (`init_health_check`) — proves the migration
+  runs end-to-end without committing to the real §8 schema.
+- **Token-gated `GET /api/health`** — checks `x-health-token` against `HEALTH_CHECK_SECRET` and
+  returns 401 *before any DB call*; on success does a real `healthCheck.count()` →
+  `{status,db,rows,time}`. `rows` exposes per-branch DB isolation directly in the response.
+- **Per-preview Neon branching** via the Neon–Vercel integration — each preview deploy gets its own
+  branch off `production`, auto-deleted on merge; prod hits the `production` branch.
+- **Repo's first GitHub Action** — `scripts/smoke.mjs` (zero-dep) + `.github/workflows/smoke.yml`,
+  a post-deploy smoke test on `deployment_status` (prod: apex + www + health; preview: health; with
+  the Vercel automation-bypass header). Prod run: **4/4 green**.
+- Docs: the milestone execution spec, plus README / `services.md` / `operating-costs.md` updates;
+  `deployment.md` §5 ticked.
+
+**Key technical learnings:**
+- `[gotcha]` **Vercel preview deploys sit behind Vercel Authentication (SSO).** Any automated probe
+  (curl, the smoke Action) gets a *false 401* — the SSO wall, not the app — *before* reaching the
+  route. Fix: enable **Protection Bypass for Automation** and send `x-vercel-protection-bypass`. The
+  **production custom domain (`guasi.tw`) is exempt**; only preview + generated prod `*.vercel.app`
+  URLs are gated.
+- `[insight]` **Preview DB env vars are injected per-deployment, not as static project vars.** With
+  preview branching on, the integration sets `DATABASE_URL`/`DATABASE_URL_UNPOOLED` on each preview
+  *at deploy time* (→ that deploy's branch), so the "Preview" column in Settings is **blank by
+  design** — empty-Preview is correct *iff* branching is on, broken if it's off.
+- `[insight]` The integration **auto-creates a `vercel-dev` branch** for Vercel's Development env;
+  point local `.env` at it instead of a hand-made `dev` branch, or you get two drifting dev DBs.
+- `[gotcha]` **`prisma@latest` is now 7.x (7.8.0)** — pinned **6.19.3**: Prisma 7's `@prisma/dev`
+  pulls a vulnerable `@hono/node-server` (3 moderate advisories; `npm audit fix` *downgrades to 6*),
+  and 7's new mandatory-output/ESM generator is churn a trivial skeleton doesn't need.
+- `[insight]` **Token-gate the health route as cost control, not authzn.** Rejecting before the DB
+  read means an anonymous flood costs ~nothing — no billed Vercel invocation work, no warm Neon
+  compute (which would defeat scale-to-zero). An auth wall wouldn't help and isn't available pre-auth.
+- `[note]` **Connecting an *existing* standalone Neon project to Vercel is done from the Neon side**
+  (Neon → Integrations → Vercel). Vercel's Storage → "Create" only provisions a *new, Vercel-managed*
+  DB — keeping the project standalone preserves the §12 portability / GCP escape hatch.
+- `[note]` **`deployment_status` workflows fire from the *deployed ref's* workflow file, not only
+  `main`.** The smoke Action ran on this PR's previews *before* merge (pre-bypass runs failed
+  correctly on the SSO wall, then went green) — no chicken-and-egg, contrary to my initial assumption.
+
+**Process learnings:**
+- `[insight]` **Split operator-driven vs in-repo phases in the execution spec.** Phases A–B (Neon
+  project, integration, env vars/secrets — all dashboard work) gated Phase C (code). Writing them as
+  separate checklists with explicit "report back X" handoffs kept the dashboard round-trips crisp.
+- `[gotcha]` Background `next start` left port 3000 held; a later `npm start` died `EADDRINUSE` and a
+  stale server served an *old* build — a verification read silently showed the pre-change response.
+  Kill `lsof -ti:3000` before re-verifying after a rebuild.
 
 ## v0.4.1 — Post-launch ops & decisions (2026-06-15 12:29)
 
