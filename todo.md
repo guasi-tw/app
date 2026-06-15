@@ -2,13 +2,19 @@
 
 Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-backup-design.md`](docs/superpowers/specs/2026-06-14-identity-backup-design.md) for the full design.
 
-- [ ] **Auto-capture validation posts via `@gua.si.tw`** — figure out how to detect the
-  verification posts that tag the account, so users can skip pasting the URL. Needs the
-  platform mention/tag API (business account + app review); paste-URL stays the fallback.
-  (Spec §6.2)
-- [ ] **Decide hosting platform (GCP vs Vercel)** and wire it to the `guasi.tw` domain.
-  (Spec §12 / §13)
+- [x] **Decide hosting platform** — ✅ **all on Vercel for MVP** (Neon Postgres + Auth.js
+  with Google OAuth + email OTP + Vercel Blob); wire Vercel to `guasi.tw`. (Spec §12)
+- [x] **Verification security model** — ✅ locked: bound 分身 = post author resolved from
+  platform authority; scoped single-use expiring code per binding request; manual paste-back
+  as the MVP primary path. (Spec §6.2/§6.3/§8)
 - [ ] **Detailed wireframes for each page** — 建立正身 (register), 註冊分身 (bind),
   驗明正身 (public profile + timeline), 分身管理 (manage), and the home / lookup pages.
-- [ ] **Implement the MVP** — after hosting + wireframes are settled. (Use the
-  writing-plans skill to turn the spec into an implementation plan first.)
+- [ ] **Implement the MVP** — after wireframes are settled. (Use the writing-plans skill to
+  turn the spec into an implementation plan first.)
+
+## Deferred to Phase 2
+
+- [ ] **Auto-capture validation posts via `@gua.si.tw`** — detect the tagged verification
+  posts so users can skip pasting the URL. Deferred on purpose: manual paste-back is more
+  responsive and avoids a business-account + app-review + live-token platform dependency.
+  (Spec §6.2 / §11)

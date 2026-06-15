@@ -51,7 +51,10 @@ not after.
 
 ### In scope (MVP)
 - Platforms: **Threads and Instagram** first, behind a pluggable platform layer.
-- Site account with **passwordless email (magic link / OTP)** login.
+- Site account login: **passwordless email (magic link / OTP)** *and* **Google OAuth** —
+  both passwordless. (Note: this is *site login* and is unrelated to the "no platform OAuth
+  **for identity**" rule in §6.1, which is only about proving 分身 ownership. Logging in with
+  Google ≠ proving you own a Threads/IG account, so Meta/no-one gates verification.)
 - Account verification via **public-post proof only** (no platform OAuth — see §6.1).
 - Cross-linking verified accounts under one site account.
 - **Profile** — each 正身 has an **avatar**, a **brief description**, and a designated
@@ -504,31 +507,50 @@ powered by `created_at` / `verified_at` and the append-only `binding_events` led
   business-account + app-review + live-token dependency on the platform. Revisit only if a
   paste-free flow proves worth that cost.
 
-## 12. Tech stack (recommendation, not locked)
+## 12. Tech stack (MVP — locked)
+
+**Everything runs on Vercel for the MVP.** Decided 2026-06-15.
 
 - **Framework:** Next.js + TypeScript (full-stack: UI + API routes).
-- **Database:** PostgreSQL via Prisma.
-- **Auth:** passwordless email magic-link / OTP (e.g. Lucia or a lightweight custom
-  flow; transactional email via a provider such as Resend/Postmark).
-- **Hosting:** **GCP or Vercel — to be decided later** (see §13). Examples: Cloud Run +
-  Cloud SQL (GCP), or Vercel + managed Postgres (Neon/Supabase). To keep the choice open,
-  avoid provider-specific lock-in in the application code where practical.
-- **Post fetching & snapshot:** server-side fetch within the PlatformAdapter, plus
-  screenshot capture and third-party archive submission (§6.4); background queue if needed.
+- **Hosting:** **Vercel** — serverless compute + CDN. The public 驗明正身 pages are cached
+  and **purged from the app on write** (on-demand ISR / `revalidateTag`) — Next.js's native
+  on-demand revalidation is exactly the "cache-but-expire-from-the-management-side" pattern
+  the design needs. GCP was the alternative (Cloud Run + Cloud SQL) and stays a clean future
+  escape hatch because the app is a portable container and the DB (below) is provider-neutral;
+  avoid Vercel-only APIs in app code where practical.
+- **Database:** **Neon** (serverless PostgreSQL) via Prisma. Scales to zero, free tier for
+  MVP, runs independently of Vercel (keeps the GCP escape hatch open). **Connection pooling
+  is mandatory** on serverless: use Neon's **pooled** connection string for queries and a
+  **direct** URL for Prisma **migrations**.
+- **Auth:** **Auth.js (NextAuth v5)** with two passwordless methods — **Google OAuth** and
+  **email magic-link / OTP** — using the **Prisma adapter** (users/sessions in Neon).
+  Verified-email **account linking** so the same address via Google and via email resolves to
+  one 正身. Transactional email via Resend/Postmark. *(Lucia, named earlier, was deprecated
+  as a library in 2025 — Auth.js replaces it.)* This is **site login only**; it does not
+  touch the §6.1 "no platform OAuth for identity" rule.
+- **Object storage (images):** snapshot screenshots **and** avatars go in **Vercel Blob**
+  (or Cloudflare R2) — **not** Postgres.
+- **Post fetching & snapshot (§6.4):** the PlatformAdapter fetch + the synchronous text-proof
+  capture run in a Vercel function. The heavier **screenshot + third-party-archive** step runs
+  **asynchronously** via a serverless-friendly queue (Vercel Cron/Queues or Upstash QStash).
+  To stay fully on Vercel, render the screenshot by calling an **external screenshot API**
+  (e.g. Urlbox / ScreenshotOne / Browserless) rather than self-hosting headless Chromium —
+  your infra stays all-Vercel; the screenshot is just an outbound API call. (Running
+  `@sparticuz/chromium` inside a Vercel function is a viable fallback.)
 
-Rationale: a single TypeScript codebase keeps a solo/small-team MVP simple, Postgres
-fits the relational data model, and passwordless auth removes password-storage burden.
-Open to alternatives if the team has stronger preferences.
+Rationale: a single TypeScript codebase on Vercel keeps a solo/small-team MVP simple,
+Neon+Postgres fits the relational model and stays portable, passwordless auth removes
+password-storage burden, and on-demand revalidation makes the cache-on-write design native.
 
 ## 13. Open questions
 
 - Final name (§10).
-- **Cloud provider: GCP vs Vercel — to be decided later** (§12). Affects managed-service
-  choices for hosting and the database; wire the chosen platform to the `guasi.tw` domain.
+- ~~Cloud provider: GCP vs Vercel~~ — **decided: all on Vercel for MVP** (§12), with Neon
+  Postgres + Auth.js (Google OAuth + email OTP) + Vercel Blob; wire Vercel to `guasi.tw`.
 - Exact public-post fetch strategy per platform and its fragility budget (§6.3).
-- **Snapshot mechanics (§6.4):** how to render the screenshot (headless browser?), which
-  third-party archive to use, and where to store images (snapshot screenshots **and**
-  uploaded avatars) — likely object storage tied to the chosen cloud provider.
+- **Snapshot mechanics (§6.4):** which screenshot approach (external screenshot API vs.
+  in-function `@sparticuz/chromium` — §12) and which third-party archive to use. *(Image
+  storage decided: Vercel Blob / R2 — §12.)*
 - Auth-code **expiry window** (format decided: 6-digit numeric, single-use — §6.2/§8).
 - Exact copy/wording of the ready-to-post verification template (§6.2).
 - ~~Tag-based auto-capture vs paste-URL for MVP~~ — **decided: manual paste-back is the MVP

@@ -54,15 +54,25 @@ with proof links.
   (login only)** — these only *lower* trust, and a hijacker can't remove a flag they don't
   control. Marking it **recovered/unbanned requires re-verification** (a trust-restoring
   claim). All status changes are append-only ledger events shown in the timeline.
-- **Site login:** passwordless email magic link / OTP. No passwords.
+- **Site login:** passwordless — **email magic link / OTP *and* Google OAuth** (via Auth.js).
+  No passwords. This is *site login* and is unrelated to the "no platform OAuth for identity"
+  rule below (logging in with Google ≠ proving you own a Threads/IG account).
 - **Verification model:** public-post proof **only**. No DMs. No platform OAuth for
   identity (so Meta can't gate who gets verified).
-- **Binding flow (§6.2):** user picks platform → we give a copy-paste template containing a
-  6-digit auth code, a `@gua.si.tw` tag, and the user's 驗明正身 page URL → user posts it →
-  pastes the URL back (or we auto-detect via the tag). **The verification post doubles as
-  the growth engine** (public + links back), the built-in answer to 行銷困難. 6-digit code
-  is fine because security = author-match + expiry, not entropy. IG caption links aren't
-  clickable (Threads' are).
+- **Binding flow (§6.2):** user picks platform (optionally pre-declares the handle, as a
+  confirmation aid only) → we give a copy-paste template containing a 6-digit auth code, a
+  `@gua.si.tw` tag, and the user's 驗明正身 page URL → user posts it → **pastes the URL back
+  (manual paste is the MVP primary path — synchronous & more responsive than a mention
+  webhook; auto-capture deferred to Phase 2)**. **The verification post doubles as the growth
+  engine** (public + links back), the built-in answer to 行銷困難.
+- **Verification security model (§6.2/§6.3/§8):** the **bound 分身 is the proof post's
+  author, resolved from platform authority** (oEmbed/API or strictly-validated canonical URL
+  — never user-supplied page content). The author-match target is the *specific 分身*, never
+  the 正身 identity name or the `@gua.si.tw` tag; **many 分身 per platform** are allowed, each
+  its own binding request. The **auth code is scoped to one binding request, single-use, and
+  expiring** — a leaked/copied code is useless in any other session. 6 digits is fine because
+  security = author-match + scope + expiry, not entropy. (Data model: `binding_requests`
+  table holds the pending state.) IG caption links aren't clickable (Threads' are).
 - **Reading the post:** platform API (oEmbed) *or* public web fetch is acceptable,
   chosen per-platform for whichever ships Phase 1 fastest; keep web fetch as a fallback
   so a revoked API token can't take the service down. (This is separate from the
@@ -72,12 +82,14 @@ with proof links.
   Domain **`guasi.tw` is registered** (the website domain). Handle `@gua.si.tw` registered
   on IG (also secures Threads). `guasi.com` taken / `guasi.id` available — both optional,
   later. Japanese-pun alt `guatasi`/`guatashi` was set aside for coherence with 正身.
-- **Tech stack (recommendation, not locked):** Next.js + TypeScript, PostgreSQL + Prisma,
-  passwordless email auth.
+- **Tech stack (MVP — locked, all on Vercel):** Next.js + TypeScript on **Vercel**;
+  **Neon** (serverless Postgres) via Prisma — pooled connection for queries, direct URL for
+  migrations; **Auth.js** (Google OAuth + email magic-link/OTP, Prisma adapter); images
+  (snapshots + avatars) in **Vercel Blob / R2**; async screenshot + archive via a
+  serverless queue calling an **external screenshot API**. GCP (Cloud Run + Cloud SQL) stays
+  a portable future escape hatch. (Spec §12.)
 
 ## Open questions / TBD
-
-- **Cloud provider: GCP vs Vercel** — to be decided later; wire to `guasi.tw`. See [`todo.md`](todo.md).
 - Per-platform post-fetch strategy (oEmbed vs web fetch) and its fragility budget.
 - Snapshot mechanics: screenshot rendering (headless browser?), which third-party archive, where to store snapshot images.
 - Auth-code format and expiry window.
