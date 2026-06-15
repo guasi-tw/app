@@ -50,7 +50,7 @@ not after.
 ## 4. Scope
 
 ### In scope (MVP)
-- Platforms: **Threads and Instagram** first, behind a pluggable platform layer.
+- Platforms: **Threads, Instagram, and miin.cc**, behind a pluggable platform layer. (Read mechanics + miin's public API: [`../../platform-verification.md`](../../platform-verification.md).)
 - Site account login: **passwordless email (magic link / OTP)** *and* **Google OAuth** —
   both passwordless. (Note: this is *site login* and is unrelated to the "no platform OAuth
   **for identity**" rule in §6.1, which is only about proving 分身 ownership. Logging in with
@@ -113,7 +113,7 @@ platform OAuth for identity. Rationale:
 
 ### 6.2 Flow
 
-1. **Start a binding request.** User picks which platform to bind (Threads or IG). They
+1. **Start a binding request.** User picks which platform to bind (Threads, IG, or miin). They
    **may optionally pre-declare the handle** they're about to verify (e.g. `@alice_ig`) —
    this is a *confirmation* aid (catches "posted from the wrong account" mistakes), **not**
    the security gate. → a `binding_request` is created for `(正身, platform)`.
@@ -123,7 +123,7 @@ platform OAuth for identity. Rationale:
    - the **auth code**,
    - a **mention/tag of the service** (`@gua.si.tw`),
    - a short line of copy, and
-   - the user's **public 驗明正身 page URL** (e.g. `guasi.tw/<handle>`) so anyone who sees
+   - the user's **public 驗明正身 page URL** (e.g. `guasi.tw/gua/<handle>`) so anyone who sees
      the post can click through.
 3. User publishes the template as a **public post** from the account they want to bind. (On
    Threads this is a text post; on **Instagram** the caption carries the text — IG requires
@@ -165,7 +165,7 @@ platform OAuth for identity. Rationale:
 
 > **Platform caveat (clickable links):** Threads renders links as clickable, so the loop
 > works well there. **Instagram captions do *not* make URLs clickable** — the link shows
-> as plain text. Mitigations: keep the URL short and typeable (`guasi.tw/<handle>`), and
+> as plain text. Mitigations: keep the URL short and typeable (`guasi.tw/gua/<handle>`), and
 > encourage users to also put it in their IG **bio link**. Don't assume the IG caption
 > link is tappable.
 
@@ -191,7 +191,7 @@ platform OAuth for identity. Rationale:
 > author to the **分身 being bound** (one specific platform account) and to *nothing else*:
 > - **`@gua.si.tw`** — the *service's* own account, present only as a tag (growth /
 >   discoverability). **Not** a security check.
-> - **正身 identity name** (the `guasi.tw/<handle>` profile) — the user's identity on *our*
+> - **正身 identity name** (the `guasi.tw/gua/<handle>` profile) — the user's identity on *our*
 >   site. **Not** what the post author is matched against.
 > - **分身 handle** (e.g. `@alice_ig`, `@alice_threads`, `@alice_backup`) — the platform
 >   account being proven. **This is the only handle the author check uses.** One 正身 owns
@@ -339,7 +339,7 @@ for the MVP.
 ```
 Browser ──> Web app (UI + API) ──> Database
                   │
-                  └──> PlatformAdapter ──> public post fetch (Threads / IG)
+                  └──> PlatformAdapter ──> public post fetch (Threads / IG / miin)
 ```
 
 ### 7.2 Components
@@ -370,7 +370,7 @@ interface PlatformAdapter {
 }
 ```
 
-Concrete implementations for MVP: `ThreadsAdapter`, `InstagramAdapter`. Adding Facebook
+Concrete implementations for MVP: `ThreadsAdapter`, `InstagramAdapter`, `MiinAdapter`. Adding Facebook
 or X later is "write a new adapter," not a rewrite.
 
 ## 8. Data model (sketch)

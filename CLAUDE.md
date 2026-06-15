@@ -11,7 +11,7 @@ that cost many KOLs their primary accounts.
 ## Current status
 
 **Phase: design + pitch complete. Implementation NOT started.** The user is not ready to
-build yet. No code, no git repo, no stack scaffolding exists.
+build yet. No code and no stack scaffolding exists (git is initialized — local only, no remote).
 
 The next implementation step (when the user is ready) is to invoke the
 **superpowers:writing-plans** skill against the design spec to produce an implementation
@@ -22,18 +22,22 @@ plan, then execute it.
 - [`docs/first_thought.md`](docs/first_thought.md) — the original raw idea (Traditional Chinese).
 - [`docs/product-pitch.md`](docs/product-pitch.md) — non-technical product overview for pitching, organized by actor (Traditional Chinese).
 - [`docs/superpowers/specs/2026-06-14-identity-backup-design.md`](docs/superpowers/specs/2026-06-14-identity-backup-design.md) — the full product + architecture design spec. **Source of truth for what to build.**
+- [`docs/superpowers/specs/2026-06-15-routing-and-identity-design.md`](docs/superpowers/specs/2026-06-15-routing-and-identity-design.md) — deep-dive on URL routing, public-ID provisioning + squatting protection, and platform-adapter author-resolution (incl. the miin.cc finding). Splits these concerns out of the main spec.
+- [`docs/platform-verification.md`](docs/platform-verification.md) — empirical capability matrix for reading the **author** and **code-bearing text** on Threads / IG / miin.cc, across post & bio methods. How-to recipes, the URL-handle spoof proof, Vercel render weights, and an evidence log (verified 2026-06-15). Source of truth for platform read mechanics.
 - [`docs/devlog.md`](docs/devlog.md) — running log of decisions and learnings, newest first.
 
 ## MVP scope (one-liner)
 
-Threads + IG first (pluggable for more) · passwordless email login · verify account
+Threads + IG + miin.cc (pluggable for more) · passwordless email login · verify account
 ownership via **public post + auth code** · cross-link verified accounts · selective
 public/private disclosure · public lookup page showing an account's verified siblings
 with proof links.
 
 ## Locked decisions
 
-- **Platforms (MVP):** Threads + IG first, behind a pluggable `PlatformAdapter`.
+- **Platforms (MVP):** Threads + IG + miin.cc, behind a pluggable `PlatformAdapter`
+  (Threads/IG read via crawler-UA SSR of canonical URLs; miin.cc via its public JSON API
+  `api.miin.cc`). See [`docs/platform-verification.md`](docs/platform-verification.md).
 - **Spec depth:** product + architecture (not full technical spec).
 - **Trust model:** centralized DB for MVP, but persist **immutable proof records**
   (not just a `verified` flag) so Phase 2 publicly-verifiable proofs is additive.
