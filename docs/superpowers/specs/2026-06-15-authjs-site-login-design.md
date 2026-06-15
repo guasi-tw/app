@@ -1,4 +1,4 @@
-# Auth.js Site Login — Google OAuth + Email (Magic-link + OTP)
+# Auth.js Site Login — Google OAuth + Email (6-digit code: magic-link + OTP)
 
 **Date:** 2026-06-15
 **Status:** 🟡 Design approved — ready for implementation plan
@@ -33,7 +33,7 @@ email must resolve to the same 正身**, in either order.
 ### In scope (this milestone) — **[DECIDED]** "auth plumbing only"
 - Auth.js v5 (NextAuth) wired into the Next.js App Router with the **Prisma adapter** on Neon.
 - **Google OAuth** provider.
-- **Email** provider: magic-link + 6-digit OTP (see §6 for the dual-token model).
+- **Email** provider: a single **6-digit code** backing both magic-link + OTP (see §6).
 - **Database sessions** (via the adapter) — not JWT.
 - **Bidirectional account-linking on verified email** (see §5).
 - Login + logout UI: a `/login` page (Google button + email input) and an **OTP entry page**.
@@ -67,12 +67,12 @@ Following the flat modular-monolith layout (`app/` + `lib/*` + `prisma/` at root
   - `events.ts` (or an adapter `createUser` wrapper) — profile **seeding** on first login.
 - **`app/api/auth/[...nextauth]/route.ts`** — the Auth.js route handler (`export { GET, POST } = handlers`).
 - **`lib/email/`** — Resend client + the combined link+OTP verification email template.
-- **`lib/otp/`** — OTP issue/verify logic (generate code, store in `email_tokens`, attempt-lockout,
-  complete login). This is the custom side that reconciles OTP with DB sessions (§6).
+- **`lib/otp/`** — the thin OTP side: the OTP-entry page handler that forwards `email + code` to the
+  native Auth.js callback, plus the attempt-lockout guard (§6). No custom session minting.
 - **`app/(auth)/login/`** — the login page (Google button + email input).
 - **`app/(auth)/otp/`** (or `/login/otp`) — the OTP entry page (email + 6-digit code).
-- **`lib/db/`** — already exists (Prisma client singleton); the adapter and `email_tokens` access
-  plug into it.
+- **`lib/db/`** — already exists (Prisma client singleton); the adapter and the login-attempt
+  counter (§4) plug into it.
 - **`middleware.ts`** — optional, minimal; only to surface `auth` for future route protection.
 
 ## 4. Data model
@@ -106,11 +106,13 @@ model User {
   This is the join that makes "two ways in, one 正身" concrete.
 - **`Session`** — DB sessions live here (chosen for **server-side revocation**, which matters
   directly for the §6.8 hacked-account flows).
-- **`VerificationToken`** — Auth.js's native store for the **high-entropy magic-link token**.
-- **`email_tokens`** (custom, anticipated by §8) — the **OTP** side. Shape:
-  `id`, `email`, `code` (6-digit, stored hashed), `expires_at`, `consumed_at`, **`attempts`**
-  (new — for lockout, §6). Optionally `user_id?` per §8. Keyed by email; one active row per login
-  request.
+- **`VerificationToken`** — Auth.js's native store for the **email login code**. We make the token a
+  **6-digit code** (via `generateVerificationToken`), and it backs **both** the magic link and the
+  OTP (single shared token — see §6). This supersedes the role §8 imagined for a separate
+  `email_tokens` table; reconcile §8 when feature work lands.
+- **Login-attempt counter** (small custom store — a tiny table or KV) — `VerificationToken` has no
+  attempts column, so lockout (§6) needs a lightweight per-email failed-attempt counter
+  (`identifier`, `count`, `window_start`). Kept minimal and portable; a DB table is fine for MVP.
 
 **Seeding:** on first login via Google, copy `name → displayName` and `image → avatarUrl` if
 present, as **editable defaults**. Email-signup users start `NULL` and fill them in later (deferred
@@ -163,48 +165,47 @@ the literal string. A user who mixes a plus-alias and the canonical address coul
 正身. **Accepted for MVP** (exact-string match) rather than building Gmail-canonicalization. Not a
 vulnerability — just a possible duplicate.
 
-## 6. Email login — dual-token model (magic-link + OTP)
+## 6. Email login — single shared 6-digit code (magic-link + OTP)
 
-**[DECIDED]** dual token. One email, two independent ways in, each with its own credential.
+**[DECIDED]** one shared token. The email login code is a **single 6-digit value** that backs **both**
+ways in. **[DECIDED]** the email shows **code + link**.
 
-- **Magic link** — Auth.js's **native high-entropy** `VerificationToken`. Cryptographically strong;
-  unchanged from the framework default.
-- **OTP** — a **separate 6-digit code** for the **same login intent**, stored in `email_tokens`
-  (hashed), rate-limited.
+- We customize the email provider's **`generateVerificationToken`** to return a **6-digit code**
+  (instead of the default long random string). Auth.js stores it (hashed) in `VerificationToken`.
+- The email (sent via Resend, customized `sendVerificationRequest`) shows **both**: the **6-digit
+  code** to type, and a **magic link** that carries that same code.
+- **Click or type, same token:** both paths complete through Auth.js's **native
+  `/api/auth/callback/<email-provider>` flow** — clicking the link hits it directly; the OTP-entry
+  page forwards `email + code` to the same callback. Auth.js then **creates the DB session and applies
+  §5 account-linking for us**. Single-use: the token is consumed on first success.
 
-The single email shows both: a clickable link (carrying the high-entropy token) **and** the 6-digit
-code to type on the OTP page.
+### Why this is the simple path (no custom session plumbing)
+Because the 6-digit code **is** the native `VerificationToken`, both entry methods ride Auth.js's own
+email callback, which natively yields a **DB session** through the adapter. So there is **no
+Credentials provider** (which would force JWT), **no custom session minting**, and **no separate OTP
+store** to reconcile. The OTP page is a thin wrapper that posts `email + code` to the native callback.
 
-### OTP guards (requirements)
-- **Short expiry** (~10 min) + **single-use** (`consumed_at`).
-- **Per-email attempt lockout** — invalidate the code after ~5 wrong attempts (the `attempts`
-  counter on `email_tokens`). Without this, 10⁶ is brute-forceable for a known email.
-
-### The integration subtlety (the main thing the plan must nail down)
-Auth.js's **Credentials provider forces JWT sessions**, which conflicts with our **DB-session**
-choice. Therefore the OTP **cannot** be implemented as a Credentials provider. The intended approach:
-
-> The OTP page **verifies the code (with lockout) and then completes the *same* email login intent
-> through the adapter** — establishing a normal DB session and applying the same auto-linking — rather
-> than being a parallel auth path. The magic link uses `VerificationToken`; the OTP uses
-> `email_tokens`; both converge on one adapter-backed login + DB session, so linking and session
-> semantics are uniform regardless of which way the user came in.
-
-Exact mechanics (how the OTP server action establishes an Auth.js DB session — e.g. a custom
-verification route that calls the adapter's `createSession`, or driving the email-callback flow
-server-side) are an **implementation-plan decision**, not settled here. The constraint is fixed: **no
-JWT, no Credentials provider; OTP must yield a DB session and honor §5 linking.**
+### Guards (requirements — non-negotiable for a 6-digit token)
+A 6-digit code is low entropy (10⁶), and it backs the link too, so both guards are mandatory:
+- **Short expiry** (~10 min) + **single-use** (native `VerificationToken` semantics).
+- **Per-email attempt lockout** — track failed verifications and invalidate after ~5 wrong tries,
+  using the small login-attempt counter from §4 (the native callback doesn't count attempts on its
+  own). Without this, 10⁶ is brute-forceable for a known email. Implementing the lockout around the
+  native callback (middleware/route guard keyed by email + IP) is the **one** item the plan must
+  detail.
 
 ## 7. Auth flows (summary)
 
 - **Google:** standard OAuth → `signIn` callback checks `email_verified` → adapter resolves/creates
   the 正身 by verified email (`allowDangerousEmailAccountLinking`) → profile seeded on creation → DB
   session.
-- **Email — magic link:** request → high-entropy `VerificationToken` issued + emailed → click →
-  Auth.js callback → adapter resolves/creates 正身 by email → DB session.
-- **Email — OTP:** request → 6-digit code issued into `email_tokens` + emailed (same email as the
-  link) → user types email + code on the OTP page → verify with lockout → complete the same email
-  login intent → DB session (§6).
+- **Email (one request, one 6-digit code):** request → `generateVerificationToken` mints a 6-digit
+  code stored (hashed) in `VerificationToken` → one Resend email shows the **code + a link carrying
+  it**. Then either:
+  - **click the link** → native Auth.js callback, or
+  - **type the code** on the OTP page → forwarded to the **same** native callback (with lockout).
+
+  Either path → adapter resolves/creates 正身 by email → DB session. Single-use.
 - **Convergence:** all four entry cases (Google-new, email-new, Google-then-email, email-then-Google)
   land on **one 正身** when the verified emails match (§5).
 
@@ -246,9 +247,13 @@ preview alias or `AUTH_REDIRECT_PROXY_URL`.)
 
 ## 11. Open items for the implementation plan
 
-- Exact OTP→DB-session mechanism (§6) — how the OTP server action mints an Auth.js DB session.
+- **Lockout around the native callback (§6)** — where to enforce per-email/IP attempt limits given
+  Auth.js's native callback doesn't count attempts (middleware vs route guard; store choice for the
+  counter).
 - Preview-deploy Google redirect-URI strategy (§9).
 - Whether the email provider also needs `allowDangerousEmailAccountLinking` in the pinned Auth.js
   version (§5).
-- Final shape of `email_tokens` vs reuse of `VerificationToken` for the OTP side.
+- Confirm a 6-digit `generateVerificationToken` + custom `sendVerificationRequest` (code + link)
+  works cleanly with the pinned Auth.js email/Resend provider, including the OTP page forwarding to
+  the native callback.
 - Logout UX + where the session/`auth()` helper is consumed in the app shell.
