@@ -10,6 +10,11 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
 - [ ] **Hello-world landing page on Vercel** — deploy a minimal Next.js page and bind the
   custom domain `https://guasi.tw` to it (DNS + SSL). Smoke-tests the Vercel + domain wiring
   before any feature work. (Spec §12)
+- [ ] **Enable Vercel Web Analytics (operator-only)** — turn on Vercel Web Analytics to
+  monitor traffic per URL / per `/[handle]` page for *operational* purposes (not a
+  user-facing view count). Note: it's **client-side, so it counts CDN-cached views** (server
+  logs would undercount); use a custom event (`track('profile_view', { handle })`) if
+  per-handle attribution needs to be cleaner. Mind the Hobby vs Pro event caps + retention.
 - [ ] **Detailed wireframes for each page** — 建立正身 (register), 註冊分身 (bind),
   驗明正身 (public profile + timeline), 分身管理 (manage), and the home / lookup pages.
 - [ ] **Implement the MVP** — after wireframes are settled. (Use the writing-plans skill to
