@@ -14,10 +14,40 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.2.0-design](#v020-design--verification-security-model--vercel-stack-lock-in-2026-06-15-0029) | Locked the verification security model (bound 分身 = post author from platform authority; scoped single-use code; manual paste-back primary) and the full MVP stack (all on Vercel: Neon + Auth.js + Google OAuth/email OTP + Vercel Blob). |
 | [v0.1.1-design](#v011-design--snapshot-ledger-status--naming-2026-06-14-2311) | Deepened the design: proof snapshots, append-only ledger, unbinding, timeline, account status management, verification-post growth loop; finalized naming/domain (我是/正身, `guasi.tw`). |
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
 
 ---
+
+## v0.2.0-design — Verification security model & Vercel stack lock-in (2026-06-15 00:29)
+
+**Review:** not yet
+
+**Design docs:**
+- 正身 identity verification: [Spec](superpowers/specs/2026-06-14-identity-backup-design.md)
+
+**What was built:**
+- **Verification security model locked** (§6.2/§6.3/§8): the **bound 分身 is the proof post's author**, resolved from platform authority (oEmbed/API or strictly-validated canonical URL) — never user-supplied page content. The **auth code is scoped to one binding request, single-use, and expiring**. Replaced the `auth_codes` table with **`binding_requests`**; narrowed `linked_accounts.status` to `verified | unbound`.
+- **Author-match target clarified**: it's the *specific 分身*, never the 正身 identity name or the `@gua.si.tw` tag; **many 分身 per platform** allowed, each its own binding request. Added a "three distinct handles" note to the spec.
+- **Manual paste-back set as the MVP primary path** (synchronous, more responsive); tag-based mention auto-capture deferred to Phase 2. Added new threat rows (copy-paste/stolen-code abuse, spoofed post page) + an author-integrity requirement (§6.3).
+- **MVP stack locked — all on Vercel** (§12): Next.js + TypeScript; **Neon** serverless Postgres via Prisma; **Auth.js** with **Google OAuth + email magic-link/OTP** (Prisma adapter, verified-email account linking); **Vercel Blob** for snapshots + avatars; async screenshot/archive via a serverless queue calling an **external screenshot API**. GCP kept as a portable escape hatch.
+- Updated `CLAUDE.md` (locked decisions + Vercel stack), `todo.md` (hosting + security checked off; auto-capture → Phase 2 section; **added hello-world landing page on Vercel bound to `guasi.tw`** as the first implementation step).
+- Made the three `guasi.tw` mentions in the (local, gitignored) pitch deck clickable to `https://guasi.tw`.
+
+**Key technical learnings:**
+- `[insight]` **The copy-paste-to-my-wall attack is defeated by two independent gates, not by code secrecy.** (1) The bound account *is* the post author resolved from the platform — you can't make an account you don't control author a post. (2) The code is scoped + single-use + expiring, so a copied post carries someone else's code, useless in any other session.
+- `[gotcha]` **Resolve the post author from the platform's authority, never from the pasted page.** If you read the author from user-supplied page content, an attacker pastes a URL to a page *they* control that mimics any author — defeating the whole author-match gate. Accept only canonical platform URLs → oEmbed/API.
+- `[insight]` **Manual paste-back is *more* responsive than the "premium" auto-detect.** A mention webhook is lossy + laggy (a poller adds poll-cycle latency) and needs a business account + app review + a live Meta token. Pasting the URL verifies synchronously in seconds and removes the platform dependency. The fancier option was strictly worse here.
+- `[insight]` **Don't size hosting on read QPS.** "1000 QPS public querying" is cache-dominated: with cache-on-write (`revalidateTag`) the origin sees near-zero. The real cost sink is the per-verification **snapshot pipeline** (headless browser / screenshot), not reads.
+- `[gotcha]` **Serverless + Postgres needs connection pooling.** With Prisma on Vercel: pooled connection string for queries, **direct** URL for migrations — skip it and concurrent functions exhaust the connection limit.
+- `[insight]` **Three distinct handles must not be conflated**: `@gua.si.tw` (service tag, not a check), the 正身 identity name (site profile, not a check), and the 分身 handle (the only one the author-match uses).
+- `[note]` **Site-login OAuth ≠ identity-verification OAuth.** Google login for `guasi.tw` doesn't touch the §6.1 "no platform OAuth for identity" rule — different OAuth, different purpose, no Meta gatekeeping.
+- `[note]` Vercel's on-demand ISR / `revalidateTag` natively implements the "cache public pages, expire from the management side" pattern.
+- `[note]` **Lucia was deprecated as a library in 2025** (now a learning resource) — use **Auth.js (NextAuth v5)** instead.
+
+**Process learnings:**
+- `[insight]` **Pressure-test stated scale numbers before pricing anything.** The "1000 QPS / 100 QPS" figures were guesses; deriving the realistic load profile (cache-dominated reads, bursty writes, snapshot-bound compute) changed the hosting answer by orders of magnitude and avoided over-engineering.
 
 ## v0.1.1-design — Snapshot, ledger, status & naming (2026-06-14 23:11)
 
