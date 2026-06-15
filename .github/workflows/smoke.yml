@@ -1,0 +1,27 @@
+name: smoke
+
+# Post-deploy smoke test (§3.8). Fires when Vercel reports a finished deploy to GitHub.
+# NOTE: deployment_status workflows only run from the file on the DEFAULT branch (main),
+# so this won't fire until it's merged — first real run is the post-merge prod deploy.
+on:
+  deployment_status:
+
+jobs:
+  smoke:
+    # Only run once the deploy actually succeeded.
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Post-deploy smoke test
+        env:
+          TARGET_URL: ${{ github.event.deployment_status.target_url }}
+          ENVIRONMENT: ${{ github.event.deployment_status.environment }}
+          HEALTH_CHECK_SECRET: ${{ secrets.HEALTH_CHECK_SECRET }}
+          # Bypasses Vercel preview Deployment Protection so the smoke test reaches the app
+          # instead of the SSO wall (§3.9). Harmless on the public production domain.
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: node scripts/smoke.mjs
