@@ -7,6 +7,9 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
 - [x] **Verification security model** — ✅ locked: bound 分身 = post author resolved from
   platform authority; scoped single-use expiring code per binding request; manual paste-back
   as the MVP primary path. (Spec §6.2/§6.3/§8)
+- [ ] **Hello-world landing page on Vercel** — deploy a minimal Next.js page and bind the
+  custom domain `https://guasi.tw` to it (DNS + SSL). Smoke-tests the Vercel + domain wiring
+  before any feature work. (Spec §12)
 - [ ] **Detailed wireframes for each page** — 建立正身 (register), 註冊分身 (bind),
   驗明正身 (public profile + timeline), 分身管理 (manage), and the home / lookup pages.
 - [ ] **Implement the MVP** — after wireframes are settled. (Use the writing-plans skill to
