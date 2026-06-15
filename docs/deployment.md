@@ -111,7 +111,7 @@ Outcome: CI/CD, migrations, env-var wiring, and domain binding all verified on a
 
 ## 6. Open / TBD
 
-- [ ] **Vercel plan:** Hobby is non-commercial → move to **Pro** before commercial launch (not blocking the scaffold).
+- [x] **Vercel plan:** on **Pro** ($20/mo) — 14-day trial started 2026-06-15 (Hobby is non-commercial). Costs tracked in [`operating-costs.md`](operating-costs.md).
 - [ ] **Async-job mechanism** for the screenshot/archive pipeline (Vercel Cron vs Vercel Queue vs external queue) — decide when building §6.4 snapshots.
 - [ ] **External screenshot-API vendor** (Urlbox / ScreenshotOne / Browserless) — parent spec §12.
 - [ ] **Migration step placement** — build command (MVP) vs dedicated release job (scale).

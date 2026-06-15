@@ -37,6 +37,7 @@ into an implementation plan before building features.
 - [`docs/platform-verification.md`](docs/platform-verification.md) — empirical capability matrix for reading the **author** and **code-bearing text** on Threads / IG / miin.cc, across post & bio methods. How-to recipes, the URL-handle spoof proof, Vercel render weights, and an evidence log (verified 2026-06-15). Source of truth for platform read mechanics.
 - [`docs/deployment.md`](docs/deployment.md) — deployment model (one Vercel app + managed Neon/Blob), CI/CD via Vercel's git integration, modular-monolith→Turborepo repo strategy, and repo/naming conventions. The north-star plan for infra; §5 is the scaffold checklist.
 - [`docs/superpowers/specs/2026-06-15-walking-skeleton-design.md`](docs/superpowers/specs/2026-06-15-walking-skeleton-design.md) — the scaffold + Vercel CI/CD + `guasi.tw` domain milestone (shipped as v0.4.0); a per-session execution tracker (checkboxes + session log) against `deployment.md`.
+- [`docs/operating-costs.md`](docs/operating-costs.md) — running ledger of operational costs (Vercel Pro, domain, future services).
 - [`docs/devlog.md`](docs/devlog.md) — running log of decisions and learnings, newest first.
 
 ## MVP scope (one-liner)
