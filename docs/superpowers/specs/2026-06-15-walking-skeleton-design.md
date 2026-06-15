@@ -133,6 +133,7 @@ their own milestone spec.)
 |------|---------------|--------|
 | 2026-06-15 | Milestone spec written; structure decided (flat monolith). | TBD |
 | 2026-06-15 | Phase A done: Next 16 scaffold + landing page, README CI/CD section, build green, PR opened. Phase B/C (Vercel + domain) next. | TBD |
+| 2026-06-15 | Resolved transitive `postcss` advisory (GHSA-qx2v-qp2m-jg93) via an `overrides` pin to `^8.5.15` (Next stays on 16); `npm audit` → 0 vulnerabilities. | TBD |
 
 ## Cross-references
 - [`docs/deployment.md`](../../deployment.md) — north-star principle (§5 scaffold checklist).
