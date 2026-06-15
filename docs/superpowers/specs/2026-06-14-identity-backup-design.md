@@ -525,7 +525,15 @@ powered by `created_at` / `verified_at` and the append-only `binding_events` led
 - **Auth:** **Auth.js (NextAuth v5)** with two passwordless methods — **Google OAuth** and
   **email magic-link / OTP** — using the **Prisma adapter** (users/sessions in Neon).
   Verified-email **account linking** so the same address via Google and via email resolves to
-  one 正身. Transactional email via Resend/Postmark. *(Lucia, named earlier, was deprecated
+  one 正身. **Transactional email: Resend** (Auth.js has a native Resend provider), sent from a
+  dedicated **`send.guasi.tw` subdomain** — never the root domain, never iCloud. *Receiving* and
+  *sending* are **separate jobs**: the root `guasi.tw` keeps its **iCloud Custom Email** mailbox
+  (MX/SPF/DKIM untouched) for inbound (`hello@`/support), while the ESP sends from the subdomain
+  so app-mail DNS + sending reputation stay isolated from the personal/brand mailbox. iCloud is a
+  personal mailbox — no sending API, and its ToS bans automated/bulk mail — so it is **never used
+  to send**. Resend's free tier covers the MVP (~3k/mo); ~$20/mo at scale; the subdomain's
+  SPF/DKIM records are configured at the Auth milestone. (Mailbox provider can later move to
+  Zoho / Google Workspace / Fastmail if shared/team inboxes are needed.) *(Lucia, named earlier, was deprecated
   as a library in 2025 — Auth.js replaces it.)* This is **site login only**; it does not
   touch the §6.1 "no platform OAuth for identity" rule.
 - **Object storage (images):** snapshot screenshots **and** avatars go in **Vercel Blob**

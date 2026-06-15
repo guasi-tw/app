@@ -102,7 +102,9 @@ with proof links.
   later. Japanese-pun alt `guatasi`/`guatashi` was set aside for coherence with 正身.
 - **Tech stack (MVP — locked, all on Vercel):** Next.js + TypeScript on **Vercel**;
   **Neon** (serverless Postgres) via Prisma — pooled connection for queries, direct URL for
-  migrations; **Auth.js** (Google OAuth + email magic-link/OTP, Prisma adapter); images
+  migrations; **Auth.js** (Google OAuth + email magic-link/OTP, Prisma adapter) with
+  **transactional email via Resend from a `send.guasi.tw` subdomain** (iCloud Custom Email stays
+  on root `guasi.tw` for *receiving* only — separate job, never used to send); images
   (snapshots + avatars) in **Vercel Blob / R2**; async screenshot + archive via a
   serverless queue calling an **external screenshot API**. GCP (Cloud Run + Cloud SQL) stays
   a portable future escape hatch. (Spec §12.)
