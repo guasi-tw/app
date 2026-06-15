@@ -19,11 +19,13 @@ export async function GET(request: Request) {
 
   try {
     // A real read against the migrated table — green proves the migration ran,
-    // not just that a connection opened (§5).
-    await prisma.healthCheck.count();
+    // not just that a connection opened (§5). The row count also makes the
+    // per-branch DB isolation visible (preview vs prod differ — §3.4 / Phase D).
+    const rows = await prisma.healthCheck.count();
     return NextResponse.json({
       status: "ok",
       db: "up",
+      rows,
       time: new Date().toISOString(),
     });
   } catch {

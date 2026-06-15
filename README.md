@@ -46,7 +46,8 @@ Locally, point them at the Neon **`vercel-dev` branch** so work never touches pr
 runs `prisma migrate deploy`, so it needs `DATABASE_URL_UNPOOLED` set.
 
 **Health check.** `GET /api/health` is **token-gated** — send `x-health-token: $HEALTH_CHECK_SECRET`;
-it returns `{status:"ok",db:"up"}` (200) after a real DB read, or 401 without the token.
+it returns `{status:"ok",db:"up",rows:N}` (200) after a real DB read (`rows` = `HealthCheck` count,
+which differs per Neon branch), or 401 without the token.
 
 ## Deployment & CI/CD
 

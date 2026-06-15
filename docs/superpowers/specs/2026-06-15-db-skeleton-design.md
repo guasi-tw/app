@@ -250,7 +250,8 @@ liveness probe — decided then, not now (**[OPEN]**).
 - [x] First migration `20260615213935_init_health_check` generated + applied to `vercel-dev`;
       `prisma/migrations/` committed.
 - [x] `app/api/health/route.ts` — `nodejs` runtime, `force-dynamic`; token check first → 401 with no
-      DB call; else `healthCheck.count()` → `{status,db,time}` (500 on error).
+      DB call; else `healthCheck.count()` → `{status,db,rows,time}` (`rows` = count, differs per
+      branch → isolation visible in the response; 500 on error).
 - [x] `scripts/smoke.mjs` (zero-dep) + `.github/workflows/smoke.yml` (`deployment_status`).
 - [x] `npm run build` green locally (full `migrate deploy && next build`); local smoke **2/2 pass**
       (200 with token `{db:up}`, 401 without/wrong).
@@ -266,10 +267,12 @@ liveness probe — decided then, not now (**[OPEN]**).
       3. **Airtight isolation (Neon SQL Editor):** `INSERT INTO "HealthCheck" DEFAULT VALUES;` ×N on
          the **preview** branch → its `count(*)` = N, while **`production`**'s `count(*)` is unchanged
          → two separate DBs; previews can't touch prod.
-      4. **Functional:** `curl -H "x-health-token: <secret>" -H "x-vercel-protection-bypass: <bypass>"
-         <preview-url>/api/health` → 200 `{db:up}`; without `x-health-token` → 401. *(The
-         `x-vercel-protection-bypass` header is required — previews sit behind Vercel Auth, §3.9.
-         Or verify in-browser while logged into Vercel.)*
+      4. **Functional + isolation in one shot:** `curl -H "x-health-token: <secret>"
+         -H "x-vercel-protection-bypass: <bypass>" <preview-url>/api/health` → 200
+         `{db:up, rows:N}` (matches the rows you inserted on the preview branch), while
+         `https://guasi.tw/api/health` shows `rows:0` — the `rows` field exposes the per-branch DB
+         directly. Without `x-health-token` → 401. *(`x-vercel-protection-bypass` required — previews
+         sit behind Vercel Auth, §3.9; or verify in-browser while logged into Vercel.)*
       5. **Cleanup:** after merge/close, the `preview/<git-branch>` branch is auto-deleted in Neon.
 - [ ] **Production:** squash-merge → `main` build runs `migrate deploy` against the production
       branch; **`https://guasi.tw/api/health`** returns `ok` **with the token** (and **401 without**).
