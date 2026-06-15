@@ -14,8 +14,20 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
   (pooled/direct URLs), `migrate deploy` in the build, trivial `HealthCheck` model + first migration,
   token-gated `/api/health`, per-preview Neon branching, and a post-deploy smoke test (first GitHub
   Action). ([db-skeleton spec](docs/superpowers/specs/2026-06-15-db-skeleton-design.md))
-- [ ] **Auth.js (site login)** — Google OAuth + email magic-link/OTP via the Prisma adapter; Resend
-  on `send.guasi.tw` for transactional mail. The next infra milestone before product features. (Spec §12)
+- [ ] **Auth.js (site login) — next milestone.** Passwordless: Google OAuth + email magic-link/OTP
+  via the Prisma adapter; Resend on `send.guasi.tw` for transactional mail. (Spec §12)
+  - **Plan first (fresh session):** brainstorm → `superpowers:writing-plans` against §12 *before*
+    coding — settle (a) how the Auth.js adapter schema (`User`/`Account`/`Session`/`VerificationToken`)
+    reconciles with the §8 `users`/正身 model (`display_name`/`avatar_url`/`bio`); (b) magic-link vs
+    OTP (or both) + session strategy (DB sessions via the adapter vs JWT); (c) **account-linking** so
+    the same email via Google *and* via email resolves to **one 正身**.
+  - **Build order — Google OAuth first:** fewest deps (just a Google Cloud OAuth client; no DNS/mail),
+    fastest path to a real logged-in session, and it stands up the shared Auth.js core + Prisma
+    adapter schema that the email provider then reuses.
+  - **Then Resend/email — but start its DNS *now*, in parallel:** create the Resend account + add the
+    `send.guasi.tw` SPF/DKIM/verification records at GoDaddy (**subdomain only** — never touch the
+    root `guasi.tw` iCloud MX/SPF/DKIM). DNS verification has lag, so kicking it off early means email
+    is ready to wire by the time the Google path is built.
 - [ ] **Enable Vercel Web Analytics (operator-only)** — turn on Vercel Web Analytics to
   monitor traffic per URL / per `/[handle]` page for *operational* purposes (not a
   user-facing view count). Note: it's **client-side, so it counts CDN-cached views** (server
