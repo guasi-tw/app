@@ -24,6 +24,7 @@ plan, then execute it.
 - [`docs/superpowers/specs/2026-06-14-identity-backup-design.md`](docs/superpowers/specs/2026-06-14-identity-backup-design.md) — the full product + architecture design spec. **Source of truth for what to build.**
 - [`docs/superpowers/specs/2026-06-15-routing-and-identity-design.md`](docs/superpowers/specs/2026-06-15-routing-and-identity-design.md) — deep-dive on URL routing, public-ID provisioning + squatting protection, and platform-adapter author-resolution (incl. the miin.cc finding). Splits these concerns out of the main spec.
 - [`docs/platform-verification.md`](docs/platform-verification.md) — empirical capability matrix for reading the **author** and **code-bearing text** on Threads / IG / miin.cc, across post & bio methods. How-to recipes, the URL-handle spoof proof, Vercel render weights, and an evidence log (verified 2026-06-15). Source of truth for platform read mechanics.
+- [`docs/deployment.md`](docs/deployment.md) — deployment model (one Vercel app + managed Neon/Blob), CI/CD via Vercel's git integration, modular-monolith→Turborepo repo strategy, and repo/naming conventions. Decisions for the minimal end-to-end scaffold.
 - [`docs/devlog.md`](docs/devlog.md) — running log of decisions and learnings, newest first.
 
 ## MVP scope (one-liner)
