@@ -22,6 +22,7 @@ plan, then execute it.
 - [`docs/first_thought.md`](docs/first_thought.md) — the original raw idea (Traditional Chinese).
 - [`docs/product-pitch.md`](docs/product-pitch.md) — non-technical product overview for pitching, organized by actor (Traditional Chinese).
 - [`docs/superpowers/specs/2026-06-14-identity-backup-design.md`](docs/superpowers/specs/2026-06-14-identity-backup-design.md) — the full product + architecture design spec. **Source of truth for what to build.**
+- [`docs/devlog.md`](docs/devlog.md) — running log of decisions and learnings, newest first.
 
 ## MVP scope (one-liner)
 
@@ -65,6 +66,7 @@ push pre-emptive verification.
 ## Conventions
 
 - Versioning: three-part semver (`vX.Y.Z`).
-- No git repo yet — `git init` before any version-controlled work (offer this when
-  starting implementation).
-- No `docs/devlog.md` yet — create one when implementation begins to track learnings.
+- Git initialized (local only, no remote). Commit when the user asks; branch off `main`
+  for feature work.
+- Devlog at [`docs/devlog.md`](docs/devlog.md) — update at the end of each session.
+  Design-only sessions use `vX.Y.0-design` with no git tag; releases get semver tags.
