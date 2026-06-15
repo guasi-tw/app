@@ -14,6 +14,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.4.1](#v041--post-launch-ops--decisions-2026-06-15-1229) | Post-launch ops + decisions: Vercel **Ignored Build Step** (skip docs-only deploys, verified live), README **live-status badges**, started the **cost ledger** + **services inventory**, and **locked the email architecture** (Resend on `send.guasi.tw`; iCloud for receiving). Gotcha: Vercel Hobby can't deploy an **org-owned private repo** → Pro. |
 | [v0.4.0](#v040--walking-skeleton-scaffold-vercel-cicd--guasitw-live-2026-06-15) | **First code.** Flat modular-monolith Next.js scaffold (Next 16 + React 19 + TS) + hello-world landing; **Vercel CI/CD** wired (`push main`→prod, PR→preview); **`guasi.tw` live** (GoDaddy DNS → Vercel, SSL, `www`→apex). postcss advisory cleared via `overrides`. |
 | [v0.3.0-design](#v030-design--routing-id-provisioning--platform-verification-2026-06-15) | Designed URL routing + proof-gated ID provisioning & squatting protection; **empirically verified** platform read-mechanics (Threads/IG crawler-UA SSR; miin's public JSON API) and the URL-handle spoof defense; created [`platform-verification.md`](platform-verification.md); slimmed the routing spec's §5 to a pointer. |
 | [v0.2.0-design](#v020-design--verification-security-model--vercel-stack-lock-in-2026-06-15-0029) | Locked the verification security model (bound 分身 = post author from platform authority; scoped single-use code; manual paste-back primary) and the full MVP stack (all on Vercel: Neon + Auth.js + Google OAuth/email OTP + Vercel Blob). |
@@ -21,6 +22,60 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
 
 ---
+
+## v0.4.1 — Post-launch ops & decisions (2026-06-15 12:29)
+
+**Review:** not yet
+
+No app code shipped — Vercel/Git config + ops docs + decisions on top of the v0.4.0 release
+(so no new git tag). Capturing the learnings before they're lost (only committed docs carry forward).
+
+**What was built / decided:**
+- **Tagged `v0.4.0`** and refreshed `CLAUDE.md` to "implementation started."
+- **Vercel Ignored Build Step** configured to **skip docs-only deploys**; verified live (three
+  docs commits each "Canceled by Ignored Build Step"). Recorded in `deployment.md` §2.
+- **README status badges** — live up/down for `guasi.tw` + `www.guasi.tw` (shields `website`) + a
+  "Deployed on Vercel" link badge.
+- **New `docs/operating-costs.md`** — cost ledger (Vercel Pro $20/mo, domain $29.99/yr, free-tier +
+  anticipated; ~$270/yr run-rate).
+- **New `docs/services.md`** — single inventory of every service/account (Active / Decided / Anticipated).
+- **Email architecture decided & recorded** (spec §12, cost ledger, `CLAUDE.md`): send transactional
+  mail via **Resend from a `send.guasi.tw` subdomain**; keep **iCloud Custom Email on the root** for
+  *receiving* only.
+
+**Key technical learnings:**
+- `[gotcha]` **Vercel Hobby can't deploy a private repo owned by a GitHub org** — only
+  *personal-account* private repos. That (not "commercial use" in the abstract) is why **Pro
+  ($20/mo) is required**; the only free alternatives were *make the repo public* or *move it to a
+  personal account*.
+- `[gotcha]` **Vercel has no native `[skip ci]`.** Skipping is *only* via the **Ignored Build Step**
+  (exit `0` = skip, `≥1` = build). It also **moved** in the UI — now under **Settings → Build and
+  Deployment** with a Presets / Repository-Scripts / Custom picker, no longer under Git.
+- `[insight]` **For skip rules, deny-list beats allow-list.** "Build *unless* only docs changed"
+  (`git diff --quiet HEAD^ HEAD -- . ':(exclude)*.md' ':(exclude)docs'`) auto-covers new
+  code/config; the "only build if folder X changed" preset would wrongly skip root changes like
+  `package.json` / `next.config.ts`.
+- `[note]` The Ignored Build Step posts a **transient `pending`** commit status first, then flips to
+  "Canceled by Ignored Build Step" (state `success`) — don't check too early. `HEAD^` is available
+  (Vercel clones `--depth=10`).
+- `[note]` **No official Vercel deploy-status badge**; community ones read GitHub's deployment API,
+  which **can't see a private repo** — so used shields.io **`website` up/down** badges (they ping the
+  live URL, independent of repo visibility).
+- `[insight]` **Email: receiving ≠ sending.** iCloud Custom Email is a personal *mailbox* (receiving;
+  no sending API; ToS bans automated/bulk) — never send app mail through it. Best practice: mailbox
+  provider on the **root** (receiving) + ESP on a **subdomain** (sending) to isolate DNS + reputation.
+  Don't remove iCloud to "use the domain for the app" — that conflates the two jobs and just loses the inbox.
+- `[note]` **Don't nuke the GoDaddy zone** to add a web host — `guasi.tw` already runs iCloud email
+  (MX/SPF/DKIM/DMARC/apple-domain); only the apex `A` + `www` CNAME changed for Vercel.
+
+**Process learnings:**
+- `[insight]` **Decisions live in docs, learnings live in the devlog.** `services.md` (inventory) +
+  `operating-costs.md` (ledger) + spec §12 (rationale) hold the *decisions*; the devlog holds the
+  *learnings*. Only committed docs carry to the next session — so record decisions in docs
+  immediately, and write up learnings at session end.
+- `[note]` **Verify vendor facts, don't recall them.** Several assumptions this session were wrong
+  until checked (no `[skip ci]`, the IBS UI moved, no Vercel badge, the org-repo Pro gate) — a quick
+  search each time corrected them.
 
 ## v0.4.0 — Walking skeleton: scaffold, Vercel CI/CD & guasi.tw live (2026-06-15)
 
