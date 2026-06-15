@@ -24,10 +24,11 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
   - **Build order — Google OAuth first:** fewest deps (just a Google Cloud OAuth client; no DNS/mail),
     fastest path to a real logged-in session, and it stands up the shared Auth.js core + Prisma
     adapter schema that the email provider then reuses.
-  - **Then Resend/email — but start its DNS *now*, in parallel:** create the Resend account + add the
-    `send.guasi.tw` SPF/DKIM/verification records at GoDaddy (**subdomain only** — never touch the
-    root `guasi.tw` iCloud MX/SPF/DKIM). DNS verification has lag, so kicking it off early means email
-    is ready to wire by the time the Google path is built.
+  - **Resend/email sending — ✅ DONE ahead of time (2026-06-15):** account created, `send.guasi.tw`
+    DNS verified (DKIM `resend._domainkey.send`, MX/SPF `send.send`; root iCloud records untouched),
+    **API key obtained + a test send succeeded.** Remaining at the Auth milestone: set `RESEND_API_KEY`
+    in Vercel (Prod/Preview/Dev) + local `.env` (never commit it), pick a from-address on
+    `send.guasi.tw` (e.g. `login@send.guasi.tw`), and register the Auth.js Resend provider.
 - [ ] **Enable Vercel Web Analytics (operator-only)** — turn on Vercel Web Analytics to
   monitor traffic per URL / per `/[handle]` page for *operational* purposes (not a
   user-facing view count). Note: it's **client-side, so it counts CDN-cached views** (server

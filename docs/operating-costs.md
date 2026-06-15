@@ -19,7 +19,7 @@ changes, or ends. Amounts in **USD** unless noted.
 
 ## Anticipated — not yet incurred
 
-- **Transactional email — Resend** [DECIDED 2026-06-15] (Auth.js native provider) for magic-link / OTP, sending from a **`send.guasi.tw`** subdomain. **Free tier covers MVP** (~3k/mo, ~100/day) → **$0 now**; ~**$20/mo** beyond the free limits. Root `guasi.tw` keeps **iCloud Custom Email** for *receiving* only (separate job, no extra cost). See spec §12.
+- **Transactional email — Resend** [**CONFIGURED + test-sent 2026-06-15**] (Auth.js native provider) for magic-link / OTP, sending from a **`send.guasi.tw`** subdomain (DNS verified). **Free tier covers MVP** (~3k/mo, ~100/day) → **$0 now**; ~**$20/mo** beyond the free limits. Root `guasi.tw` keeps **iCloud Custom Email** for *receiving* only (separate job, no extra cost). See spec §12.
 - **External screenshot API** (Urlbox / ScreenshotOne / Browserless) — proof snapshots (spec §6.4). Paid per render.
 - **Third-party archive** — proof archiving (spec §6.4); Internet Archive / archive.today are free.
 
