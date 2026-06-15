@@ -1,6 +1,6 @@
 # Deployment, CI/CD & Repo Conventions
 
-**Status:** decisions / planning (2026-06-15). **GitHub org [`guasi-tw`](https://github.com/guasi-tw) created**; repo + Vercel + Neon still pending — see the §5 scaffold checklist for current state. Stack is locked in the parent spec §12 (Next.js + TypeScript on Vercel · Neon Postgres via Prisma · Auth.js · Vercel Blob).
+**Status:** decisions / planning (2026-06-15). **GitHub org [`guasi-tw`](https://github.com/guasi-tw) created**, repo **`guasi-tw/app`** pushed, hello-world **scaffolded**; Vercel import + domain + Neon still pending — see the §5 scaffold checklist for current state. Stack is locked in the parent spec §12 (Next.js + TypeScript on Vercel · Neon Postgres via Prisma · Auth.js · Vercel Blob).
 
 > **Legend:** **[DECIDED]** · **[REC]** recommendation, final call is the operator's · **[OPEN]** TBD.
 
@@ -93,8 +93,9 @@ Vercel deploys **multiple projects from one monorepo** by pointing each project 
 The "walking skeleton" that proves the whole pipeline before any feature work (aligns with the todo: *hello-world landing page on Vercel bound to `guasi.tw`*). **Current status:**
 
 - [x] **GitHub org `guasi-tw` created** (`github.com/guasi-tw`).
-- [ ] Private repo **`guasi-tw/app`** created → add as remote to this local repo → push `main`.
-- [ ] Next.js hello-world → Vercel project (`guasi-web`), **production domain `guasi.tw`** attached.
+- [x] Private repo **`guasi-tw/app`** created → remote added → `main` pushed.
+- [x] **Next.js hello-world scaffolded** (flat monolith, Next 16; build green) — see [`superpowers/specs/2026-06-15-walking-skeleton-design.md`](superpowers/specs/2026-06-15-walking-skeleton-design.md).
+- [ ] Import to Vercel project (`guasi-web`); **production domain `guasi.tw`** attached.
 - [ ] Neon DB provisioned; **one trivial Prisma model + migration** via `prisma migrate deploy` (direct URL) in the pipeline.
 - [ ] **Preview deploy** (branch) + **prod deploy** (main) both verified, with **Neon branching** for the preview DB.
 - [ ] (Optional) `/api/health` route hitting the DB — proves app→Neon end-to-end.
