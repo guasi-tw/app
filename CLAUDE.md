@@ -46,6 +46,10 @@ with proof links.
   releases its uniqueness lock so a new owner can re-verify it later.
 - **Verification timeline:** surface *when* each account was verified (older = more
   credible).
+- **正身 profile:** each 正身 has an avatar, brief description, and a designated **main 分身**
+  (a `is_main` flag on a bound account — *not* a free-form URL; at most one per user;
+  **defaults to the first verified 分身**, changeable on the 分身管理 page). The public
+  驗明正身 page is a Linktree-like profile for a *verified* identity.
 - **Account status management (§6.8):** owner can mark a 分身 banned/hacked **self-service
   (login only)** — these only *lower* trust, and a hijacker can't remove a flag they don't
   control. Marking it **recovered/unbanned requires re-verification** (a trust-restoring

@@ -31,6 +31,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 - **Proof snapshot at verification time** (§6.4) — capture content + screenshot + third-party archive, so a proof survives the account/post being banned.
 - **Append-only public ledger** (§6.6), **unbinding** with reasons (§6.5), **verification timeline** (§6.7).
 - **Account status management** (§6.8) — owner marks banned/hacked (self-service) vs unbanned/reclaimed (re-verify).
+- **正身 profile** (§4) — avatar, brief description, and a designated **main 分身** (an `is_main` flag on a bound account, not a free-form URL; defaults to the first verified 分身, changeable on 分身管理). Public 驗明正身 page = a Linktree-like profile for a *verified* identity.
 - **Verification-post flow** (§6.2) — choose platform → copy-paste template (6-digit code + `@gua.si.tw` tag + 驗明正身 URL) → post → paste URL or tag auto-capture.
 - Finalized naming: concept term **正身**, brand/domain **我是/`guasi`** (`guasi.tw` registered), tagline **我是正身**, UI terms 建立正身 / 註冊分身 / 驗明正身.
 - Built a 13-page open-slide pitch deck (kept local, gitignored — not committed).

@@ -1,6 +1,6 @@
 # Identity Backup / Alter-Account Verification — Design Spec
 
-**Date:** 2026-06-14 (rev. append-only ledger, unbinding, verification timeline, naming/domain finalized, account status management, verification-post flow & growth loop)
+**Date:** 2026-06-14 (rev. append-only ledger, unbinding, verification timeline, naming/domain finalized, account status management, verification-post flow & growth loop, 正身 profile)
 **Status:** Draft (product + architecture)
 **Source:** [`docs/first_thought.md`](../../first_thought.md)
 **Name:** 正身 (tsiànn-sin) — product concept term · brand & domain 我是 / `guasi` (`guasi.tw`) · tagline 我是正身. See [§10 Naming](#10-naming)
@@ -54,6 +54,11 @@ not after.
 - Site account with **passwordless email (magic link / OTP)** login.
 - Account verification via **public-post proof only** (no platform OAuth — see §6.1).
 - Cross-linking verified accounts under one site account.
+- **Profile** — each 正身 has an **avatar**, a **brief description**, and a designated
+  **main 分身** (the primary verified account to feature — a *flag on a bound account*, not
+  a free-form URL). **The first verified 分身 becomes the main by default; the user can
+  change it on the 分身管理 page.** Shown atop the public 驗明正身 page (a Linktree-like
+  profile for a *verified* identity).
 - **Proof snapshot at verification time** — capture self-contained evidence (content +
   screenshot) so a proof survives the account/post being banned or deleted (§6.4).
 - **Unbinding** a linked account that's no longer needed or was sold, modeled as an
@@ -243,9 +248,10 @@ themselves. The data already exists (`created_at`, `verified_at`, ledger events)
 
 ### 6.8 Account status management (banned / hacked / recovered)
 
-A management page lets the owner record the real-world condition of each linked account.
-This is **separate from the binding status** (§8): an account can be `verified` (bound)
-yet `banned` in reality.
+A management page (**分身管理**) lets the owner record the real-world condition of each
+linked account, set visibility, and **choose which bound 分身 is the main one** (default:
+the first verified 分身 — §4). Condition is **separate from the binding status** (§8): an
+account can be `verified` (bound) yet `banned` in reality.
 
 **Status-change asymmetry (the security principle):**
 
@@ -315,13 +321,18 @@ or X later is "write a new adapter," not a rewrite.
 
 ## 8. Data model (sketch)
 
-- **users** — `id`, `email`, `created_at`. (Passwordless: no password hash.)
+- **users** (a person's 正身) — `id`, `email`, `display_name`, `avatar_url`, `bio` (brief
+  description), `created_at`. (Passwordless: no password hash.) Profile fields set at
+  建立正身, editable later. (The "main link" is **not** stored here — it's a flag on a
+  bound account, see `linked_accounts.is_main`.)
 - **email_tokens** — `id`, `user_id?`, `email`, `code`, `expires_at`, `consumed_at`
   (for magic-link / OTP login).
 - **linked_accounts** — `id`, `user_id`, `platform`, `account_id`, `display_name`,
   `status` (`pending` | `verified` | `unbound`), `condition` (`active` | `banned` |
   `hacked`, owner-reported real-world state — see §6.8), `visibility` (`public` |
-  `private`), `created_at`, `verified_at`. Current-state projection; full history lives in
+  `private`), `is_main` (boolean — the user's featured "main 分身"; **at most one `true`
+  per user**; defaults to the first verified 分身, reassignable on the 分身管理 page),
+  `created_at`, `verified_at`. Current-state projection; full history lives in
   `binding_events`.
 - **binding_events** (append-only ledger, §6.6) — `id`, `user_id`, `platform`,
   `account_id`, `event_type` (`bound` | `unbound` | `reported_banned` | `reported_hacked`
@@ -399,10 +410,10 @@ identity; **分身** = an alter-ego (a linked social account):
 
 | UI action | Term | Maps to |
 |-----------|------|---------|
-| Register a site account | **建立正身** ("create your 正身") | site account (§4) |
+| Register a site account (also sets avatar, description, main link) | **建立正身** ("create your 正身") | site account + profile (§4) |
 | Add & verify a linked social account (binding) | **註冊分身** ("register a 分身") | verification flow (§6.2), `bound` event (§6.6) |
-| Public page listing all of an account's bound accounts, with a click to reveal its **timeline** (registered → bound → unbound / history) | **驗明正身** | public lookup (§4) + ledger (§6.6) + timeline (§6.7) |
-| Owner marks a 分身 banned / hacked, or re-verifies it as recovered | **分身管理** ("manage your 分身") — *term suggested, TBD* | account status management (§6.8) |
+| Public profile page — avatar, description, main 分身 + all bound accounts, with a click to reveal the **timeline** (registered → bound → unbound / history) | **驗明正身** | profile + public lookup (§4) + ledger (§6.6) + timeline (§6.7) |
+| Owner manages 分身: mark banned/hacked, re-verify as recovered, choose the **main 分身**, set visibility | **分身管理** ("manage your 分身") — *term suggested, TBD* | account status management (§6.8) + profile (§4) |
 
 **驗明正身** is a well-known Chinese idiom — "to ascertain someone's true identity" —
 which is exactly what the public verification view does. The timeline view it opens is
@@ -455,7 +466,8 @@ Open to alternatives if the team has stronger preferences.
   managed-service choices for hosting and the database.
 - Exact public-post fetch strategy per platform and its fragility budget (§6.3).
 - **Snapshot mechanics (§6.4):** how to render the screenshot (headless browser?), which
-  third-party archive to use, and where to store snapshot images.
+  third-party archive to use, and where to store images (snapshot screenshots **and**
+  uploaded avatars) — likely object storage tied to the chosen cloud provider.
 - Auth-code **expiry window** (format decided: 6-digit numeric, single-use — §6.2/§8).
 - Exact copy/wording of the ready-to-post verification template (§6.2).
 - Tag-based auto-capture feasibility (mention API access, business-account/app-review
