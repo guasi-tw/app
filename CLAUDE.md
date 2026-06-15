@@ -10,12 +10,23 @@ that cost many KOLs their primary accounts.
 
 ## Current status
 
-**Phase: design + pitch complete. Implementation NOT started.** The user is not ready to
-build yet. No code and no stack scaffolding exists (git is initialized — local only, no remote).
+**Phase: implementation started — walking skeleton live (v0.4.0, 2026-06-15).** Design + pitch
+are complete; the first code has shipped.
 
-The next implementation step (when the user is ready) is to invoke the
-**superpowers:writing-plans** skill against the design spec to produce an implementation
-plan, then execute it.
+- **Repo:** private GitHub repo **`guasi-tw/app`** (remote wired). Work via PRs off `main`
+  (squash-merge); `main` is the production branch.
+- **Live:** **https://guasi.tw** serves a Next.js hello-world on **Vercel** (project
+  **`guasi-app`**). CI/CD = Vercel's GitHub integration — **push `main` → production**,
+  **PR → preview** (no GitHub Actions yet).
+- **Code shape:** flat **modular monolith** — `app/` (Next 16 + React 19 + TS, App Router) at
+  the repo root; `lib/*` and `prisma/` arrive when product code lands. (Monorepo/Turborepo
+  considered + rejected for now — one deployable; see [`docs/deployment.md`](docs/deployment.md) §3.)
+- **DNS/email caveat:** `guasi.tw` DNS is at **GoDaddy**, and the zone also runs **iCloud Custom
+  Email Domain** (MX/SPF/DKIM/DMARC) — don't touch those records when changing web hosting.
+
+**Next milestone:** Neon Postgres + first Prisma migration + a `/api/health` route (app→DB
+proof), then MVP features. Use **superpowers:writing-plans** against the design spec to turn it
+into an implementation plan before building features.
 
 ## Docs
 
@@ -24,7 +35,8 @@ plan, then execute it.
 - [`docs/superpowers/specs/2026-06-14-identity-backup-design.md`](docs/superpowers/specs/2026-06-14-identity-backup-design.md) — the full product + architecture design spec. **Source of truth for what to build.**
 - [`docs/superpowers/specs/2026-06-15-routing-and-identity-design.md`](docs/superpowers/specs/2026-06-15-routing-and-identity-design.md) — deep-dive on URL routing, public-ID provisioning + squatting protection, and platform-adapter author-resolution (incl. the miin.cc finding). Splits these concerns out of the main spec.
 - [`docs/platform-verification.md`](docs/platform-verification.md) — empirical capability matrix for reading the **author** and **code-bearing text** on Threads / IG / miin.cc, across post & bio methods. How-to recipes, the URL-handle spoof proof, Vercel render weights, and an evidence log (verified 2026-06-15). Source of truth for platform read mechanics.
-- [`docs/deployment.md`](docs/deployment.md) — deployment model (one Vercel app + managed Neon/Blob), CI/CD via Vercel's git integration, modular-monolith→Turborepo repo strategy, and repo/naming conventions. Decisions for the minimal end-to-end scaffold.
+- [`docs/deployment.md`](docs/deployment.md) — deployment model (one Vercel app + managed Neon/Blob), CI/CD via Vercel's git integration, modular-monolith→Turborepo repo strategy, and repo/naming conventions. The north-star plan for infra; §5 is the scaffold checklist.
+- [`docs/superpowers/specs/2026-06-15-walking-skeleton-design.md`](docs/superpowers/specs/2026-06-15-walking-skeleton-design.md) — the scaffold + Vercel CI/CD + `guasi.tw` domain milestone (shipped as v0.4.0); a per-session execution tracker (checkboxes + session log) against `deployment.md`.
 - [`docs/devlog.md`](docs/devlog.md) — running log of decisions and learnings, newest first.
 
 ## MVP scope (one-liner)
@@ -108,8 +120,14 @@ push pre-emptive verification.
 
 ## Conventions
 
-- Versioning: three-part semver (`vX.Y.Z`).
-- Git initialized (local only, no remote). Commit when the user asks; branch off `main`
-  for feature work.
-- Devlog at [`docs/devlog.md`](docs/devlog.md) — update at the end of each session.
-  Design-only sessions use `vX.Y.0-design` with no git tag; releases get semver tags.
+- Versioning: three-part semver (`vX.Y.Z`). Releases that ship code get a git tag; design-only
+  sessions use `vX.Y.0-design` with no tag.
+- **Git/PRs:** private GitHub remote **`guasi-tw/app`**. Branch off `main` for work, open a PR,
+  **squash-merge**. Commit/push when the user asks. `main` = production (Vercel deploys it).
+- **Repo structure:** flat **modular monolith** (`app/` + `lib/*` + `prisma/` at root) — *not* a
+  monorepo yet; see [`docs/deployment.md`](docs/deployment.md) §3.
+- **Build milestones** get an **execution spec** under `docs/superpowers/specs/` (per-session
+  tracker: checkboxes + session log), with `deployment.md` / the design specs as the north star —
+  see the walking-skeleton spec for the pattern.
+- Devlog at [`docs/devlog.md`](docs/devlog.md) — update at the end of each session (newest first;
+  TL;DR table + tagged learnings).
