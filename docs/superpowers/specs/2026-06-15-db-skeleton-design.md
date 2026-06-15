@@ -165,6 +165,21 @@ We **adopt the integration's native env-var names** (Option 1, decided 2026-06-1
   `deployment_status` is the correct hook. This is the **first GitHub Action** in the repo and is
   exactly the "tests on deploy — what Vercel doesn't do" case `deployment.md` §2 anticipated.
 
+### 3.9 Preview Deployment Protection — bypass for automation **[DECIDED 2026-06-15]**
+- `[gotcha]` **Preview `*.vercel.app` URLs sit behind Vercel Authentication** (SSO) — discovered when
+  the PR-1 preview returned `401` with a `_vercel_sso_nonce` cookie + "Authentication Required" page
+  *before* reaching our app. So both a manual `curl` and the smoke Action would get a **false 401**
+  from Vercel's wall, not our token gate. The **production custom domain `guasi.tw` is exempt** (only
+  preview + the generated prod `*.vercel.app` URLs are protected), so prod smoke checks are unaffected.
+- **Decision: keep protection ON, use Vercel "Protection Bypass for Automation."** Previews can hold
+  test data for an identity product — keeping them private is the right posture. The smoke test sends
+  the **`x-vercel-protection-bypass`** header (value = `VERCEL_AUTOMATION_BYPASS_SECRET`) on every
+  request; harmless on the public prod domain, required for previews. *Rejected:* disabling preview
+  protection (makes previews public) — simpler but exposes preview URLs + data.
+- **Operator step:** Vercel → `guasi-app` → Settings → **Deployment Protection → Protection Bypass
+  for Automation** → generate the secret → add it as a **GitHub Actions repo secret**
+  **`VERCEL_AUTOMATION_BYPASS_SECRET`**. (Same value works for local `curl` against a preview.)
+
 ## 4. Stack / versions **[DECIDED]**
 - **Prisma pinned to `6.19.3`** — `prisma` (devDep) + `@prisma/client` (dep), PostgreSQL provider,
   `prisma-client-js` generator. `[gotcha]` `prisma@latest` now resolves to **7.8.0**; we
@@ -220,6 +235,9 @@ liveness probe — decided then, not now (**[OPEN]**).
       obsolete Neon branches** is ON (cleans up merged preview branches; never touches `dev`/`production`).
 - [x] Set **`HEALTH_CHECK_SECRET`** in Vercel for **Production + Preview + Development** (§3.7).
 - [x] Added the **same `HEALTH_CHECK_SECRET`** as a **repository** Actions secret on `guasi-tw/app` (§3.8).
+- [ ] **TODO (operator):** enable Vercel **Protection Bypass for Automation** + add the secret as a
+      GitHub repo secret **`VERCEL_AUTOMATION_BYPASS_SECRET`** (§3.9) — needed for the smoke test to
+      pass through preview Deployment Protection. *(Discovered during Phase D; see §3.9.)*
 
 ### Phase C — Prisma in the repo (in-repo; agent does, on a branch) — ✅ done 2026-06-15
 - [x] Deps: `prisma` (dev) + `@prisma/client` **pinned 6.19.3** (§4); `postinstall: prisma generate`;
@@ -248,8 +266,10 @@ liveness probe — decided then, not now (**[OPEN]**).
       3. **Airtight isolation (Neon SQL Editor):** `INSERT INTO "HealthCheck" DEFAULT VALUES;` ×N on
          the **preview** branch → its `count(*)` = N, while **`production`**'s `count(*)` is unchanged
          → two separate DBs; previews can't touch prod.
-      4. **Functional:** `curl -H "x-health-token: <secret>" <preview-url>/api/health` → 200 `{db:up}`;
-         no header → 401.
+      4. **Functional:** `curl -H "x-health-token: <secret>" -H "x-vercel-protection-bypass: <bypass>"
+         <preview-url>/api/health` → 200 `{db:up}`; without `x-health-token` → 401. *(The
+         `x-vercel-protection-bypass` header is required — previews sit behind Vercel Auth, §3.9.
+         Or verify in-browser while logged into Vercel.)*
       5. **Cleanup:** after merge/close, the `preview/<git-branch>` branch is auto-deleted in Neon.
 - [ ] **Production:** squash-merge → `main` build runs `migrate deploy` against the production
       branch; **`https://guasi.tw/api/health`** returns `ok` **with the token** (and **401 without**).

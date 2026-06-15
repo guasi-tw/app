@@ -7,13 +7,20 @@
 //   TARGET_URL          the deployed URL (deployment_status.target_url) — or argv[2]
 //   ENVIRONMENT         "Production" | "Preview" (deployment_status.environment)
 //   HEALTH_CHECK_SECRET shared secret for the x-health-token header (§3.7)
+//   VERCEL_AUTOMATION_BYPASS_SECRET  bypasses Vercel preview Deployment Protection (§3.9)
 //
 // On Production it exercises the canonical public surface (guasi.tw + www); on Preview it
-// only hits the deploy's own /api/health (apex/www are production-only).
+// only hits the deploy's own /api/health (apex/www are production-only). Preview *.vercel.app
+// URLs sit behind Vercel Authentication, so we send the protection-bypass header on every
+// request (harmless on the public production domain).
 
 const token = process.env.HEALTH_CHECK_SECRET ?? "";
+const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? "";
 const environment = (process.env.ENVIRONMENT ?? "preview").toLowerCase();
 const targetUrl = (process.env.TARGET_URL ?? process.argv[2] ?? "").replace(/\/+$/, "");
+
+// Sent on every request; only matters for protected preview deployments (§3.9).
+const bypassHeaders = bypass ? { "x-vercel-protection-bypass": bypass } : {};
 
 if (!targetUrl) {
   console.error("smoke: no TARGET_URL (set env TARGET_URL or pass as argv[1])");
@@ -46,7 +53,7 @@ for (const check of checks) {
   try {
     const res = await fetch(check.url, {
       method: "GET",
-      headers: check.headers ?? {},
+      headers: { ...bypassHeaders, ...(check.headers ?? {}) },
       redirect: "follow",
     });
     const ok = res.status === check.expect;
