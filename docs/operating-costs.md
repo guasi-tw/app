@@ -7,7 +7,7 @@ changes, or ends. Amounts in **USD** unless noted.
 
 | Service | What it's for | Cost | Cycle | Since | Notes |
 |---|---|---|---|---|---|
-| **Vercel Pro** | Hosting + CI/CD for the app | **$20** / member | monthly | 2026-06-15 | **14-day free trial** started 2026-06-15 → first charge ~**2026-06-29**. Solo = 1 member. Hobby *can* deploy a private repo but is **non-commercial-use only**, so Pro is the right tier for a real product. (See `deployment.md` §6.) |
+| **Vercel Pro** | Hosting + CI/CD for the app | **$20** / member | monthly | 2026-06-15 | **14-day free trial** started 2026-06-15 → first charge ~**2026-06-29**. Solo = 1 member. **Why Pro is required:** Vercel **Hobby can't deploy a private repo owned by a GitHub org** (`guasi-tw/app`) — only *personal-account* private repos. Alternatives were *make the repo public* or *move it to a personal account*; Pro chosen to keep org + privacy. (Hobby is also non-commercial-use.) See `deployment.md` §6. |
 | **Domain `guasi.tw`** | Primary website domain | **$29.99** | yearly | (confirm) | Registrar **GoDaddy**. Renews annually — **confirm exact registration/renewal date in GoDaddy** and watch auto-renew. DNS also hosts iCloud Custom Email (no extra cost here). |
 
 ## Free tier — no cost yet (watch for overage)
