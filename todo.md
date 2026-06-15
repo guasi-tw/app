@@ -7,9 +7,9 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
 - [x] **Verification security model** — ✅ locked: bound 分身 = post author resolved from
   platform authority; scoped single-use expiring code per binding request; manual paste-back
   as the MVP primary path. (Spec §6.2/§6.3/§8)
-- [ ] **Hello-world landing page on Vercel** — deploy a minimal Next.js page and bind the
-  custom domain `https://guasi.tw` to it (DNS + SSL). Smoke-tests the Vercel + domain wiring
-  before any feature work. (Spec §12)
+- [x] **Hello-world landing page on Vercel** — ✅ done (v0.4.0): Next 16 scaffold deployed via
+  Vercel CI/CD; `https://guasi.tw` live over TLS, `www`→apex. Smoke-tested the Vercel + domain
+  wiring. (Spec §12; [walking-skeleton spec](docs/superpowers/specs/2026-06-15-walking-skeleton-design.md))
 - [ ] **Enable Vercel Web Analytics (operator-only)** — turn on Vercel Web Analytics to
   monitor traffic per URL / per `/[handle]` page for *operational* purposes (not a
   user-facing view count). Note: it's **client-side, so it counts CDN-cached views** (server

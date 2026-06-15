@@ -14,12 +14,64 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.4.0](#v040--walking-skeleton-scaffold-vercel-cicd--guasitw-live-2026-06-15) | **First code.** Flat modular-monolith Next.js scaffold (Next 16 + React 19 + TS) + hello-world landing; **Vercel CI/CD** wired (`push main`→prod, PR→preview); **`guasi.tw` live** (GoDaddy DNS → Vercel, SSL, `www`→apex). postcss advisory cleared via `overrides`. |
 | [v0.3.0-design](#v030-design--routing-id-provisioning--platform-verification-2026-06-15) | Designed URL routing + proof-gated ID provisioning & squatting protection; **empirically verified** platform read-mechanics (Threads/IG crawler-UA SSR; miin's public JSON API) and the URL-handle spoof defense; created [`platform-verification.md`](platform-verification.md); slimmed the routing spec's §5 to a pointer. |
 | [v0.2.0-design](#v020-design--verification-security-model--vercel-stack-lock-in-2026-06-15-0029) | Locked the verification security model (bound 分身 = post author from platform authority; scoped single-use code; manual paste-back primary) and the full MVP stack (all on Vercel: Neon + Auth.js + Google OAuth/email OTP + Vercel Blob). |
 | [v0.1.1-design](#v011-design--snapshot-ledger-status--naming-2026-06-14-2311) | Deepened the design: proof snapshots, append-only ledger, unbinding, timeline, account status management, verification-post growth loop; finalized naming/domain (我是/正身, `guasi.tw`). |
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
 
 ---
+
+## v0.4.0 — Walking skeleton: scaffold, Vercel CI/CD & guasi.tw live (2026-06-15)
+
+**Review:** not yet
+
+**Design docs:**
+- Walking skeleton (scaffold + CI/CD + domain): [Spec](superpowers/specs/2026-06-15-walking-skeleton-design.md)
+
+**What was built:**
+- **First code in the repo:** a flat **modular-monolith Next.js scaffold** (Next 16 + React 19 +
+  TypeScript, App Router) — `app/` only; `lib/` and `prisma/` deferred until product code lands.
+  Considered and rejected a workspaces / Turborepo monorepo (only one deployable today, and
+  `prisma/` lives in-repo either way).
+- A minimal on-brand **hello-world landing** (`我是正身`, `zh-Hant`); `npm run build` green (static `/`).
+- **Vercel CI/CD** wired via the GitHub integration — `push main` → production, PR → preview.
+  Project **`guasi-app`**.
+- **`guasi.tw` bound** — apex `A → 216.198.79.1` + `www` CNAME at **GoDaddy**, SSL auto-issued,
+  `www` 308-redirects to apex.
+- New **execution spec** (`2026-06-15-walking-skeleton-design.md`) as a per-session tracker
+  (north star: `deployment.md` §5); **README** gained a **Deployment & CI/CD** section;
+  `deployment.md` §5 + the `todo.md` hello-world item ticked.
+
+**Key technical learnings:**
+- `[gotcha]` **`npm audit fix --force` wanted to downgrade Next 16 → 9.3.3** to clear a
+  *transitive* `postcss` advisory (GHSA-qx2v-qp2m-jg93). The right fix for a transitive dep is an
+  npm **`overrides`** pin (`postcss: ^8.5.15`) — bumps it without touching Next; `npm audit` → 0.
+- `[gotcha]` **Vercel now hands out a *new* IP range.** Apex `A → 216.198.79.1` (not the
+  long-documented `76.76.21.21`) and a **project-unique** `www` CNAME
+  (`…vercel-dns-017.com`, not the generic `cname.vercel-dns.com`). Use exactly what the Domains
+  page shows — the generic values still work but are the old path.
+- `[insight]` **Don't nuke the GoDaddy zone to add a web host.** `guasi.tw` already ran **iCloud
+  Custom Email Domain** (MX + SPF/DKIM/DMARC + `apple-domain` TXT). Only the apex `A` (a GoDaddy
+  WebsiteBuilder record) and the `www` CNAME needed changing; deleting the rest would have killed
+  email. Edit the two web records, leave NS/SOA/MX/TXT/DKIM alone.
+- `[gotcha]` **`create-next-app` refuses a non-empty dir** — `CLAUDE.md`/`todo.md` trip its
+  empty-folder check, so the scaffold was hand-rolled. Also the root `tsconfig` must **exclude the
+  gitignored `pitch-deck/`** workspace, or its own deps fail the Next typecheck.
+- `[note]` **Bootstrap ordering:** importing a repo makes Vercel immediately deploy `main`, so the
+  scaffold had to land on `main` *before* the import — else the first production build has nothing
+  to build.
+- `[note]` Vercel **auto-named the project `guasi-app`** from `package.json` (not the `guasi-web`
+  the convention suggested) — cosmetic/internal; the domain is attached separately.
+
+**Process learnings:**
+- `[insight]` **The structure question was worth stopping for.** The user paused the scaffold to
+  reconsider monorepo-vs-monolith; laying out three concrete options (folder-tree previews +
+  trade-offs) surfaced that the stated "I want a monorepo" actually resolved to the flat monolith
+  once "the DB schema is in-repo either way" was made explicit.
+- `[note]` **A doc-closeout PR doubles as preview-deploy verification** — opening it makes Vercel
+  build a preview, exercising the `PR → preview` half of CI/CD that a straight-to-`main` flow never
+  triggers.
 
 ## v0.3.0-design — Routing, ID provisioning & platform verification (2026-06-15)
 

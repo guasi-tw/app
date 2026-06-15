@@ -1,6 +1,6 @@
 # Deployment, CI/CD & Repo Conventions
 
-**Status:** decisions / planning (2026-06-15). **GitHub org [`guasi-tw`](https://github.com/guasi-tw) created**, repo **`guasi-tw/app`** pushed, hello-world **scaffolded**; Vercel import + domain + Neon still pending — see the §5 scaffold checklist for current state. Stack is locked in the parent spec §12 (Next.js + TypeScript on Vercel · Neon Postgres via Prisma · Auth.js · Vercel Blob).
+**Status:** decisions / planning (2026-06-15). **GitHub org [`guasi-tw`](https://github.com/guasi-tw) created**, repo **`guasi-tw/app`** pushed, hello-world **scaffolded + deployed to Vercel with [`guasi.tw`](https://guasi.tw) live** (CI/CD + SSL); Neon still pending — see the §5 scaffold checklist for current state. Stack is locked in the parent spec §12 (Next.js + TypeScript on Vercel · Neon Postgres via Prisma · Auth.js · Vercel Blob).
 
 > **Legend:** **[DECIDED]** · **[REC]** recommendation, final call is the operator's · **[OPEN]** TBD.
 
@@ -81,7 +81,7 @@ Vercel deploys **multiple projects from one monorepo** by pointing each project 
 | **GitHub org** | **`guasi-tw`** — created (`github.com/guasi-tw`) | reserves the namespace, future-proofs collaborators, separates from personal account; GitHub Free orgs = unlimited private repos + collaborators |
 | **Repo name** | **`guasi-tw/app`** for the product monorepo (private); `guasi-tw/site` for the public marketing site later (can be public) | the brand is implied by the org — **not `guasi-web`** (stutter). `app` names the *container*, so it survives a Turborepo split where `web` becomes the inner `apps/web` (§3); `web` alone would be too narrow |
 | **npm scope** (Turborepo pkgs) | **`@guasi/*`** — `@guasi/core`, `@guasi/db`, `@guasi/adapters` | internal/unpublished, so the clean scope is fine even though the GH org is `guasi-tw`; verify on npm only if you ever publish |
-| **Vercel project** | **`guasi-web`** (internal name; Vercel team may be `guasi-tw`) | the production domain `guasi.tw` is attached separately, so the project name is internal-only |
+| **Vercel project** | **`guasi-app`** (auto-derived from `package.json`; internal name) | the production domain `guasi.tw` is attached separately, so the project name is internal-only. (`guasi-web` was the earlier suggestion; Vercel named it `guasi-app` from the package name on import.) |
 | **Brand** (`guasi` / 正身, `guasi.tw`, `@gua.si.tw`) | unchanged — public domain, social, pitch | naming repos/orgs doesn't touch any of this |
 
 **Next:** create the private repo **`guasi-tw/app`**, add it as the remote to this local repo, push `main`, then import it into Vercel (install the Vercel GitHub app on the `guasi-tw` org).
@@ -95,7 +95,7 @@ The "walking skeleton" that proves the whole pipeline before any feature work (a
 - [x] **GitHub org `guasi-tw` created** (`github.com/guasi-tw`).
 - [x] Private repo **`guasi-tw/app`** created → remote added → `main` pushed.
 - [x] **Next.js hello-world scaffolded** (flat monolith, Next 16; build green) — see [`superpowers/specs/2026-06-15-walking-skeleton-design.md`](superpowers/specs/2026-06-15-walking-skeleton-design.md).
-- [ ] Import to Vercel project (`guasi-web`); **production domain `guasi.tw`** attached.
+- [x] Imported to Vercel project (`guasi-app`); **production domain `guasi.tw`** attached, SSL issued, `www` 308-redirects to apex. `push main → prod` + `PR → preview` verified.
 - [ ] Neon DB provisioned; **one trivial Prisma model + migration** via `prisma migrate deploy` (direct URL) in the pipeline.
 - [ ] **Preview deploy** (branch) + **prod deploy** (main) both verified, with **Neon branching** for the preview DB.
 - [ ] (Optional) `/api/health` route hitting the DB — proves app→Neon end-to-end.
