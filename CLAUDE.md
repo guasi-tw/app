@@ -77,7 +77,7 @@ with proof links.
 
 ## Open questions / TBD
 
-- **Cloud provider: GCP vs AWS vs Vercel** — to be decided later; affects managed-service choices.
+- **Cloud provider: GCP vs Vercel** — to be decided later; wire to `guasi.tw`. See [`todo.md`](todo.md).
 - Per-platform post-fetch strategy (oEmbed vs web fetch) and its fragility budget.
 - Snapshot mechanics: screenshot rendering (headless browser?), which third-party archive, where to store snapshot images.
 - Auth-code format and expiry window.

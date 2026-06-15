@@ -448,10 +448,9 @@ powered by `created_at` / `verified_at` and the append-only `binding_events` led
 - **Database:** PostgreSQL via Prisma.
 - **Auth:** passwordless email magic-link / OTP (e.g. Lucia or a lightweight custom
   flow; transactional email via a provider such as Resend/Postmark).
-- **Hosting:** **GCP, AWS, or Vercel — to be decided later** (see §13). Examples per
-  option: Cloud Run + Cloud SQL (GCP), App Runner/ECS + RDS (AWS), or Vercel + managed
-  Postgres (Neon/Supabase). To keep the choice open, avoid provider-specific lock-in in
-  the application code where practical.
+- **Hosting:** **GCP or Vercel — to be decided later** (see §13). Examples: Cloud Run +
+  Cloud SQL (GCP), or Vercel + managed Postgres (Neon/Supabase). To keep the choice open,
+  avoid provider-specific lock-in in the application code where practical.
 - **Post fetching & snapshot:** server-side fetch within the PlatformAdapter, plus
   screenshot capture and third-party archive submission (§6.4); background queue if needed.
 
@@ -462,8 +461,8 @@ Open to alternatives if the team has stronger preferences.
 ## 13. Open questions
 
 - Final name (§10).
-- **Cloud provider: GCP vs AWS vs Vercel — to be decided later** (§12). Affects
-  managed-service choices for hosting and the database.
+- **Cloud provider: GCP vs Vercel — to be decided later** (§12). Affects managed-service
+  choices for hosting and the database; wire the chosen platform to the `guasi.tw` domain.
 - Exact public-post fetch strategy per platform and its fragility budget (§6.3).
 - **Snapshot mechanics (§6.4):** how to render the screenshot (headless browser?), which
   third-party archive to use, and where to store images (snapshot screenshots **and**

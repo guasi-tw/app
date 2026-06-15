@@ -15,6 +15,7 @@ Status: **design phase** — not yet implemented. See the docs below.
 - [`docs/superpowers/specs/2026-06-14-identity-backup-design.md`](docs/superpowers/specs/2026-06-14-identity-backup-design.md) — full product + architecture spec (source of truth).
 - [`docs/devlog.md`](docs/devlog.md) — running log of decisions and learnings.
 - [`CLAUDE.md`](CLAUDE.md) — project context and locked decisions.
+- [`todo.md`](todo.md) — working list of next steps.
 
 ## Viewing the pitch deck
 
