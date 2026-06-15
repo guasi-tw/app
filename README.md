@@ -1,5 +1,11 @@
 # 我是 (guasi) · 正身
 
+[![guasi.tw](https://img.shields.io/website?url=https%3A%2F%2Fguasi.tw&up_message=up&up_color=brightgreen&down_message=down&down_color=red&label=guasi.tw)](https://guasi.tw)
+[![www.guasi.tw](https://img.shields.io/website?url=https%3A%2F%2Fwww.guasi.tw&up_message=up&up_color=brightgreen&down_message=down&down_color=red&label=www.guasi.tw)](https://www.guasi.tw)
+[![Deployed on Vercel](https://img.shields.io/badge/deploy-Vercel-000?logo=vercel&logoColor=white)](https://vercel.com/sans-word-s-projects/guasi-app)
+
+<sup>Site badges ping the live URLs (up/down). Vercel has no official deploy-status badge, and the GitHub-deployment ones can't read this **private** repo — so build/deploy status lives in the [Vercel dashboard](https://vercel.com/sans-word-s-projects/guasi-app).</sup>
+
 An identity-backup / alter-account verification service. Lets a person **proactively
 verify and cross-link the social accounts they own**, so that when one account is banned,
 their surviving verified accounts can vouch for a new one — and anyone can publicly
