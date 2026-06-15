@@ -14,7 +14,7 @@ changes, or ends. Amounts in **USD** unless noted.
 
 | Service | What it's for | Tier | Starts costing when |
 |---|---|---|---|
-| **Neon** (Postgres) | App database | Free | Scale / storage / compute-hours overage (next milestone) |
+| **Neon** (Postgres) | App database | Free | Provisioned 2026-06-15 (DB-skeleton milestone). Free tier ≈ 0.5 GB storage + limited compute-hours + ~10 branches; cost starts on storage / compute / branch-count overage. Auto-deletion of obsolete preview branches keeps branch count in check. |
 | **Vercel Blob / R2** | Snapshot + avatar images | Included / free | Storage + bandwidth overage (feature work) |
 
 ## Anticipated — not yet incurred

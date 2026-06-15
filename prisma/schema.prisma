@@ -1,0 +1,24 @@
+// Prisma schema — DB skeleton milestone (Milestone 2).
+// See docs/superpowers/specs/2026-06-15-db-skeleton-design.md.
+//
+// Connection strings (§3.1): pooled for runtime queries, direct for migrations.
+//   url       = DATABASE_URL           (pooled, host contains `-pooler`)
+//   directUrl = DATABASE_URL_UNPOOLED  (direct, no `-pooler`)
+// Names match what the Neon–Vercel integration injects, so preview-branch URLs flow in untouched.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+// Trivial, disposable model (§5) — proves the migration ran end-to-end.
+// The real §8 data model arrives with feature work, not here.
+model HealthCheck {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+}

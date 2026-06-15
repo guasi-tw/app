@@ -15,7 +15,7 @@ committed to. This is the *inventory*; **dollar costs** live in
 | **Vercel** | App hosting + CI/CD (`push main`→prod, PR→preview) | Active | **Pro $20/mo** (trial from 2026-06-15) | team `sans-word-s-projects` · project `guasi-app` | [deployment.md](deployment.md) |
 | **GoDaddy** | Domain registrar + DNS for `guasi.tw` | Active | $29.99/yr (domain) | `guasi.tw` | [deployment.md](deployment.md) §5 |
 | **iCloud+ Custom Email Domain** | **Receiving** mail @`guasi.tw` (`hello@`, support) | Active | included in existing iCloud+ | root `guasi.tw` MX/SPF/DKIM | spec §12 |
-| **Neon** | Serverless Postgres — app database | Decided | Free tier | — | spec §12 · DB milestone |
+| **Neon** | Serverless Postgres — app database | Active | Free tier | project (standalone) · default branch `production` · `vercel-dev` (Development env, used for local dev) · Vercel integration (auto preview branches) | spec §12 · [db-skeleton spec](superpowers/specs/2026-06-15-db-skeleton-design.md) |
 | **Google Cloud** | Google OAuth provider for **site login** | Decided | Free | OAuth client (TBD) | spec §12 · Auth milestone |
 | **Resend** | **Sending** transactional email (magic-link/OTP) | Decided | Free → ~$20/mo | sender `send.guasi.tw` | spec §12 · Auth milestone |
 | **Vercel Blob** (or Cloudflare R2) | Object storage — proof snapshots + avatars | Decided | Included / free tier | — | spec §12 |
