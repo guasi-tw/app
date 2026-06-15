@@ -29,6 +29,11 @@
 - **PR / branch push → preview deployment** (own URL).
 - **Migrations:** run `prisma migrate deploy` as a release step (build command for MVP; promote to a dedicated step later so concurrent builds don't race). Use the **direct** Neon URL.
 - **GitHub Actions:** add later, only for what Vercel doesn't do — tests / typecheck / lint on PRs once a test suite exists. (Vercel's build already typechecks the Next build.)
+- **Skip docs-only redeploys [DECIDED 2026-06-15]:** Vercel **Ignored Build Step** (Settings → Git, *dashboard-only* — no `vercel.json` equivalent) set to
+  ```
+  git diff --quiet HEAD^ HEAD -- . ':(exclude)*.md' ':(exclude)docs'
+  ```
+  Exit **0 skips** the build, **≥1 builds** (Vercel does `git clone --depth=10`, so `HEAD^` is available). A commit touching only `*.md` / `docs/` won't burn a production deploy. **Caveat:** keys off file type — revisit if markdown ever becomes a build input (e.g. MDX content rendered by the app).
 
 **Env vars** (set per environment — production / preview / development in Vercel): Neon pooled + direct URLs, Auth.js secret + Google OAuth creds, Vercel Blob token, external screenshot-API key. Vercel's Neon/Blob integrations can auto-inject several of these.
 
