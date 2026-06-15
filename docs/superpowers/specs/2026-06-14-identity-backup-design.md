@@ -1,6 +1,6 @@
 # Identity Backup / Alter-Account Verification — Design Spec
 
-**Date:** 2026-06-14 (rev. append-only ledger, unbinding, verification timeline, naming/domain finalized, account status management, verification-post flow & growth loop, 正身 profile)
+**Date:** 2026-06-14 (rev. append-only ledger, unbinding, verification timeline, naming/domain finalized, account status management, verification-post flow & growth loop, 正身 profile; **2026-06-15** verification security model: bound-account = post author resolved from platform authority, scoped single-use code per binding request, manual paste-back as the primary path — more responsive than the mention webhook)
 **Status:** Draft (product + architecture)
 **Source:** [`docs/first_thought.md`](../../first_thought.md)
 **Name:** 正身 (tsiànn-sin) — product concept term · brand & domain 我是 / `guasi` (`guasi.tw`) · tagline 我是正身. See [§10 Naming](#10-naming)
@@ -88,7 +88,8 @@ not after.
 | **Linked account** (分身) | A social platform account `(platform, account_id)` claimed by a site account. Current-state projection (`status`, `visibility`); full history lives in the ledger. UI term: 分身. |
 | **Proof record** | Immutable, **self-contained** evidence of one verification: the captured post snapshot (content + screenshot), author, capture time, and original URL. Survives the post being deleted/banned. |
 | **Binding event** | An append-only ledger entry: a `bound` or `unbound` event for a `(platform, account_id)` under a site account. Never updated or deleted. |
-| **Auth code** | A unique, expiring token the user must place in a public post to prove control of an account. |
+| **Binding request** | A pending verification for a `(正身, platform)`: holds the scoped single-use auth code and (optionally) a pre-declared handle. On success, the **resolved post author** becomes the bound 分身. |
+| **Auth code** | A 6-digit, expiring, **single-use** token scoped to one binding request; the user places it in a public post to prove control. Security rests on author-match + scope + expiry, not entropy (§6.2). |
 
 ## 6. Verification & binding lifecycle (MVP)
 
@@ -109,24 +110,34 @@ platform OAuth for identity. Rationale:
 
 ### 6.2 Flow
 
-1. **Choose platform.** User picks which platform to bind (Threads or IG) and enters the
-   account id `id1`. → status `pending`.
-2. Site generates a unique, **expiring 6-digit auth code** and a **ready-to-post text
-   template** for the user to copy. The template contains:
+1. **Start a binding request.** User picks which platform to bind (Threads or IG). They
+   **may optionally pre-declare the handle** they're about to verify (e.g. `@alice_ig`) —
+   this is a *confirmation* aid (catches "posted from the wrong account" mistakes), **not**
+   the security gate. → a `binding_request` is created for `(正身, platform)`.
+2. Site generates a unique, **expiring, single-use 6-digit auth code** scoped to **this
+   binding request** and a **ready-to-post text template** for the user to copy. The
+   template contains:
    - the **auth code**,
    - a **mention/tag of the service** (`@gua.si.tw`),
    - a short line of copy, and
    - the user's **public 驗明正身 page URL** (e.g. `guasi.tw/<handle>`) so anyone who sees
      the post can click through.
-3. User publishes the template as a **public post** from `id1`. (On Threads this is a text
-   post; on **Instagram** the caption carries the text — IG requires attaching an image.)
-4. User pastes the **post URL** back into the site — *or* we auto-detect the post via the
-   `@gua.si.tw` tag (see note below).
-5. Site fetches the post and confirms **both**:
-   - the post text contains the matching auth code, **and**
-   - the post author equals `id1`.
-6. On success, the site **snapshots the post** (§6.4), writes an **immutable proof
-   record**, appends a `bound` event to the ledger (§6.6), and sets the account `verified`.
+3. User publishes the template as a **public post** from the account they want to bind. (On
+   Threads this is a text post; on **Instagram** the caption carries the text — IG requires
+   attaching an image.)
+4. User **pastes the post URL** back into the site. Manual paste-back is the **primary
+   path** and the *most responsive* one — verification completes **synchronously, in
+   seconds** (see the auto-capture note for why the mention webhook was set aside).
+5. Site resolves the post **through the platform's authority** (oEmbed / API, or a
+   strictly-validated canonical platform URL — *never* user-supplied page content; §6.3)
+   and confirms **both**:
+   - the post text contains **this binding request's** auth code, **and**
+   - the post is **authored by a platform account** — and *that resolved author becomes the
+     bound 分身*. If the user pre-declared a handle, the resolved author must match it.
+6. On success, the site **captures the text proof synchronously**, then **snapshots the
+   post** (§6.4), creates/activates the `linked_account` for the **resolved author**, writes
+   an **immutable proof record**, appends a `bound` event to the ledger (§6.6), and sets the
+   account `verified`. The single-use code is **consumed** and the binding request closes.
 
 > **The verification post is also the growth engine.** Because the post is public and
 > links to the user's 驗明正身 page, every verification markets 正身 to that user's
@@ -135,15 +146,19 @@ platform OAuth for identity. Rationale:
 > original idea. Only the **auth code** is *required* for verification; the URL + copy are
 > what make the post double as marketing, so the template defaults to including them.
 
-> **Tagging `@gua.si.tw` enables auto-capture.** Because the post tags the service's
-> account, the platform's mention/tag API can surface the post to us automatically —
-> potentially letting users **skip the paste-URL step** (we detect the tagged post, then
-> match the auth code + author and verify). Treat this as a UX **enhancement, not the
-> primary path**: mention APIs typically need a business account + app review and have
-> coverage limits, so the manual **paste-URL flow stays the reliable fallback** (consistent
-> with §6.3). Bonus: the tag adds credibility and a follow path back to the official
-> account. **Security is unchanged** — the auth code + author-match still do the work, so a
-> stranger tagging `@gua.si.tw` cannot get falsely verified.
+> **Why manual paste-back is the primary path (not the mention webhook).** Tagging
+> `@gua.si.tw` could let the platform's mention/tag API surface the post automatically and
+> skip the paste step — but this was **deliberately set aside for MVP**, and not only for
+> cost/app-review reasons: **manual paste-back is actually *more responsive*.** Pasting the
+> URL completes verification **synchronously, in seconds**; a mention webhook is lossy and
+> laggy (a poller adds up to a full poll-cycle of latency), while needing a business account
+> + Meta app review + a live API token — a hard dependency on the very platform this product
+> exists to route around. Since the user *just* composed and published the post, pasting its
+> URL one line later is a natural, instant step. Auto-capture stays a **Phase 2
+> enhancement** (§11); the tag still adds credibility + a follow path back to the official
+> account today. **Security is unchanged either way** — the scoped single-use code + author
+> resolved from platform authority do the work, so a stranger tagging `@gua.si.tw` cannot
+> get falsely verified.
 
 > **Platform caveat (clickable links):** Threads renders links as clickable, so the loop
 > works well there. **Instagram captions do *not* make URLs clickable** — the link shows
@@ -151,10 +166,34 @@ platform OAuth for identity. Rationale:
 > encourage users to also put it in their IG **bio link**. Don't assume the IG caption
 > link is tappable.
 
-> **Why 6 digits is enough.** Security comes from the **author match** (the post must come
-> from `id1`, which an impersonator doesn't control) plus **expiry + single use** — not
-> from code entropy. The code just ties one specific post to one pending binding and proves
-> intent. 6 digits keeps it easy to copy.
+> **Why 6 digits is enough — and what actually makes it safe.** Security does **not** come
+> from code entropy. It rests on three things:
+> 1. **Authorship is unforgeable.** The proof post must be *authored by* the account being
+>    bound, and the bound account **is** that author (resolved from platform authority,
+>    §6.3). Copy-pasting the template text onto your own wall just produces a post authored
+>    by *you* — you can never make someone else's account author a post, so you can never
+>    bind an account you don't control.
+> 2. **The code is scoped + single-use + expiring.** Each code belongs to exactly **one
+>    binding request** (`正身` + `platform`), verifies **at most once**, and expires after a
+>    short TTL. A **leaked or copied code is useless in anyone else's session** — their
+>    binding request carries a *different* code — and useless once consumed or expired.
+>    Failed attempts (typo, author mismatch) do **not** consume it; the user can retry within
+>    the TTL. Rate-limit verify attempts to prevent hammering.
+> 3. **The match target is the *specific account*, never the identity** (see next note).
+>
+> So a 6-digit code is plenty — it only has to tie one live post to one pending request and
+> prove intent, and it stays easy to copy.
+
+> **Three distinct handles — don't conflate them.** The author check compares the post
+> author to the **分身 being bound** (one specific platform account) and to *nothing else*:
+> - **`@gua.si.tw`** — the *service's* own account, present only as a tag (growth /
+>   discoverability). **Not** a security check.
+> - **正身 identity name** (the `guasi.tw/<handle>` profile) — the user's identity on *our*
+>   site. **Not** what the post author is matched against.
+> - **分身 handle** (e.g. `@alice_ig`, `@alice_threads`, `@alice_backup`) — the platform
+>   account being proven. **This is the only handle the author check uses.** One 正身 owns
+>   **many** 分身, including **several on the same platform** — each is its own binding
+>   request, its own code, and its own author-proven `bound` event.
 
 > **Design rule:** persist the *full, self-contained proof record* (snapshot, not just a
 > live URL, and never just a `verified: true` boolean). Storing the captured evidence is
@@ -169,8 +208,9 @@ whichever ships Phase 1 fastest; the other serves as fallback:
 
 1. **Platform API (preferred where straightforward).** Use the platform's official
    **oEmbed** endpoint (available for both Instagram and Threads): given a public post
-   URL it returns the author handle/URL and embed content, which is enough to check
-   `author == id1` and that the auth code appears in the text. Requires a Meta app +
+   URL it returns the author handle/URL and embed content — enough to take the **resolved
+   author** as the bound 分身 (matching the pre-declared handle if one was given) and to
+   check the auth code appears in the text. Requires a Meta app +
    access token. *This is acceptable for reading posts — it does not tie the trust model
    to Meta (see §6.1).*
 2. **Public web fetch (fallback / easier-first-phase option).** Fetch the public post
@@ -178,6 +218,17 @@ whichever ships Phase 1 fastest; the other serves as fallback:
    anti-bot measures).
 3. **Manual review (safety net).** If automated fetch fails or is ambiguous, queue the
    verification for human confirmation.
+
+**Author integrity (critical).** Whichever route is used, the **post author must be derived
+from the platform's own authority, never from attacker-influenced page content.** Concretely:
+(a) accept **only canonical platform URLs** (`threads.net/@author/post/…`,
+`instagram.com/p/…`) and parse out **platform + post-id**; (b) resolve the author via the
+platform's oEmbed/API for that post-id, or — for the web-fetch route — fetch **only from the
+real platform domain over HTTPS with no arbitrary redirects**, reading the author from the
+platform's markup, not from anything the user supplied. Without this, an attacker could paste
+a URL to a **page they control** that mimics a post claiming any author, defeating the
+author-match gate. The author-match is only as strong as the trustworthiness of *who told us
+the author*.
 
 **Keep web fetch viable as a fallback even if the API is the primary path.** Because the
 product's reason for existing is Meta cutting people off, a revoked oEmbed token must not
@@ -295,8 +346,8 @@ Browser ──> Web app (UI + API) ──> Database
 - **Linked-account manager** — add/list/unbind linked accounts and record their status
   (banned/hacked/recovered, §6.8); owns status, condition & visibility; writes events to
   the ledger (§6.6).
-- **Verification service** — generates auth codes, drives the proof flow, writes proof
-  records.
+- **Verification service** — opens binding requests, generates scoped single-use codes,
+  resolves the post author from platform authority (§6.3), and writes proof records.
 - **Snapshot/archive service** — at verification, captures the post snapshot (content +
   screenshot) and submits the URL to a third-party archive (§6.4).
 - **PlatformAdapter layer** — the pluggable seam for platforms (§7.3).
@@ -328,7 +379,9 @@ or X later is "write a new adapter," not a rewrite.
 - **email_tokens** — `id`, `user_id?`, `email`, `code`, `expires_at`, `consumed_at`
   (for magic-link / OTP login).
 - **linked_accounts** — `id`, `user_id`, `platform`, `account_id`, `display_name`,
-  `status` (`pending` | `verified` | `unbound`), `condition` (`active` | `banned` |
+  `status` (`verified` | `unbound` — a row exists only once an account is **bound**, i.e.
+  the resolved author of a successful binding request; the *pending* state lives in
+  `binding_requests`), `condition` (`active` | `banned` |
   `hacked`, owner-reported real-world state — see §6.8), `visibility` (`public` |
   `private`), `is_main` (boolean — the user's featured "main 分身"; **at most one `true`
   per user**; defaults to the first verified 分身, reassignable on the 分身管理 page),
@@ -340,8 +393,13 @@ or X later is "write a new adapter," not a rewrite.
   `proof_record_id?` (set for `bound` / `re_verified`), `created_at`. **Append-only —
   never updated or deleted.** `reported_banned` / `reported_hacked` are self-service
   (login only); `re_verified` requires the public-post flow (§6.8).
-- **auth_codes** — `id`, `linked_account_id`, `code` (6-digit numeric), `expires_at`,
-  `consumed_at` (single-use). See §6.2 for why 6 digits suffices.
+- **binding_requests** — `id`, `user_id`, `platform`, `expected_handle?` (optional
+  pre-declared handle, **confirmation only** — §6.2), `code` (6-digit numeric, **scoped to
+  this request**), `status` (`pending` | `verified` | `expired`), `expires_at`,
+  `consumed_at` (**single-use** — set on success), `created_at`. The *pending* state of a
+  verification lives here; on success the **resolved post author** becomes the `account_id`
+  of a new/activated `linked_account`. A code verifies **at most once** and only ever
+  completes **its own** request (§6.2). See §6.2 for why 6 digits suffices.
 - **proof_records** — `id`, `linked_account_id`, `proof_post_url`, `auth_code`,
   `author_handle`, `author_display_name`, `snapshot_content` (raw fetched content),
   `snapshot_image` (screenshot reference), `archive_url` (third-party archive),
@@ -358,7 +416,9 @@ later; all past events remain in `binding_events`.
 | Threat | Mitigation |
 |--------|-----------|
 | **Verification timing** (can't verify a banned account) | Core principle §3: encourage pre-verification while accounts are alive; surviving accounts vouch for new ones. |
-| **Impersonation** (claiming an account you don't own) | Verification requires posting from the account itself; post-author check blocks this. |
+| **Impersonation** (claiming an account you don't own) | The bound account **is** the proof post's author, resolved from platform authority (§6.3); you cannot make an account you don't control author a post, so you cannot bind it. |
+| **Copy-paste / stolen-code abuse** (reposting someone's verification template, or reusing a leaked code) | The code is **scoped to one binding request, single-use, and expiring** (§6.2/§8): a copied post carries *someone else's* code, which matches no other session's request; a consumed or expired code is dead. |
+| **Spoofed post page** (pasting a URL to attacker-controlled content that fakes the author) | Author is resolved **only** from the platform's authority via **canonical URLs** + oEmbed/API, never from user-supplied page content (§6.3 author integrity). |
 | **Platform-account takeover** (your `a1` is hacked) | The **site account**, not the platform account, controls bindings. A hijacker of `a1` cannot alter your links, and cannot re-verify `a1` elsewhere while it is bound to you (uniqueness, §8). |
 | **Site-account takeover** (your 正身 login is compromised) | The real attack surface. Mitigations: secure passwordless email login, notify on binding changes, and the append-only ledger (§6.6) makes any malicious bind/unbind publicly visible — history cannot be erased. |
 | **Banned/deleted proof post** | Proof is **snapshotted at verification time** (content + screenshot) and independently archived (§6.4), so it survives the account/post disappearing — the case that matters most. |
@@ -439,8 +499,10 @@ powered by `created_at` / `verified_at` and the append-only `binding_events` led
   page). Additionally, anchor a few large KOLs as launch partners to break the
   chicken-and-egg trust bootstrap.
 - **Tag-based auto-capture** — detect verification posts via the `@gua.si.tw` mention/tag
-  API so users can skip pasting the URL (§6.2). Likely Phase 2, since it needs a business
-  account + app review; paste-URL remains the MVP path.
+  API so users *could* skip pasting the URL (§6.2). **Deferred from MVP on purpose:** manual
+  paste-back is *more responsive* (synchronous vs. a lossy/laggy webhook) and avoids a
+  business-account + app-review + live-token dependency on the platform. Revisit only if a
+  paste-free flow proves worth that cost.
 
 ## 12. Tech stack (recommendation, not locked)
 
@@ -469,6 +531,7 @@ Open to alternatives if the team has stronger preferences.
   uploaded avatars) — likely object storage tied to the chosen cloud provider.
 - Auth-code **expiry window** (format decided: 6-digit numeric, single-use — §6.2/§8).
 - Exact copy/wording of the ready-to-post verification template (§6.2).
-- Tag-based auto-capture feasibility (mention API access, business-account/app-review
-  requirements) vs paste-URL only for MVP (§6.2).
+- ~~Tag-based auto-capture vs paste-URL for MVP~~ — **decided: manual paste-back is the MVP
+  primary** (more responsive + no platform dependency, §6.2); tag-based auto-capture deferred
+  to Phase 2 (§11).
 - Whether the public lookup should be queryable by platform handle, by URL, or both.
