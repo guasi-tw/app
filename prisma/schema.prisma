@@ -7,13 +7,15 @@
 // Names match what the Neon–Vercel integration injects, so preview-branch URLs flow in untouched.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DATABASE_URL_UNPOOLED")
+  extensions = [citext]
 }
 
 // Trivial, disposable model (§5) — proves the migration ran end-to-end.
@@ -37,11 +39,17 @@ model User {
   emailVerified DateTime?
   image         String?
 
+  // public URL (handle-derived, case-insensitive; minted at main-account designation — Slice 2)
+  slug          String?   @unique @db.Citext
+  // short opaque redirect token at /r/{shortRef}; NOT NULL from creation (§H.2)
+  shortRef      String    @unique
+
   // app-owned 正身 profile (seeded from Google on first login; editable later)
   displayName   String?
   avatarUrl     String?
   bio           String?
   createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   accounts      Account[]
   sessions      Session[]

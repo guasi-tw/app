@@ -29,5 +29,8 @@ describe.skipIf(!hasDb)("createAuthAdapter.createUser (DB)", () => {
     expect(row.displayName).toBe("New User");
     expect(row.avatarUrl).toBe("https://example.com/avatar.png");
     expect(row.bio).toBeNull(); // not seeded — user fills this in later
+    expect(row.shortRef).toHaveLength(10); // base62 token minted at creation
+    expect(row.slug).toBeNull(); // not minted until main-account designation (Slice 2)
+    expect(row.updatedAt).toBeInstanceOf(Date);
   });
 });

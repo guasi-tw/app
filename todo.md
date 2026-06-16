@@ -57,6 +57,15 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
   - [ ] **Slice 4 — Timeline tab** — render the append-only `binding_events` ledger (+ `created_at`).
   - [ ] **Slice 5 — Manage tab** — disclose (one-way), set-as-main (forces public), condition flags
     (banned/hacked), 恢復·重新驗證.
+    - [ ] **Give 編輯個人資料 a real edit surface** (avatar/name/bio). Slice 1 shortcut: the `/r/{shortRef}`
+      "編輯個人資料" link points at **`/onboarding`**, which doubles as the editor (the form pre-fills from
+      the current `User` row and `saveProfileAction` is already an `UPDATE`). What's wrong is only the
+      *framing*: onboarding copy reads as first-time setup (title `建立你的正身`, button `下一步：設定主要帳號 →`,
+      the permanence warning). Replace with an edit-framed surface (`儲存`, no "下一步"). Two decisions to
+      settle here: (a) dedicated `/…/edit` page **vs.** a profile section on this Manage tab (today Manage
+      is scoped to *bound 分身*, not profile fields); (b) add an `onboardedAt`-style flag so first login
+      routes to the wizard while returning users route to their page + this edit surface (Slice 1
+      deliberately omitted the flag). The `updateUserProfile` write path is already reusable.
   - [ ] **Later platforms** — IG + miin adapters once the Threads slice proves the `PlatformAdapter` seam.
 
 ## Deferred to Phase 2
