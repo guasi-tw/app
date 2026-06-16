@@ -27,7 +27,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 ## v0.6.0 — Auth.js site login (Google OAuth) (2026-06-15 20:53)
 
-**Review:** not yet
+**Review:** complete — fresh-context code review (no critical/important issues) + **production login round-trip verified on `https://guasi.tw`** (seeded 正身 row confirmed in the prod Neon branch; login→logout→re-login all clean).
 
 **Design docs:**
 - Auth.js site login (Google MVP): [Spec](superpowers/specs/2026-06-15-authjs-site-login-design.md) [Plan](superpowers/plans/2026-06-15-authjs-site-login.md)
@@ -49,6 +49,10 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 - **New Vitest harness** — pure-function unit tests (normalize/seed/signIn guard) run in `node` with no
   DB; one DB integration test exercises the real wrapped adapter against the Neon `vercel-dev` branch and
   **self-skips** when `DATABASE_URL` is unset, so `npm test` is green everywhere. 10 tests pass.
+- **Post-merge fixes from smoke-testing:** un-nested the logout `<form>` from a `<p>` (invalid HTML →
+  hydration error); added `suppressHydrationWarning` to `<body>` (browser extensions mutate it); locked
+  **Traditional Chinese (zh-Hant)** as a project-wide convention in `CLAUDE.md`. Home/login headings set
+  to 我是首頁 / 我是登入頁.
 
 **Key technical learnings:**
 - `[gotcha]` **next-auth v5 (`@beta`) declares a peer range of `next: ^14 || ^15`** — a plain
@@ -69,6 +73,18 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 - `[note]` **Vitest loads `.env` into `process.env`**, so the DB integration test ran for real (not
   skipped) locally against the `vercel-dev` branch — Prisma Client itself doesn't load `.env`, but Vitest
   does.
+- `[gotcha]` **The preview-proxy strategy can't smoke-test the *first* auth PR.** `AUTH_REDIRECT_PROXY_URL`
+  routes preview OAuth callbacks *through production* (`https://guasi.tw/api/auth/...`) — but this is the PR
+  that *introduces* those routes, so the prod callback **404s until merge**. Bootstrap gap: smoke-test
+  **locally** (registered `localhost` redirect, no proxy) pre-merge, then on prod post-merge. Future preview
+  PRs work fine once prod has the routes.
+- `[gotcha]` **`<form>` cannot be nested inside `<p>`** (invalid HTML) — but neither `tsc` nor `next build`
+  catches it; it only surfaces at **runtime as a hydration error**. The logout form shipped inside a `<p>`
+  from the plan's literal JSX; fixed to a `<div>`. Build-green ≠ valid DOM.
+- `[note]` **Browser extensions (Feedly's `data-feedly-mini`, Grammarly, etc.) mutate `<body>`/`<html>`
+  before React hydrates**, producing an attribute-mismatch hydration warning that looks like our bug but
+  isn't. The sanctioned fix is `suppressHydrationWarning` on `<body>` — safe because our own render there
+  is deterministic. The dev-overlay call stack naming a `chrome-extension://…` script is the tell.
 
 **Process learnings:**
 - `[gotcha]` A **Google `client_secret_*.json`** downloaded from Cloud Console landed loose in the repo

@@ -14,11 +14,12 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
   (pooled/direct URLs), `migrate deploy` in the build, trivial `HealthCheck` model + first migration,
   token-gated `/api/health`, per-preview Neon branching, and a post-deploy smoke test (first GitHub
   Action). ([db-skeleton spec](docs/superpowers/specs/2026-06-15-db-skeleton-design.md))
-- [x] **Auth.js (site login) — Google OAuth ONLY** — ✅ done (v0.6.0): Auth.js v5 + `@auth/prisma-adapter`
-  on Neon, **DB sessions**, `User`=正身 with profile columns seeded once from Google via an adapter
-  `createUser` wrapper (also normalizes email), `signIn` callback rejecting unverified Google emails,
-  and login/logout in the app shell. Vitest harness added (unit + self-skipping DB integration test).
-  Preview OAuth proxies through prod via `AUTH_REDIRECT_PROXY_URL`. Email login is **deferred** (below).
+- [x] **Auth.js (site login) — Google OAuth ONLY** — ✅ done (v0.6.0), **live + prod-verified on
+  `https://guasi.tw`**: Auth.js v5 + `@auth/prisma-adapter` on Neon, **DB sessions**, `User`=正身 with
+  profile columns seeded once from Google via an adapter `createUser` wrapper (also normalizes email),
+  `signIn` callback rejecting unverified Google emails, and login/logout in the app shell. Vitest harness
+  added (unit + self-skipping DB integration test). Preview OAuth proxies through prod via
+  `AUTH_REDIRECT_PROXY_URL`. Email login is **deferred** (below).
   ([plan](docs/superpowers/plans/2026-06-15-authjs-site-login.md) · [spec](docs/superpowers/specs/2026-06-15-authjs-site-login-design.md))
   - **Email login (magic-link + OTP) — DEFERRED to a future milestone.** Full design parked in
     [`email-login-future-feature`](docs/superpowers/specs/2026-06-15-email-login-future-feature.md):
