@@ -11,8 +11,8 @@ export default async function Home() {
         也讓任何人都能公開查證「這些帳號是同一個人」。
       </p>
       {session?.user ? (
-        <p className="status">
-          已登入：{session.user.name ?? session.user.email}
+        <div className="status">
+          <span>已登入：{session.user.name ?? session.user.email}</span>
           <form
             action={async () => {
               "use server";
@@ -21,7 +21,7 @@ export default async function Home() {
           >
             <button type="submit">登出</button>
           </form>
-        </p>
+        </div>
       ) : (
         <p className="status">
           <a href="/login">登入</a> · 建置中 · coming soon
