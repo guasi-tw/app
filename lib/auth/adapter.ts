@@ -43,14 +43,16 @@ export function isShortRefCollision(e: unknown): boolean {
  * collision (any other unique violation — e.g. email — rethrows immediately).
  */
 export async function createUserWithRetry(
-  insert: (input: AdapterUser) => Promise<AdapterUser>,
+  // `insert` is the adapter's createUser: param is the built input (always carries
+  // a shortRef), return is Awaitable (the PrismaAdapter signature), not a bare Promise.
+  insert: (input: AdapterUser & { shortRef: string }) => AdapterUser | PromiseLike<AdapterUser>,
   data: AdapterUser,
   genRef: () => string,
   maxAttempts = 5,
 ): Promise<AdapterUser> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      return await insert(buildCreateUserInput(data, genRef()) as AdapterUser);
+      return await insert(buildCreateUserInput(data, genRef()));
     } catch (e) {
       if (isShortRefCollision(e) && attempt < maxAttempts) continue;
       throw e;

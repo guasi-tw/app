@@ -60,7 +60,7 @@ describe("createUserWithRetry", () => {
     const out = await createUserWithRetry(insert, { email: "a@b.com" } as never, () => `ref${seq++}`);
     expect(calls).toBe(2);
     expect(refs).toEqual(["ref0", "ref1"]); // a fresh ref on the retry
-    expect((out as { shortRef: string }).shortRef).toBe("ref1");
+    expect((out as unknown as { shortRef: string }).shortRef).toBe("ref1");
   });
 
   it("rethrows a non-shortRef unique violation immediately (no retry)", async () => {

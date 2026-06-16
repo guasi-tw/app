@@ -9,6 +9,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "database" }, // server-side revocation for §6.8 hacked-account flows
   providers,
   trustHost: true, // Vercel / proxied hosts
-  callbacks: { signIn: signInCallback },
+  callbacks: {
+    signIn: signInCallback,
+    session({ session, user }) {
+      // database strategy: `user` is the adapter row — surface its id to the app.
+      session.user.id = user.id;
+      return session;
+    },
+  },
   pages: { signIn: "/login" },
 });
