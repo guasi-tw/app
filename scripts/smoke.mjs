@@ -38,6 +38,9 @@ const healthBase = isProd ? "https://guasi.tw" : targetUrl;
 const checks = [
   { name: "health (with token → 200)", url: `${healthBase}/api/health`, headers: { "x-health-token": token }, expect: 200 },
   { name: "health (no token → 401)", url: `${healthBase}/api/health`, expect: 401 },
+  // Runs the real avatar pipeline → proves sharp's native libvips loads on this
+  // runtime. Gates the ERR_DLOPEN_FAILED class of failure before it reaches prod.
+  { name: "imaging (sharp pipeline → 200)", url: `${healthBase}/api/health/imaging`, headers: { "x-health-token": token }, expect: 200 },
 ];
 
 if (isProd) {
