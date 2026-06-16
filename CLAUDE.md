@@ -129,6 +129,10 @@ push pre-emptive verification.
 
 ## Conventions
 
+- **Language: Traditional Chinese (繁體中文, zh-Hant / Taiwan) for ALL Chinese text** — every
+  user-facing UI string, product copy, and doc. Never Simplified (简体). Use Taiwan vocabulary
+  (e.g. 登入 not 登录, 帳號 not 账号, 驗證 not 验证, 建置 not 搭建). The only exception is
+  user-supplied data we render verbatim (e.g. a person's Google display name).
 - Versioning: three-part semver (`vX.Y.Z`). Releases that ship code get a git tag; design-only
   sessions use `vX.Y.0-design` with no tag.
 - **Git/PRs:** private GitHub remote **`guasi-tw/app`**. Branch off `main` for work, open a PR,
