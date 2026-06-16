@@ -14,6 +14,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.6.0](#v060--authjs-site-login-google-oauth-2026-06-15-2053) | **Site login (Google).** Auth.js v5 + `@auth/prisma-adapter` on Neon, **DB sessions**; `User`=正身 with profile columns seeded once from Google via an adapter `createUser` wrapper (also normalizes email); `signIn` rejects unverified Google emails; login/logout in the shell. New **Vitest** harness (unit + self-skipping DB integration). Gotchas: next-auth v5 peer range stops at Next 15 → `.npmrc legacy-peer-deps`; Next 16 renamed `middleware.ts`→`proxy.ts` (built neither). Preview OAuth proxies through prod via `AUTH_REDIRECT_PROXY_URL`. |
 | [v0.5.0](#v050--db-skeleton-neon--prisma--token-gated-apihealth-2026-06-15-1502) | **DB skeleton.** Neon Postgres + Prisma wired in; `prisma migrate deploy` in the build; trivial `HealthCheck` model + first migration; **token-gated `/api/health`** (401 before any DB call); per-preview **Neon branching**; repo's **first GitHub Action** (post-deploy smoke test). Gotchas: preview deploys sit behind **Vercel SSO** (need automation-bypass); `prisma@latest`=7.x → pinned 6.x for clean audit. |
 | [v0.4.1](#v041--post-launch-ops--decisions-2026-06-15-1229) | Post-launch ops + decisions: Vercel **Ignored Build Step** (skip docs-only deploys, verified live), README **live-status badges**, started the **cost ledger** + **services inventory**, and **locked the email architecture** (Resend on `send.guasi.tw`; iCloud for receiving). Gotcha: Vercel Hobby can't deploy an **org-owned private repo** → Pro. |
 | [v0.4.0](#v040--walking-skeleton-scaffold-vercel-cicd--guasitw-live-2026-06-15) | **First code.** Flat modular-monolith Next.js scaffold (Next 16 + React 19 + TS) + hello-world landing; **Vercel CI/CD** wired (`push main`→prod, PR→preview); **`guasi.tw` live** (GoDaddy DNS → Vercel, SSL, `www`→apex). postcss advisory cleared via `overrides`. |
@@ -21,6 +22,58 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 | [v0.2.0-design](#v020-design--verification-security-model--vercel-stack-lock-in-2026-06-15-0029) | Locked the verification security model (bound 分身 = post author from platform authority; scoped single-use code; manual paste-back primary) and the full MVP stack (all on Vercel: Neon + Auth.js + Google OAuth/email OTP + Vercel Blob). |
 | [v0.1.1-design](#v011-design--snapshot-ledger-status--naming-2026-06-14-2311) | Deepened the design: proof snapshots, append-only ledger, unbinding, timeline, account status management, verification-post growth loop; finalized naming/domain (我是/正身, `guasi.tw`). |
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
+
+---
+
+## v0.6.0 — Auth.js site login (Google OAuth) (2026-06-15 20:53)
+
+**Review:** not yet
+
+**Design docs:**
+- Auth.js site login (Google MVP): [Spec](superpowers/specs/2026-06-15-authjs-site-login-design.md) [Plan](superpowers/plans/2026-06-15-authjs-site-login.md)
+
+**What was built:**
+- **Auth.js v5 (`next-auth@5.0.0-beta.31`) + `@auth/prisma-adapter`** wired into the App Router with
+  **database sessions** (`session.strategy: "database"`) — server-side revocation, the foundation for
+  §6.8 hacked-account flows. Route handler at `app/api/auth/[...nextauth]/route.ts`; `lib/auth/*` opens
+  the auth seam (`adapter.ts`, `callbacks.ts`, `providers.ts`, `index.ts`).
+- **Google is the only login method** (`providers.ts`); email magic-link/OTP stays deferred and additive.
+- **`User` IS the 正身** — schema extended with app-owned `displayName`/`avatarUrl`/`bio`/`createdAt`
+  alongside the Auth.js-managed columns; one migration adds `User`/`Account`/`Session`/`VerificationToken`,
+  `HealthCheck` untouched.
+- **Adapter `createUser` wrapper** folds email normalization + one-time profile seeding into the single
+  `User` insert (seeds `displayName`/`avatarUrl` from the Google profile as editable defaults).
+- **`signIn` callback rejects unverified Google emails**; non-Google providers pass through.
+- **Login page** (`/login`, server-action Google button) + **app-shell login/logout** (`/` reads
+  `auth()`, shows 已登入：<name> + 登出, or a 登入 link).
+- **New Vitest harness** — pure-function unit tests (normalize/seed/signIn guard) run in `node` with no
+  DB; one DB integration test exercises the real wrapped adapter against the Neon `vercel-dev` branch and
+  **self-skips** when `DATABASE_URL` is unset, so `npm test` is green everywhere. 10 tests pass.
+
+**Key technical learnings:**
+- `[gotcha]` **next-auth v5 (`@beta`) declares a peer range of `next: ^14 || ^15`** — a plain
+  `npm install` aborts with `ERESOLVE` against Next 16. Fix: `.npmrc` `legacy-peer-deps=true`, committed
+  so Vercel's build install honors it too.
+- `[gotcha]` **Next 16 renamed `middleware.ts` → `proxy.ts`** (old name still works). We built **neither** —
+  route protection is out of scope for site login.
+- `[insight]` **Seeding + email-normalization belong in the adapter `createUser` wrapper, not
+  `events.createUser`.** One atomic insert with the normalized email and seeded profile; can't be skipped,
+  no second write, and the mapping is a pure function we unit-test. `events.createUser` would fire *after*
+  the row exists with a non-normalized email.
+- `[insight]` **Vercel preview OAuth must proxy through prod via `AUTH_REDIRECT_PROXY_URL`** — preview URLs
+  are dynamic and can't be pre-registered as Google redirect URIs, so register only prod + localhost and
+  set the proxy URL on Vercel's Preview env (Auth.js v5's documented answer).
+- `[gotcha]` **`signInCallback`'s type needs a *double* `NonNullable`** — `NextAuthConfig["callbacks"]` is
+  optional *and* its `signIn` member is optional, so `NonNullable<...>["signIn"]` still includes `undefined`
+  and `tsc` rejects invoking it in tests. `NonNullable<NonNullable<...>["signIn"]>` strips it.
+- `[note]` **Vitest loads `.env` into `process.env`**, so the DB integration test ran for real (not
+  skipped) locally against the `vercel-dev` branch — Prisma Client itself doesn't load `.env`, but Vitest
+  does.
+
+**Process learnings:**
+- `[gotcha]` A **Google `client_secret_*.json`** downloaded from Cloud Console landed loose in the repo
+  root and wasn't covered by `.gitignore` (creds already live in `.env`). Added a `client_secret_*.json`
+  ignore rule before the first commit so the secret can't be committed.
 
 ---
 
