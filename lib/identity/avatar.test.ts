@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
 import sharp from "sharp";
 import { processAvatar, AvatarError, AVATAR_MAX_BYTES } from "./avatar";
 
@@ -35,5 +36,27 @@ describe("processAvatar", () => {
     await expect(
       processAvatar(Buffer.from("definitely not an image"), "image/png"),
     ).rejects.toBeInstanceOf(AvatarError);
+  });
+});
+
+// Deployment guard (§ sharp on Vercel linux-x64): sharp is a heavy native
+// (libvips) module. It MUST be loaded dynamically, inside the functions that
+// need it — never at module top level — so that server actions importing this
+// file (e.g. a bio-only profile save) don't dlopen the native binary and crash
+// with ERR_DLOPEN_FAILED on the linux-x64 runtime. This is a source-level
+// assertion because an *unused* eager import can't be caught behaviourally
+// (vitest's module mocks are lazy; real Node would dlopen it at eval time).
+describe("sharp is loaded lazily, never at module top level", () => {
+  const src = readFileSync(new URL("./avatar.ts", import.meta.url), "utf8");
+
+  it("has no static top-level import of sharp", () => {
+    // `import sharp from "sharp"`, `import x, { y } from "sharp"`, etc.
+    expect(src).not.toMatch(/^\s*import\s[^\n]*\bfrom\s+["']sharp["']/m);
+    // side-effect import: `import "sharp"`
+    expect(src).not.toMatch(/^\s*import\s+["']sharp["']/m);
+  });
+
+  it("loads sharp via dynamic import()", () => {
+    expect(src).toMatch(/\bimport\(\s*["']sharp["']\s*\)/);
   });
 });

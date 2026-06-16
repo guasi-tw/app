@@ -1,4 +1,3 @@
-import sharp from "sharp";
 import { put } from "@vercel/blob";
 
 export const AVATAR_MAX_BYTES = 2 * 1024 * 1024; // ~2 MB (§D.1)
@@ -25,6 +24,12 @@ export async function processAvatar(
   if (buffer.byteLength > AVATAR_MAX_BYTES) {
     throw new AvatarError("圖片太大，請小於 2MB");
   }
+
+  // Lazy-load sharp: it's a heavy native (libvips) module. A top-level import
+  // would load it on every server action that touches this file — e.g. a
+  // bio-only profile save where no avatar is processed — and crash if the
+  // native binary is unavailable in the runtime.
+  const sharp = (await import("sharp")).default;
 
   let format: string | undefined;
   try {
