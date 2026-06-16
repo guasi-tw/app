@@ -149,7 +149,11 @@ then user-reviewed and **approved**.
   the row exists with a non-normalized email.
 - `[insight]` **Vercel preview OAuth must proxy through prod via `AUTH_REDIRECT_PROXY_URL`** — preview URLs
   are dynamic and can't be pre-registered as Google redirect URIs, so register only prod + localhost and
-  set the proxy URL on Vercel's Preview env (Auth.js v5's documented answer).
+  set the proxy URL on Vercel's Preview env (Auth.js v5's documented answer). **`AUTH_REDIRECT_PROXY_URL`
+  must be set on the PRODUCTION (stable) env too, not only Preview** — "if the variable is not set in the
+  stable environment, the proxy functionality will not be enabled" (Auth.js docs). With it missing on prod,
+  the prod callback handles the preview login locally and dies with `InvalidCheck: pkceCodeVerifier could
+  not be parsed`; `AUTH_SECRET` must also be identical across prod+preview. (Corrected 2026-06-16.)
 - `[gotcha]` **`signInCallback`'s type needs a *double* `NonNullable`** — `NextAuthConfig["callbacks"]` is
   optional *and* its `signIn` member is optional, so `NonNullable<...>["signIn"]` still includes `undefined`
   and `tsc` rejects invoking it in tests. `NonNullable<NonNullable<...>["signIn"]>` strips it.
