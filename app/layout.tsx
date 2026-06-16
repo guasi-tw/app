@@ -14,7 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-Hant">
-      <body>{children}</body>
+      {/* Browser extensions (e.g. Feedly) inject attributes like `data-feedly-mini`
+          onto <body> before React hydrates; suppress the resulting attribute-mismatch
+          warning. Our own render of <body> is deterministic. */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

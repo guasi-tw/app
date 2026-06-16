@@ -22,3 +22,62 @@ model HealthCheck {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
 }
+
+// --- Auth.js (site login) — Milestone v0.6.0 ---
+// See docs/superpowers/specs/2026-06-15-authjs-site-login-design.md.
+// `User` IS the 正身 (main spec §8), extended with app-owned profile columns.
+// NOTE: `Account` = a site-LOGIN method (the Google connection), NOT a bound 分身.
+// Bound 分身 live in the future §8 `linked_accounts` table.
+
+model User {
+  // Auth.js-managed
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique          // normalized lowercase/trim at the adapter boundary
+  emailVerified DateTime?
+  image         String?
+
+  // app-owned 正身 profile (seeded from Google on first login; editable later)
+  displayName   String?
+  avatarUrl     String?
+  bio           String?
+  createdAt     DateTime  @default(now())
+
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

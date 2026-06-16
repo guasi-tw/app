@@ -29,3 +29,6 @@ yarn-error.log*
 
 # Pitch deck (open-slide workspace) — intentionally not version-controlled
 pitch-deck/
+
+# Google OAuth client secret JSON (downloaded from Cloud Console; creds live in .env)
+client_secret_*.apps.googleusercontent.com.json
