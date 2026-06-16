@@ -10,7 +10,7 @@ export function isGoogleEmailVerified(profile: unknown): boolean {
 }
 
 /** Reject Google sign-in unless the Google email is verified; pass others through. */
-export const signInCallback: NonNullable<NextAuthConfig["callbacks"]>["signIn"] = async ({
+export const signInCallback: NonNullable<NonNullable<NextAuthConfig["callbacks"]>["signIn"]> = async ({
   account,
   profile,
 }) => {
