@@ -725,11 +725,18 @@ AUTH_URL="https://guasi.tw"
 - [ ] **Step 5: Set Vercel environment variables (project `guasi-app`)**
 
 In Vercel → Project Settings → Environment Variables:
-- **Production:** `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `AUTH_URL=https://guasi.tw`
+- **Production:** `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `AUTH_URL=https://guasi.tw`, **`AUTH_REDIRECT_PROXY_URL=https://guasi.tw/api/auth`**
 - **Preview:** `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, **`AUTH_REDIRECT_PROXY_URL=https://guasi.tw/api/auth`** (no `AUTH_URL`)
 - **Development:** `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`
 
 (Reuse one Google client across all envs — prod handles every real redirect; previews proxy through it.)
+
+> ⚠️ **`AUTH_REDIRECT_PROXY_URL` must be set on BOTH Production and Preview.** Auth.js docs:
+> *"If the variable is not set in the stable environment, the proxy functionality will not be
+> enabled!"* Without it on Production, Google's callback to `guasi.tw` is handled as a local
+> login, the preview's PKCE `code_verifier` cookie isn't present, and it fails with
+> `InvalidCheck: pkceCodeVerifier could not be parsed`. `AUTH_SECRET` must also be the **same
+> value** in Production and Preview (the proxy verifies the OAuth `state` with it).
 
 - [ ] **Step 6: Commit the example only**
 
