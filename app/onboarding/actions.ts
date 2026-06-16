@@ -31,7 +31,15 @@ export async function saveProfileAction(
       const processed = await processAvatar(buf, file.type);
       avatarUrl = await storeAvatar(user.id, processed.data, processed.contentType);
     } catch (e) {
-      errors.avatar = e instanceof AvatarError ? e.message : "頭像處理失敗，請再試一次";
+      if (e instanceof AvatarError) {
+        errors.avatar = e.message;
+      } else {
+        // Unexpected (non-validation) failure — e.g. sharp's native module
+        // failing to load, or a Blob upload error. Log it: swallowing it
+        // silently makes the generic message un-diagnosable in production.
+        console.error("[onboarding] avatar processing failed", e);
+        errors.avatar = "頭像處理失敗，請再試一次";
+      }
     }
   }
 
