@@ -7,7 +7,7 @@ export default function LoginPage() {
       <form
         action={async () => {
           "use server";
-          await signIn("google", { redirectTo: "/" });
+          await signIn("google", { redirectTo: "/onboarding" });
         }}
       >
         <button type="submit">使用 Google 登入</button>

@@ -1,18 +1,18 @@
-import { auth, signOut } from "@/lib/auth";
+import { signOut } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/identity/session";
 
 export default async function Home() {
-  const session = await auth();
+  const user = await getCurrentUser();
 
   return (
     <main className="wrap">
-      <h1 className="wordmark">我是首頁</h1>
+      <h1 className="wordmark">我是 · guasi</h1>
       <p className="lede">
-        主動驗證並串連你擁有的社群帳號，讓某個帳號被封時，存活的帳號能為你證明 ——
-        也讓任何人都能公開查證「這些帳號是同一個人」。
+        我是正身 —— 主動驗證並串連你擁有的社群帳號，讓某個帳號被封時，存活的帳號能為你證明。
       </p>
-      {session?.user ? (
+      {user ? (
         <div className="status">
-          <span>已登入：{session.user.name ?? session.user.email}</span>
+          <a href={`/r/${user.shortRef}`}>前往我的正身頁 →</a>
           <form
             action={async () => {
               "use server";
@@ -24,7 +24,7 @@ export default async function Home() {
         </div>
       ) : (
         <p className="status">
-          <a href="/login">登入</a> · 建置中 · coming soon
+          <a href="/login">建立你的正身 · 登入</a>
         </p>
       )}
       <footer className="foot">guasi.tw</footer>
