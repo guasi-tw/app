@@ -32,3 +32,6 @@ pitch-deck/
 
 # Google OAuth client secret JSON (downloaded from Cloud Console; creds live in .env)
 client_secret_*.apps.googleusercontent.com.json
+
+# Visual brainstorm companion (local mockups)
+.superpowers/
