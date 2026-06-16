@@ -14,6 +14,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.7.0-design](#v070-design--mvp-wireframes--page-flows-2026-06-16) | **MVP wireframes & page flows (design, approved).** All 9 surfaces (Home, Create Identity, Add Account per-platform wizard, Identity Card = Accounts/Timeline/Manage, pre-provisioned state). Decisions that **change** parent specs: snapshots **dropped** → link to live post; slug minted at main-account designation (**IG/Threads-only** source); **no self-service unbind**; **no binding-uniqueness lock** (per-owner `linked_accounts` rows); `/r/{short_ref}` collision-proof short-link; `binding_requests` **commit-on-confirm**. To be built **incrementally** (Slice 1 = Foundation + Create Identity). No code shipped. |
 | [v0.6.0](#v060--authjs-site-login-google-oauth-2026-06-15-2053) | **Site login (Google).** Auth.js v5 + `@auth/prisma-adapter` on Neon, **DB sessions**; `User`=正身 with profile columns seeded once from Google via an adapter `createUser` wrapper (also normalizes email); `signIn` rejects unverified Google emails; login/logout in the shell. New **Vitest** harness (unit + self-skipping DB integration). Gotchas: next-auth v5 peer range stops at Next 15 → `.npmrc legacy-peer-deps`; Next 16 renamed `middleware.ts`→`proxy.ts` (built neither). Preview OAuth proxies through prod via `AUTH_REDIRECT_PROXY_URL`. |
 | [v0.5.0](#v050--db-skeleton-neon--prisma--token-gated-apihealth-2026-06-15-1502) | **DB skeleton.** Neon Postgres + Prisma wired in; `prisma migrate deploy` in the build; trivial `HealthCheck` model + first migration; **token-gated `/api/health`** (401 before any DB call); per-preview **Neon branching**; repo's **first GitHub Action** (post-deploy smoke test). Gotchas: preview deploys sit behind **Vercel SSO** (need automation-bypass); `prisma@latest`=7.x → pinned 6.x for clean audit. |
 | [v0.4.1](#v041--post-launch-ops--decisions-2026-06-15-1229) | Post-launch ops + decisions: Vercel **Ignored Build Step** (skip docs-only deploys, verified live), README **live-status badges**, started the **cost ledger** + **services inventory**, and **locked the email architecture** (Resend on `send.guasi.tw`; iCloud for receiving). Gotcha: Vercel Hobby can't deploy an **org-owned private repo** → Pro. |
@@ -24,6 +25,61 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
 
 ---
+
+## v0.7.0-design — MVP wireframes & page flows (2026-06-16)
+
+**Review:** complete — a fresh-context consistency review (general-purpose subagent) mid-session caught a
+dropped `§B` heading + a `§D.3`/`§H` "delete-binding vs commit-on-confirm" contradiction (both fixed);
+then user-reviewed and **approved**.
+
+**Design docs:**
+- MVP wireframes & page flows: [Spec](superpowers/specs/2026-06-16-mvp-wireframes-design.md)
+
+**What was built:** (design only — no code shipped)
+- Wireframed all **9 MVP surfaces** against the spec §6 flows (used the brainstorming **visual
+  companion**): Home (search box = placeholder, feature deferred), Create Identity onboarding, Add Account
+  per-platform wizard, Identity Card (Accounts / Timeline / Manage tabs), and the pre-provisioned state.
+- Settled English page names: Home / Create Identity / Add Account / **Identity Card** (驗明正身) /
+  **Manage** (分身管理).
+- Recorded a build sequence + **Slice-1 scope** for incremental implementation (spec §I).
+
+**Key technical learnings:**
+- `[insight]` **Removing the pre-declared handle forces commit-on-confirm.** Without a declared handle,
+  the user first sees the *resolved* author at the success step → must be able to reject it. To let
+  "wrong account" cancel without reversing an append-only `bound` event, the durable artifacts
+  (`linked_account`, ledger event, slug) are written **only at the terminal confirm**; before that only
+  the `binding_requests` row exists (`pending`/`resolved`) and simply expires if abandoned.
+- `[insight]` **The first verification post is a short-URL design.** The slug can't exist at first-post
+  time (derived from the not-yet-resolved author), so the post carries `/r/{short_ref}` — a short opaque
+  token minted at account creation that 308-redirects to the slug once provisioned. Putting it on its
+  **own `/r/` path** (not `/gua/`) makes refs and handle-derived slugs **collision-proof by construction**
+  (a same-namespace short ref could squat a real handle someone later proves).
+- `[insight]` **Slug minting = a deliberate "set 主要帳號" action, not silent on first bind** — resolves
+  the routing-spec open slug-setup-UX question; confirm-as-slug forces the main account public (it's the
+  public face).
+- `[insight]` **Dropping the uniqueness lock → per-owner `linked_accounts` rows.** The same
+  `(platform, account_id)` can be bound by multiple 正身 (each proves ownership); uniqueness moves to
+  `(user_id, platform, account_id)`. Viewers disambiguate competing claims via the timeline
+  (recency/condition); this also mooted the parent "sold → release lock" concern.
+- `[gotcha]` **`updated_at` is for the future search feature, not the timeline.** The timeline must come
+  from the append-only `binding_events` ledger — a single mutable `updated_at` can't represent a
+  multi-event history (banned → recovered → banned).
+- `[note]` **Decisions that change parent specs** (spec §A): proof snapshots **dropped** for MVP (link to
+  live post; dead link acceptable) — reverses the §6.4 + CLAUDE.md locked decision; **IG/Threads-only**
+  slug source (miin stays a binding platform but defers as a slug source — closes weak-platform
+  squatting); **no self-service unbind** (bindings permanent; only status changes). All kept additive for
+  Phase 2.
+- `[note]` **Per-platform publish affordance:** Threads has a prefilled web compose intent (one-click
+  post); IG can't prefill a feed caption + needs an image (copy-paste); miin copy-paste. The
+  `PlatformAdapter` declares it — confirm the Threads intent empirically before build.
+
+**Process learnings:**
+- `[insight]` **Editing a long spec across many turns drifts.** A late insert silently swallowed the §B
+  heading; the fresh-context reviewer caught it where the main loop (primed to think it's fine) didn't —
+  the review-protocol payoff in miniature. Lesson: re-read structural anchors after big inserts.
+- `[note]` Decided to build the MVP **incrementally** (one page/slice at a time, each its own
+  writing-plans → execute → review → merge) rather than one-shot. Visual mockups persist under
+  `.superpowers/brainstorm/` (gitignored).
 
 ## v0.6.0 — Auth.js site login (Google OAuth) (2026-06-15 20:53)
 

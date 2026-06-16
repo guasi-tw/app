@@ -36,10 +36,28 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
   user-facing view count). Note: it's **client-side, so it counts CDN-cached views** (server
   logs would undercount); use a custom event (`track('profile_view', { handle })`) if
   per-handle attribution needs to be cleaner. Mind the Hobby vs Pro event caps + retention.
-- [ ] **Detailed wireframes for each page** — 建立正身 (register), 註冊分身 (bind),
-  驗明正身 (public profile + timeline), 分身管理 (manage), and the home / lookup pages.
-- [ ] **Implement the MVP** — after wireframes are settled. (Use the writing-plans skill to
-  turn the spec into an implementation plan first.)
+- [x] **Detailed wireframes for each page** — ✅ done (v0.7.0-design, **approved**): all 9 surfaces +
+  data-model deltas in
+  [`mvp-wireframes-design.md`](docs/superpowers/specs/2026-06-16-mvp-wireframes-design.md). This is the
+  **build doc** for the implementation tasks below.
+- [ ] **Build the MVP pages — INCREMENTALLY, one slice at a time** (not one-shot). For each slice: run
+  **superpowers:writing-plans** on *just that slice* of the wireframes spec → execute → review → merge,
+  then start the next. Recommended order (see the spec's §G surface inventory):
+  - [ ] **Slice 1 — Foundation + Create Identity onboarding** ⬅️ **START HERE** (see §I "Next session"
+    in the spec / below). `users` model extension (`slug` nullable, `short_ref` NOT NULL, `bio`,
+    `avatar_url`, `updated_at`) + `short_ref` minted in the existing `createUser` wrapper + the
+    建立正身 profile-setup UI + the pre-provisioned owner-view shell. Builds on shipped Google auth;
+    no binding logic yet.
+  - [ ] **Slice 2 — Add Account (註冊分身) + binding model** — `binding_requests` (commit-on-confirm,
+    §H), `linked_accounts` (per-owner rows, §A.6), `binding_events` ledger, `proof_records`; the
+    per-platform wizard; **start with ONE platform** (Threads — has the compose intent + tokenless SSR);
+    the success/visibility step; the slug-confirm/provisioning (`/gua/{slug}` minting). The core.
+  - [ ] **Slice 3 — Identity Card public page (Accounts tab)** — the Linktree (header + featured main +
+    rows → live profile); now there's data to show.
+  - [ ] **Slice 4 — Timeline tab** — render the append-only `binding_events` ledger (+ `created_at`).
+  - [ ] **Slice 5 — Manage tab** — disclose (one-way), set-as-main (forces public), condition flags
+    (banned/hacked), 恢復·重新驗證.
+  - [ ] **Later platforms** — IG + miin adapters once the Threads slice proves the `PlatformAdapter` seam.
 
 ## Deferred to Phase 2
 
