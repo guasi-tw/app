@@ -14,21 +14,23 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
   (pooled/direct URLs), `migrate deploy` in the build, trivial `HealthCheck` model + first migration,
   token-gated `/api/health`, per-preview Neon branching, and a post-deploy smoke test (first GitHub
   Action). ([db-skeleton spec](docs/superpowers/specs/2026-06-15-db-skeleton-design.md))
-- [ ] **Auth.js (site login) — next milestone.** Passwordless: Google OAuth + email magic-link/OTP
-  via the Prisma adapter; Resend on `send.guasi.tw` for transactional mail. (Spec §12)
-  - **Plan first (fresh session):** brainstorm → `superpowers:writing-plans` against §12 *before*
-    coding — settle (a) how the Auth.js adapter schema (`User`/`Account`/`Session`/`VerificationToken`)
-    reconciles with the §8 `users`/正身 model (`display_name`/`avatar_url`/`bio`); (b) magic-link vs
-    OTP (or both) + session strategy (DB sessions via the adapter vs JWT); (c) **account-linking** so
-    the same email via Google *and* via email resolves to **one 正身**.
-  - **Build order — Google OAuth first:** fewest deps (just a Google Cloud OAuth client; no DNS/mail),
-    fastest path to a real logged-in session, and it stands up the shared Auth.js core + Prisma
-    adapter schema that the email provider then reuses.
-  - **Resend/email sending — ✅ DONE ahead of time (2026-06-15):** account created, `send.guasi.tw`
-    DNS verified (DKIM `resend._domainkey.send`, MX/SPF `send.send`; root iCloud records untouched),
-    **API key obtained + a test send succeeded.** Remaining at the Auth milestone: set `RESEND_API_KEY`
-    in Vercel (Prod/Preview/Dev) + local `.env` (never commit it), pick a from-address on
-    `send.guasi.tw` (e.g. `login@send.guasi.tw`), and register the Auth.js Resend provider.
+- [ ] **Auth.js (site login) — next milestone. Scope: Google OAuth ONLY.** Brainstorm done; design
+  spec written: [`authjs-site-login-design`](docs/superpowers/specs/2026-06-15-authjs-site-login-design.md).
+  Auth.js v5 + Prisma adapter on Neon, **DB sessions**, `User`=正身 with seeded profile fields,
+  Google-only login/logout. Email login is **deferred** (below). (Spec §12)
+  - **Next step:** `superpowers:writing-plans` against the design spec (fresh session) → execution
+    plan. Open items the plan must close: preview-deploy Google redirect-URI strategy; logout UX;
+    the profile-seeding hook for the pinned Auth.js v5 + `@auth/prisma-adapter` versions.
+  - **Email login (magic-link + OTP) — DEFERRED to a future milestone.** Full design parked in
+    [`email-login-future-feature`](docs/superpowers/specs/2026-06-15-email-login-future-feature.md):
+    the opaque-`rid` model (no email in the URL), OTP throttling/lockout-DoS analysis, same-email
+    account-linking, and custom DB-session minting. The Google-only MVP is built so email is
+    **additive** (no account migration). Pick this up after the Google MVP ships.
+  - **Resend/email sending — ✅ DONE ahead of time (2026-06-15), now waiting on the email milestone:**
+    account created, `send.guasi.tw` DNS verified (DKIM `resend._domainkey.send`, MX/SPF `send.send`;
+    root iCloud records untouched), **API key obtained + a test send succeeded.** Wiring it in
+    (`RESEND_API_KEY` in Vercel/local, a `send.guasi.tw` from-address, the email provider) happens at
+    the **deferred email milestone**, not the Google MVP.
 - [ ] **Enable Vercel Web Analytics (operator-only)** — turn on Vercel Web Analytics to
   monitor traffic per URL / per `/[handle]` page for *operational* purposes (not a
   user-facing view count). Note: it's **client-side, so it counts CDN-cached views** (server
