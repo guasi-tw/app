@@ -14,6 +14,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.8.0](#v080--slice-1-foundation--create-identity-2026-06-16-0308) | **Slice 1: Foundation + Create Identity (first feature code).** `User`(正身) gains **`slug`** (citext, CI, unique, nullable — minted later), **`shortRef`** (NOT NULL, unique base62), **`updatedAt`**, via a backfill-safe migration; the Auth.js `createUser` wrapper now **mints a `shortRef`** per 正身 (retry on collision). New `lib/identity/*`: base62 generator, plain-text **profile sanitization** (name/bio caps), **avatar pipeline** (sharp re-decode→WebP 512² + Vercel Blob, provisioned), repo + `getCurrentUser` + `session.user.id`. UI: **建立正身 onboarding** (avatar/name/bio), owner-gated **`/r/{shortRef}`** pre-provisioned shell, **`/gua/{slug}`** resolver shell + generic 404. No binding/verification yet (Slice 2). 35 tests green. |
 | [v0.7.0-design](#v070-design--mvp-wireframes--page-flows-2026-06-16) | **MVP wireframes & page flows (design, approved).** All 9 surfaces (Home, Create Identity, Add Account per-platform wizard, Identity Card = Accounts/Timeline/Manage, pre-provisioned state). Decisions that **change** parent specs: snapshots **dropped** → link to live post; slug minted at main-account designation (**IG/Threads-only** source); **no self-service unbind**; **no binding-uniqueness lock** (per-owner `linked_accounts` rows); `/r/{short_ref}` collision-proof short-link; `binding_requests` **commit-on-confirm**. To be built **incrementally** (Slice 1 = Foundation + Create Identity). No code shipped. |
 | [v0.6.0](#v060--authjs-site-login-google-oauth-2026-06-15-2053) | **Site login (Google).** Auth.js v5 + `@auth/prisma-adapter` on Neon, **DB sessions**; `User`=正身 with profile columns seeded once from Google via an adapter `createUser` wrapper (also normalizes email); `signIn` rejects unverified Google emails; login/logout in the shell. New **Vitest** harness (unit + self-skipping DB integration). Gotchas: next-auth v5 peer range stops at Next 15 → `.npmrc legacy-peer-deps`; Next 16 renamed `middleware.ts`→`proxy.ts` (built neither). Preview OAuth proxies through prod via `AUTH_REDIRECT_PROXY_URL`. |
 | [v0.5.0](#v050--db-skeleton-neon--prisma--token-gated-apihealth-2026-06-15-1502) | **DB skeleton.** Neon Postgres + Prisma wired in; `prisma migrate deploy` in the build; trivial `HealthCheck` model + first migration; **token-gated `/api/health`** (401 before any DB call); per-preview **Neon branching**; repo's **first GitHub Action** (post-deploy smoke test). Gotchas: preview deploys sit behind **Vercel SSO** (need automation-bypass); `prisma@latest`=7.x → pinned 6.x for clean audit. |
@@ -25,6 +26,32 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
 
 ---
+
+## v0.8.0 — Slice 1: Foundation + Create Identity (2026-06-16 03:08)
+
+**Review:** not yet
+
+**Design docs:**
+- Slice 1 — Foundation + Create Identity: [Spec](superpowers/specs/2026-06-16-mvp-wireframes-design.md) [Plan](superpowers/plans/2026-06-16-slice1-foundation-create-identity.md)
+
+**What was built:**
+- **`User`(正身) model delta** (§H.2): `slug` (citext, case-insensitive, `@unique`, nullable — *not* minted until main-account designation in Slice 2), `shortRef` (NOT NULL, `@unique`, base62 token), `updatedAt`. citext enabled via Prisma `postgresqlExtensions` preview + `extensions = [citext]`. Backfill-safe migration (nullable add → backfill existing rows → `SET NOT NULL` → unique indexes).
+- **`shortRef` minted in the Auth.js `createUser` wrapper** — every 正身 gets a `/r/{shortRef}` token at creation, with regenerate-and-retry **only** on a `shortRef` unique violation (other P2002s, e.g. email, rethrow immediately).
+- **`lib/identity/*` domain layer** (Vitest-TDD'd): base62 `generateShortRef` (unbiased `randomInt`); `sanitizeDisplayName`/`sanitizeBio` (strip control chars, reject HTML, length caps, 繁中 errors); `processAvatar` (MIME gate + sharp re-decode → WebP 512² cover, strips EXIF, rejects SVG/non-images) + `storeAvatar` (Vercel Blob, `VERCEL_ENV`-prefixed stable key); `repo.ts` (`findUserById/ByShortRef/BySlug`, `updateUserProfile`); `getCurrentUser()`.
+- **`session.user.id`** surfaced via the database-session `session` callback (+ `types/next-auth.d.ts` augmentation).
+- **UI:** 建立正身 **onboarding** (server page auth-gate + `useActionState` client form + `saveProfileAction`); owner-gated **`/r/{shortRef}`** pre-provisioned shell (banner + empty main-account slot stub; 404s to non-owners; permanent-redirects to `/gua/{slug}` once a slug exists); **`/gua/{slug}`** resolver shell (CI lookup, always 404s this slice) + generic **404** (no register CTA, §1.3); login `redirectTo: /onboarding`; Home links to `/r/{shortRef}` when signed in.
+- **Vercel Blob provisioned** for avatars (services.md `Decided`→`Provisioned`); added `sharp` + `@vercel/blob`.
+
+**Key technical learnings:**
+- `[gotcha]` Adding a **NOT NULL column to a populated table** needs a 3-step migration (nullable add → backfill → `SET NOT NULL`). Prisma's `migrate dev --create-only` is **interactive** and aborts in a non-interactive shell — hand-author the migration folder + SQL and apply with `migrate deploy`.
+- `[insight]` **sharp re-decoding the bytes is the real avatar gate**; the declared MIME is only a first filter. A spoofed content-type (SVG renamed `.png`) is caught by sharp's detected-format check, and re-encoding to WebP strips EXIF/any embedded payload.
+- `[gotcha]` **`tsc --noEmit` typechecks test files** (tsconfig `include: ["**/*.ts"]`) but `next build` does **not**. The adapter's `insert` param had to carry `shortRef` and return `Awaitable` (the PrismaAdapter signature), not a bare `Promise`, to satisfy strict-function-type contravariance against both the real `base.createUser` and the test mock — a failure only `tsc` surfaced, not Vitest or the build.
+- `[note]` **citext** stores the value case-preserving while making `@unique`/lookup case-insensitive natively — no `lower()` indexes or normalized columns needed.
+- `[insight]` Under the **database** session strategy, `session.user.id` comes from the callback's `user` arg (the adapter row), not a JWT — so it's wired in the `session` callback, not `jwt`.
+
+**Process learnings:**
+- `[gotcha]` Control-char regexes and one test string literal in the plan doc had their **control characters flattened to spaces** when rendered/copied. Reconstructed them with explicit `\u` escapes (and a real control char where the test's intent required one) — a plan that embeds raw control bytes can't be copied verbatim; encode them.
+- `[note]` Blob stores were **already provisioned** in `.env.local` (`BLOB_READ_WRITE_TOKEN` + `BLOB_STORE_ID`) ahead of this session, so Task 1's external Vercel-dashboard step was a no-op. Browser-based manual verification (Google login → avatar upload end-to-end, incognito 404 check) is still pending and left for the user.
 
 ## v0.7.0-design — MVP wireframes & page flows (2026-06-16)
 
