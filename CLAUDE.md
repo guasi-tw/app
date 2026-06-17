@@ -70,8 +70,9 @@ not only in a one-off plan/spec.
 
 ## MVP scope (one-liner)
 
-Threads + IG + miin.cc (pluggable for more) · passwordless email login · verify account
-ownership via **public post + auth code** · cross-link verified accounts · selective
+Threads + IG + miin.cc (pluggable for more) · passwordless login (Google OAuth; email
+magic-link/OTP deferred) · verify account ownership via **public post + auth code** ·
+cross-link verified accounts · selective
 public/private disclosure · public lookup page showing an account's verified siblings
 with proof links.
 
@@ -102,7 +103,8 @@ with proof links.
   credible).
 - **正身 profile:** each 正身 has an avatar, brief description, and a designated **main 分身**
   (a `is_main` flag on a bound account — *not* a free-form URL; at most one per user;
-  **defaults to the first verified 分身**, changeable on the 分身管理 page). The public
+  **the first binding is accepted as the main 分身** — which is what mints the slug — and is
+  changeable later on the 分身管理 page). The public
   驗明正身 page is a Linktree-like profile for a *verified* identity.
 - **Account status management (§6.8):** owner can mark a 分身 banned/hacked **self-service
   (login only)** — these only *lower* trust, and a hijacker can't remove a flag they don't
@@ -129,9 +131,10 @@ with proof links.
   security = author-match + scope + expiry, not entropy. (Data model: `binding_requests`
   table holds the pending state.) IG caption links aren't clickable (Threads' are).
 - **Reading the post:** platform API (oEmbed) *or* public web fetch is acceptable,
-  chosen per-platform for whichever ships Phase 1 fastest; keep web fetch as a fallback
-  so a revoked API token can't take the service down. (This is separate from the
-  "no OAuth for identity" rule.)
+  chosen per-platform; keep web fetch as a fallback so a revoked API token can't take the
+  service down. (This is separate from the "no OAuth for identity" rule.) **Shipped: Threads via
+  tokenless crawler-UA SSR** — see [`docs/platform-verification.md`](docs/platform-verification.md)
+  for the settled per-platform mechanics.
 - **Name:** **正身 (tsiànn-sin)** is the product concept term used in the UI
   ("create your 正身"). **我是 / `guasi`** is the brand & domain. **Tagline: 我是正身.**
   Domain **`guasi.tw` is registered** (the website domain). Handle `@gua.si.tw` registered
@@ -139,7 +142,7 @@ with proof links.
   later. Japanese-pun alt `guatasi`/`guatashi` was set aside for coherence with 正身.
 - **Tech stack (MVP — locked, all on Vercel):** Next.js + TypeScript on **Vercel**;
   **Neon** (serverless Postgres) via Prisma — pooled connection for queries, direct URL for
-  migrations; **Auth.js** (Google OAuth + email magic-link/OTP, Prisma adapter) with
+  migrations; **Auth.js** (Google OAuth — Prisma adapter; email magic-link/OTP deferred) with
   **transactional email via Resend from a `send.guasi.tw` subdomain** (iCloud Custom Email stays
   on root `guasi.tw` for *receiving* only — separate job, never used to send); images
   (snapshots + avatars) in **Vercel Blob / R2**; async screenshot + archive via a
@@ -147,10 +150,9 @@ with proof links.
   a portable future escape hatch. (Spec §12.)
 
 ## Open questions / TBD
-- Per-platform post-fetch strategy (oEmbed vs web fetch) and its fragility budget.
-- Snapshot mechanics: screenshot rendering (headless browser?), which third-party archive, where to store snapshot images.
-- Auth-code format and expiry window.
+- Per-platform post-fetch strategy (oEmbed vs web fetch) and its fragility budget (Threads settled — crawler-UA SSR; IG/miin TBD as they ship).
 - Whether public lookup is queryable by handle, by URL, or both.
+- (Snapshot mechanics → now a Phase-2 deferral, see Locked decisions; auth-code format → shipped: 6-digit, scoped/single-use/expiring.)
 
 ## The one principle that drives everything
 
