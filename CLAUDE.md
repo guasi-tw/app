@@ -224,8 +224,8 @@ push pre-emptive verification.
 
 ## "Raise a PR" / "ship it" shortcut
 
-When the user says **"ship it"**, **"raise a PR"** (or equivalent), run the release flow for the
-current feature branch — this counts as the user authorizing the commit/push:
+When the user says **"ship it"**, **"raise a PR"** (or equivalent), run the prep-and-open-PR flow for
+the current feature branch — this counts as the user authorizing the commit/push:
 
 1. **Stage + commit** pending work with a clear message (end with the `Co-Authored-By:` trailer).
 2. **Update docs** — refresh any affected `docs/*.md` (esp. [`docs/routes.md`](docs/routes.md) when
@@ -233,10 +233,18 @@ current feature branch — this counts as the user authorizing the commit/push:
 3. **Update devlog** — add/refresh the `vX.Y.Z` entry + TL;DR row (see **Devlog format**); cross off
    done items in [`todo.md`](todo.md). Commit the doc changes.
 4. **Verify** — `npx tsc --noEmit` clean **and** `npx vitest run` green before opening the PR.
-5. **Open the PR** — branch off `main`, `gh pr create --base main`; the merge mode is
-   **squash-merge**. `main` = production (Vercel deploys on merge).
-6. **Tag** `vX.Y.Z` after the squash-merge lands on `main` (releases that ship code get a tag;
-   design-only sessions don't).
+5. **Open the PR** — branch off `main`, `gh pr create --base main`. **Then stop.**
+
+**Do NOT merge.** Merging is the user's manual decision: they review the **Vercel preview** deploy on
+the PR and **squash-merge on GitHub themselves**. Don't run `gh pr merge` or otherwise merge unless
+explicitly told to.
+
+**Tagging is a separate, explicit step.** Only when the user says **"tag it"** (or similar), *after*
+they've merged:
+1. `git checkout main && git pull` **first** — a squash-merge created a new commit on `main`, so local
+   `main` is behind; the tag must land on that merge commit, not a stale one.
+2. `git tag -a vX.Y.Z -m "vX.Y.Z — <title>"` then `git push origin vX.Y.Z`. (Releases that ship code
+   get a tag; design-only sessions don't. Version + devlog heading + tag must match.)
 
 If any step fails (tsc/tests/push), **stop and report** — don't paper over it.
 
