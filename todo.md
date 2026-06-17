@@ -49,16 +49,16 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
 - [ ] **Build the MVP pages — INCREMENTALLY, one slice at a time** (not one-shot). For each slice: run
   **superpowers:writing-plans** on *just that slice* of the wireframes spec → execute → review → merge,
   then start the next. Recommended order (see the spec's §G surface inventory):
-  - [ ] **Slice 1 — Foundation + Create Identity onboarding** ⬅️ **START HERE** (see §I "Next session"
+  - [x] **Slice 1 — Foundation + Create Identity onboarding** — ✅ done (v0.8.0). (see §I "Next session"
     in the spec / below). `users` model extension (`slug` nullable, `short_ref` NOT NULL, `bio`,
     `avatar_url`, `updated_at`) + `short_ref` minted in the existing `createUser` wrapper + the
     建立正身 profile-setup UI + the pre-provisioned owner-view shell. Builds on shipped Google auth;
     no binding logic yet.
-  - [ ] **Slice 2 — Add Account (註冊分身) + binding model** — `binding_requests` (commit-on-confirm,
+  - [x] **Slice 2 — Add Account (註冊分身) + binding model** — ✅ done (v0.9.0; UI refined v0.10.0). `binding_requests` (commit-on-confirm,
     §H), `linked_accounts` (per-owner rows, §A.6), `binding_events` ledger, `proof_records`; the
     per-platform wizard; **start with ONE platform** (Threads — has the compose intent + tokenless SSR);
     the success/visibility step; the slug-confirm/provisioning (`/gua/{slug}` minting). The core.
-  - [ ] **Slice 3 — Identity Card public page (Accounts tab)** — the Linktree (header + featured main +
+  - [ ] **Slice 3 — Identity Card public page (Accounts tab)** ⬅️ **NEXT** — the Linktree (header + featured main +
     rows → live profile); now there's data to show.
   - [ ] **Slice 4 — Timeline tab** — render the append-only `binding_events` ledger (+ `created_at`).
   - [ ] **Slice 5 — Manage tab** — disclose (one-way), set-as-main (forces public), condition flags

@@ -10,6 +10,12 @@ changes, or ends. Amounts in **USD** unless noted.
 | **Vercel Pro** | Hosting + CI/CD for the app | **$20** / member | monthly | 2026-06-15 | **14-day free trial** started 2026-06-15 → first charge ~**2026-06-29**. Solo = 1 member. **Why Pro is required:** Vercel **Hobby can't deploy a private repo owned by a GitHub org** (`guasi-tw/app`) — only *personal-account* private repos. Alternatives were *make the repo public* or *move it to a personal account*; Pro chosen to keep org + privacy. (Hobby is also non-commercial-use.) See `deployment.md` §6. |
 | **Domain `guasi.tw`** | Primary website domain | **$29.99** | yearly | (confirm) | Registrar **GoDaddy**. Renews annually — **confirm exact registration/renewal date in GoDaddy** and watch auto-renew. DNS also hosts iCloud Custom Email (no extra cost here). |
 
+## Tooling / development
+
+| Service | What it's for | Cost | Cycle | Since | Notes |
+|---|---|---|---|---|---|
+| **Claude (Pro → Max)** | AI pair-programming / build assistant for this project | **$82.02** | one-time (upgrade) | 2026-06-16 | Prorated charge to upgrade the existing Claude **Pro** subscription to **Max** for more capacity while building. One-off upgrade cost; the ongoing Max subscription difference is separate. |
+
 ## Free tier — no cost yet (watch for overage)
 
 | Service | What it's for | Tier | Starts costing when |
@@ -27,6 +33,7 @@ changes, or ends. Amounts in **USD** unless noted.
 
 - **$20 / mo** (Vercel Pro) **+ $29.99 / yr** (domain) ≈ **$22.50 / mo** · **~$270 / yr**.
 - First real charge: **Vercel ~2026-06-29** (trial ends). Set a reminder before then if reconsidering the plan.
+- **One-time to date:** **$82.02** (Claude Pro → Max upgrade, 2026-06-16).
 
 ## Cross-references
 - [`deployment.md`](deployment.md) §6 (Vercel plan) · [`CLAUDE.md`](../CLAUDE.md) (locked stack).

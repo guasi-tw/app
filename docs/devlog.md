@@ -14,6 +14,8 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.10.0](#v0100--add-flow-refinements-add-platform-picker--primary-only-first-binding-2026-06-16-2153) | **Add-flow refinements (UI/routing).** New **`/add` platform picker** (Threads live; IG/miin disabled `施工中` — state derived from the adapter registry). Onboarding now routes a new 正身 to `/add` (provisioned → `/gua/{slug}`); all add-account entries go through `/add`. **First (main) binding simplified to accept-as-primary or cancel** — dropped the public/private toggle + keep-as-分身 (the main account is always public), cancel hints to delete the verification post; `OrdinaryConfirm` (non-primary 分身) keeps its visibility choice. Copy: `產生驗證貼文`, `施工中`. 80 tests. |
+| [v0.9.0](#v090--slice-2-add-account--commit-on-confirm-binding-2026-06-16-2039) | **Slice 2: Add Account (註冊分身) + commit-on-confirm binding.** 4 Prisma models (`BindingRequest`/`LinkedAccount`/`ProofRecord`/`BindingEvent`) + the binding lib: scoped single-use auth code, growth-engine post template, **`PlatformAdapter` seam + Threads adapter** (tokenless crawler-UA SSR, author from `og:title` authority, spoof-defended, query-free canonical proof URL), and the **commit-on-confirm** repo (durable artifacts written in one transaction at confirm; per-owner uniqueness, NOT global; slug minted first-claim-wins). The `/add/threads` wizard (copy/compose → paste-back → resolve), the confirm step, and the `/r/{shortRef}` provisioning picker. 79 tests (incl. live-DB). |
 | [v0.8.1](#v081--avatar-sharplibvips-runtime-fix--imaging-smoke-gate-2026-06-16-1005) | **Avatar sharp/libvips production fix + imaging smoke gate.** Avatar upload 500'd on Vercel with `ERR_DLOPEN_FAILED: libvips-cpp.so` — root cause was a **file-tracing gap**: libvips ships in the *separate* `@img/sharp-libvips-linux-x64` package, which Next's tracer can't follow from sharp's runtime-resolved `require`, so the 18MB `.so` installed but never reached the function bundle. Fixed with **`outputFileTracingIncludes`** for `@img/**` (bundler-agnostic — Turbopack & Webpack both failed without it; `serverExternalPackages` alone insufficient). Also: **lazy `import("sharp")`** (bio-only saves no longer load the native module), stopped **swallowing** the avatar error, new token-gated **`/api/health/imaging`** probe + **smoke check** (observational gate; hard branch-protection needs paid GitHub). Plus the **`AUTH_REDIRECT_PROXY_URL`-on-prod** doc fix (preview-login `InvalidCheck: pkceCodeVerifier`). |
 | [v0.8.0](#v080--slice-1-foundation--create-identity-2026-06-16-0308) | **Slice 1: Foundation + Create Identity (first feature code).** `User`(正身) gains **`slug`** (citext, CI, unique, nullable — minted later), **`shortRef`** (NOT NULL, unique base62), **`updatedAt`**, via a backfill-safe migration; the Auth.js `createUser` wrapper now **mints a `shortRef`** per 正身 (retry on collision). New `lib/identity/*`: base62 generator, plain-text **profile sanitization** (name/bio caps), **avatar pipeline** (sharp re-decode→WebP 512² + Vercel Blob, provisioned), repo + `getCurrentUser` + `session.user.id`. UI: **建立正身 onboarding** (avatar/name/bio), owner-gated **`/r/{shortRef}`** pre-provisioned shell, **`/gua/{slug}`** resolver shell + generic 404. No binding/verification yet (Slice 2). 35 tests green. |
 | [v0.7.0-design](#v070-design--mvp-wireframes--page-flows-2026-06-16) | **MVP wireframes & page flows (design, approved).** All 9 surfaces (Home, Create Identity, Add Account per-platform wizard, Identity Card = Accounts/Timeline/Manage, pre-provisioned state). Decisions that **change** parent specs: snapshots **dropped** → link to live post; slug minted at main-account designation (**IG/Threads-only** source); **no self-service unbind**; **no binding-uniqueness lock** (per-owner `linked_accounts` rows); `/r/{short_ref}` collision-proof short-link; `binding_requests` **commit-on-confirm**. To be built **incrementally** (Slice 1 = Foundation + Create Identity). No code shipped. |
@@ -27,6 +29,53 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
 
 ---
+
+## v0.10.0 — Add-flow refinements: /add platform picker + primary-only first binding (2026-06-16 21:53)
+
+**Review:** not yet
+
+**Design docs:**
+- Add-flow refinements: [Spec](superpowers/specs/2026-06-17-add-flow-refinements-design.md) [Plan](superpowers/plans/2026-06-17-add-flow-refinements.md)
+
+**What was built:**
+- **`/add` platform picker** (new server page) — generic + reusable. **Threads** active → `/add/threads`; **Instagram** + **miin.cc** disabled with a `施工中` badge. Active/disabled is **derived from the adapter registry** (`getAdapter`), so adding an adapter lights its tile automatically.
+- **Onboarding redirect is now conditional** — a new 正身 (no slug) lands on `/add`; a provisioned user re-editing their profile returns to `/gua/{slug}`.
+- **All add-account entries route through `/add`** (both `/r/{shortRef}` CTAs, not `/add/threads` directly).
+- **First (main) binding simplified to accept-as-primary or cancel** — the main account is always public, so the slug-confirm step **dropped the public/private toggle and the keep-as-分身 option**; the only outcomes are 接受為主要帳號 (mint slug, public, main; permanence-gated) or 取消 (which now **hints to delete the verification post**). `keepAsAccountAction` removed. `OrdinaryConfirm` (provisioned user adding a *non-primary* 分身) is unchanged — it keeps its public/private choice.
+- **Copy:** `產生驗證貼文範本` → `產生驗證貼文`; `/gua` stub `建置中` → `施工中`.
+- 80 tests; built via brainstorm → spec → plan → subagent-driven implementation.
+
+**Key technical learnings:**
+- `[gotcha]` **"Reset Neon branch from production" reverts the branch's schema + `_prisma_migrations` to prod.** If the feature's migration isn't merged to `main` yet, the reset **strips it**, and the next request throws `AdapterError` (it bit a preview login during testing). After such a reset you must **re-run `prisma migrate deploy`** (or redeploy — the build does it) against the branch. For repeated re-testing, prefer **targeted row-deletes** (schema-safe) over branch-reset-from-prod; once the feature is merged + the prod deploy applies the migration, reset-from-prod is safe again.
+- `[insight]` **Deriving the picker's active state from the adapter registry** (not a hardcoded list/flag) means the IG/miin tiles light up the moment their adapter ships — one source of truth.
+- `[note]` **`施工中`** is now the project's standard "under construction" label (replaces `建置中`); distinct from `（即將推出）` "coming soon" for upcoming features.
+
+**Process learnings:**
+- `[note]` Ran the full **brainstorm → spec → plan → subagent-driven** cycle for a small change in one session (overriding the usual per-phase handoff, by request). Two-stage review still applied per task and caught a latent empty-slug copy bug in the now-dead not-slug-eligible branch.
+
+## v0.9.0 — Slice 2: Add Account + commit-on-confirm binding (2026-06-16 20:39)
+
+**Review:** not yet
+
+**Design docs:**
+- Add Account (註冊分身) + binding model: [Spec](superpowers/specs/2026-06-16-mvp-wireframes-design.md) [Plan](superpowers/plans/2026-06-16-slice2-add-account-binding.md)
+
+**What was built:**
+- **4 Prisma models + 6 enums + migration** — the **commit-on-confirm** binding model: `BindingRequest` holds pending state; `LinkedAccount` + `ProofRecord` + a `bound` `BindingEvent` (+ `User.slug` for a provisioning bind) are written only at the terminal confirm. Per-owner uniqueness `@@unique([userId, platform, accountId])` — **not** global. Snapshot columns exist but stay nullable (no snapshots this slice).
+- **`lib/binding/`** — scoped single-use **6-digit auth code** + namespaced matcher; the **verification-post template** (the growth engine: `@gua.si.tw` + profile link + code); **slug** derive (proven-handle-only) + availability; the **`PlatformAdapter` seam** + **Threads adapter** (tokenless **crawler-UA SSR**, author from **`og:title` authority** — never user page content; a spoofed path handle canonicalizes to the true author; **query-free canonical** proof URL); the **commit-on-confirm repo** (transactional commit + provisioning).
+- **Add Account wizard** `/add/threads` — copy/compose the template → publish → **paste the post URL back** → resolve via platform authority + match the code. **Confirm step:** ordinary bind / slug-confirm provisioning (mints `/gua/{slug}`) / already-bound notify.
+- **`/r/{shortRef}`** pre-provisioned **setup picker** + provision-an-existing-account.
+- 79 tests (incl. live-DB suites); built task-by-task with **subagent-driven development** (spec + code-quality review per task).
+
+**Key technical learnings:**
+- `[gotcha]` **Threads omits `og:description` when the post contains a link** — so the auth code is scanned from the **SSR'd body**, not `og:description`. The author still comes from `og:title` (authority), so scanning the body for the scoped code is safe.
+- `[gotcha]` **Editing a Threads post mints a NEW shortcode**; the old URL `302`s to `/?error=invalid_post`. The stored proof URL can therefore go stale if the user edits/deletes the post — accepted (a dead proof link is OK; no snapshots, §A.1).
+- `[insight]` **Fail closed on the redirect host guard** — after following redirects, a missing/unparseable final URL is treated as **off-platform** and throws (a security-review hardening over the first draft, which skipped the guard when `resp.url` was empty). Real undici always populates `resp.url`, so this only fired in mocks — but the one trust-not-verify branch is gone.
+- `[insight]` **commit-on-confirm in one transaction**: the slug-mint, `isMain` clear, `LinkedAccount`/`ProofRecord`/`bound`-event create, and request-`verified` flip all roll back together; a `P2002` on the `User.slug` unique index → `slug_taken` (first-claim-wins, proven by a rollback test).
+- `[note]` **Re-validating an already-bound account is on-screen NOTIFY only** this slice (no write); the append-only `re_verified` refresh is deferred to Slice 5.
+
+**Process learnings:**
+- `[insight]` **Two-stage subagent review (spec compliance, then code quality) per task** caught issues a single pass wouldn't: an unescaped code interpolated into a regex, the fail-open host guard, a missing `proofPostUrl` transaction guard + an uncovered `not_resolvable` path, and a silent clipboard failure. Cheap to fix at the seam, expensive later.
 
 ## v0.8.1 — Avatar sharp/libvips runtime fix + imaging smoke gate (2026-06-16 10:05)
 
