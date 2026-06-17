@@ -14,6 +14,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.12.3](#v0123--about-page-alignment--guarantee-2026-06-17) | **About-page mock realigned to the live card + guarantee.** Reworked the `/about` 驗明正身 example card to mirror the real `/gua/{slug}` UI: added the `3 個分身` badge, 帳號/時間軸 tab bar, handle-first rows with a `★ 主要` tag on the main account and a `平台 · 驗證於 {date}` meta line + `↗` click-out — replacing the old platform-on-top / `✔ 已驗證` layout. Carried in the new same-owner **guarantee** line (`✓ …由本人公開貼文驗證。`) above the rows. Content-only (typed `content.ts` + CSS module); +1 accuracy test (12 total). |
 | [v0.12.2](#v0122--public-card-trust-hint-2026-06-17) | **Public Identity Card trust hint.** Added a one-line callout above the account list on the public `/gua/{slug}` 帳號 tab — `✓ 以下帳號皆經 guasi 確認屬於同一人，由本人公開貼文驗證。` — making the page's guarantee explicit to visitors. Public view only (hidden in 管理檢視). New `.id-hint` style (muted callout, accent left-border). Copy-only; no logic change. |
 | [v0.12.1](#v0121--short-ref-routing-fix-public-slug-owners-land-on-the-management-tab-2026-06-17-0240) | **`/r/{shortRef}` routing fix + slug-less owner management tab.** The private short-link gated on login **before** the public-slug check, so a logged-out visitor to a public identity's short-link was bounced to `/login` → index instead of the public card. Reordered so the slug redirect wins for everyone. New behaviour: unknown ref → `/`; **has slug + owner → `/gua/{slug}?view=manage`** (lands on 管理檢視); has slug + anyone else → `/gua/{slug}`; no slug + logged-out/non-owner → `/`; **no slug + owner → the `IdentityCard` management tab rendered inline at `/r/{shortRef}`**, locked to 管理檢視 (no public toggle, 🔒 尚未公開 banner, add button → `/add` which is already main-only for slug-less users). `IdentityCard` gains `initialManage`/`lockManage` props + nullable `publicUrl`; `/gua/{slug}` honors `?view=manage` (owner-only); extracted shared **`buildAccountGroups()`**. Removed the orphaned §D.5 `provisionExistingAction` (promote-existing-account picker gone; tested lib fn kept). 113 tests (13 new). |
 | [v0.12.0](#v0120--identity-card-public-page-slice-3-2026-06-17-0031) | **Slice 3: Identity Card public page (`/gua/{slug}`).** Replaced the stub with the real server-rendered Linktree: header (avatar/name/bio) + `N 個分身` badge + 帳號/時間軸 tabs + account rows (featured ★主要 → active oldest-first → flagged last), each active row a ↗ click-out to the live platform profile. **Owner-only 公開 ⇄ 管理 toggle** (segmented control, not a 3rd tab) reveals private rows + stubbed manage chips + ＋註冊分身; **functional 登出 / 切換帳號**. New read model **`listIdentityAccounts`** (visibility filter, main/active/flagged split, oldest-first, badge count excludes private+flagged), adapter **`profileUrl(handle)`**, Google **`prompt: "select_account"`** (fixes 切換帳號), **複製連結** share button, 時間軸 placeholder (Slice 4). Server formats rows + resolves URLs so the client card is a dumb view. Post-verify fixes (same PR): explicit `★ 主要` tag on the main row, owner footer no longer self-links, and a **`/post-login` dispatcher** that routes returning (provisioned) users to `/gua/{slug}` instead of forcing onboarding. 100 tests. |
@@ -31,6 +32,19 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 | [v0.2.0-design](#v020-design--verification-security-model--vercel-stack-lock-in-2026-06-15-0029) | Locked the verification security model (bound 分身 = post author from platform authority; scoped single-use code; manual paste-back primary) and the full MVP stack (all on Vercel: Neon + Auth.js + Google OAuth/email OTP + Vercel Blob). |
 | [v0.1.1-design](#v011-design--snapshot-ledger-status--naming-2026-06-14-2311) | Deepened the design: proof snapshots, append-only ledger, unbinding, timeline, account status management, verification-post growth loop; finalized naming/domain (我是/正身, `guasi.tw`). |
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
+
+---
+
+## v0.12.3 — about-page alignment + guarantee (2026-06-17)
+
+**Review:** not yet
+
+**What was built:**
+- Realigned the `/about` 驗明正身 example card to match the live `/gua/{slug}` Identity Card so the marketing mock reflects what visitors actually see:
+  - Added the `3 個分身` badge to the card header and a 帳號 / 時間軸 tab bar.
+  - Rebuilt account rows to be **handle-first** (`@meimei` + `★ 主要` tag on the main account) with a `平台 · 驗證於 {date}` meta line and a `↗` click-out glyph — replacing the old platform-label-on-top / `✔ 已驗證 · 2026/05` layout. Row chrome (pill background, border) now matches the real `.acct-pill`.
+- Carried the **same-owner guarantee** (`✓ 以下帳號皆經 guasi 確認屬於同一人，由本人公開貼文驗證。`) into the mock, above the rows — mirroring the v0.12.2 hint on the live page.
+- Content-only: typed `content.ts` (new `count` / `tabs` / `guarantee` fields, `AboutAccount.main`) + `about.module.css`. Added one accuracy-constraint test locking the guarantee copy (12 tests, was 11). `tsc --noEmit` clean.
 
 ---
 

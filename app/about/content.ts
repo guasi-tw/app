@@ -1,6 +1,11 @@
 export type AboutStep = { n: number; title: string; body: string };
 export type AboutTrustItem = { title: string; body: string };
-export type AboutAccount = { platform: string; handle: string; verified: string };
+export type AboutAccount = {
+  platform: string;
+  handle: string;
+  verified: string;
+  main?: boolean;
+};
 
 export const aboutContent = {
   topbar: { brand: "guasi", label: "關於" },
@@ -56,10 +61,13 @@ export const aboutContent = {
     avatarInitial: "美",
     name: "小美",
     handleUrl: "guasi.tw/gua/meimei",
+    count: "3 個分身",
+    tabs: { accounts: "帳號", timeline: "時間軸" },
+    guarantee: "✓ 以下帳號皆經 guasi 確認屬於同一人，由本人公開貼文驗證。",
     accounts: [
-      { platform: "Threads", handle: "@meimei", verified: "✔ 已驗證 · 2026/05" },
-      { platform: "Instagram", handle: "@meimei.ig", verified: "✔ 已驗證 · 2026/05" },
-      { platform: "Threads · 新帳號", handle: "@meimei.new", verified: "✔ 已驗證 · 2026/06" },
+      { platform: "Threads", handle: "@meimei", verified: "驗證於 2026/05", main: true },
+      { platform: "Instagram", handle: "@meimei.ig", verified: "驗證於 2026/05" },
+      { platform: "Threads", handle: "@meimei.new", verified: "驗證於 2026/06" },
     ] satisfies AboutAccount[],
   },
 

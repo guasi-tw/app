@@ -100,15 +100,26 @@ export default function AboutPage() {
               <div className={styles.avatar} aria-hidden="true">{c.exampleProfile.avatarInitial}</div>
               <div className={styles.pname}>{c.exampleProfile.name}</div>
               <div className={styles.purl}>{c.exampleProfile.handleUrl}</div>
+              <span className={styles.pcount}>{c.exampleProfile.count}</span>
+            </div>
+            <div className={styles.tabbar}>
+              <span className={styles.tabActive}>{c.exampleProfile.tabs.accounts}</span>
+              <span className={styles.tab}>{c.exampleProfile.tabs.timeline}</span>
             </div>
             <div className={styles.accounts}>
+              <p className={styles.guarantee}>{c.exampleProfile.guarantee}</p>
               {c.exampleProfile.accounts.map((a) => (
                 <div className={styles.account} key={a.handle}>
-                  <div>
-                    <span className={styles.acctPlatform}>{a.platform}</span>
-                    <div className={styles.acctHandle}>{a.handle}</div>
+                  <div className={styles.acctId}>
+                    <span className={styles.acctNameLine}>
+                      <span className={styles.acctHandle}>{a.handle}</span>
+                      {a.main && <span className={styles.acctMain}>★ 主要</span>}
+                    </span>
+                    <span className={styles.acctMeta}>
+                      {a.platform} · {a.verified}
+                    </span>
                   </div>
-                  <span className={styles.acctVerified}>{a.verified}</span>
+                  <span className={styles.acctOut} aria-hidden="true">↗</span>
                 </div>
               ))}
             </div>

@@ -264,28 +264,97 @@
   color: var(--muted);
   margin-top: 0.2rem;
 }
+.pcount {
+  display: inline-block;
+  margin-top: 0.55rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: #1a1500;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+/* tabs */
+.tabbar {
+  display: flex;
+  border-bottom: 1px solid #16161d;
+}
+.tab,
+.tabActive {
+  flex: 1;
+  padding: 0.6rem 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+}
+.tabActive {
+  color: var(--fg);
+  border-bottom-color: var(--accent);
+}
+
 .accounts {
   padding: 0.9rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.6rem;
+}
+.guarantee {
+  margin: 0 0 0.2rem;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.74rem;
+  line-height: 1.6;
+  color: var(--muted);
+  background: #15151c;
+  border: 1px solid #2a2a33;
+  border-left: 3px solid var(--accent);
+  border-radius: 0.5rem;
 }
 .account {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.7rem 0.85rem;
+  background: #15151c;
+  border: 1px solid #2a2a33;
+  border-radius: 0.6rem;
 }
-.acctPlatform {
-  font-size: 0.7rem;
-  color: var(--muted);
+.acctId {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.acctNameLine {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 .acctHandle {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   color: var(--fg);
 }
-.acctVerified {
-  font-size: 0.7rem;
-  color: #7bd88f;
+.acctMain {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.4rem;
+  color: #1a1500;
+  background: var(--accent);
+  border-radius: 0.35rem;
+}
+.acctMeta {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.acctOut {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.85rem;
 }
 
 /* trust */

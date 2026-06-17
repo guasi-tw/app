@@ -47,6 +47,11 @@ describe("aboutContent — accuracy constraints", () => {
   it("has three trust points", () => {
     expect(aboutContent.trust.items).toHaveLength(3);
   });
+
+  it("example card states the same-owner guarantee, verified by public post", () => {
+    expect(aboutContent.exampleProfile.guarantee).toContain("同一人");
+    expect(aboutContent.exampleProfile.guarantee).toContain("公開貼文");
+  });
 });
 
 describe("aboutContent — key anchor copy", () => {
