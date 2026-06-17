@@ -84,7 +84,11 @@ Working list of next steps. For current product/identity decisions see [`CLAUDE.
     `select_account`; 複製連結 share; 時間軸 placeholder.
   - [ ] **Slice 4 — Timeline tab** — render the append-only `binding_events` ledger (+ `created_at`).
   - [ ] **Slice 5 — Manage tab** — disclose (one-way), set-as-main (forces public), condition flags
-    (banned/hacked), 恢復·重新驗證.
+    (banned/hacked), 恢復·重新驗證. **Designed (v0.14.0-design, approved):**
+    [`slice5-manage-tab-design.md`](docs/superpowers/specs/2026-06-17-slice5-manage-tab-design.md) —
+    next step is **superpowers:writing-plans** against that spec. The two "needs deeper design" items
+    below are resolved there (編輯個人資料 → dedicated edit page + `onboardedAt`; slug-less `/r` →
+    zero-account-only state; disclose/set-main now emit `disclosed`/`set_main` ledger events).
     - [ ] **Re-verify of an already-bound account** (deferred from Slice 2, decided 2026-06-16): the
       append-only refresh — add a new immutable `proof_record` + a `re_verified` `binding_event`, bump
       `updated_at`, and (if `banned`/`hacked`) restore `condition → active`; for an already-`active`

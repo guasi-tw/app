@@ -189,7 +189,10 @@ push pre-emptive verification.
   monorepo yet; see [`docs/deployment.md`](docs/deployment.md) §3.
 - **Build milestones** are planned with **superpowers:brainstorm → writing-plans**; the resulting
   spec/plan artifacts land under `docs/superpowers/` as *historical* records (see the Docs two-tier
-  note — they're allowed to go stale). Lasting decisions from a milestone must be folded into the
+  note — they're allowed to go stale). **Visual brainstorming is welcome** — the user has opted into
+  the brainstorming **visual companion** (browser mockups/diagrams); use it when a design question is
+  genuinely visual (layout/flow/state comparisons), not for conceptual/tradeoff questions. Mockups
+  live under the gitignored `.superpowers/brainstorm/`. Lasting decisions from a milestone must be folded into the
   maintained docs (CLAUDE.md Locked decisions, `docs/product-decisions.md`, `docs/routes.md`, etc.),
   and shipped state into `docs/devlog.md` — those, not the spec, are the source of truth afterward.
 - Devlog at [`docs/devlog.md`](docs/devlog.md) — update at the end of each session (newest first;
