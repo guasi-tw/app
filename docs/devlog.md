@@ -40,6 +40,13 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 **Review:** not yet
 
+> _A meaningful session despite a deliberately **presentation-only** feature (favicon, OG card,
+> consistent header/footer) — no business/data logic changed, but it polishes the site from POC toward
+> "real product." The session's real weight was the **documentation clean-up**: correcting stale
+> Locked decisions, the two-tier maintained-vs-historical model, the salvage migration, and a
+> fresh-eyes consistency review now make it safe to **trust what a new session loads into context** —
+> the foundation everything after depends on._
+
 **What was built:**
 - **Favicon** from the gold 我 coin avatar (`guasi-avatar.svg`): `app/icon.svg` (primary), `app/icon.png` 32² (raster fallback), `app/apple-icon.png` 180² (opaque) — via Next's file-convention icons.
 - **Social share card** — `app/opengraph-image.png`, a 1200×630 branded card (coin + **我是正身** + `驗證並串連你擁有的社群帳號` + `guasi.tw`). Next's `opengraph-image` convention auto-emits **both** `og:image` and `twitter:image`. Rendered **locally with sharp and committed as a static asset** (not generated at runtime).
