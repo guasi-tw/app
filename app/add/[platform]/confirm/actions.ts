@@ -44,22 +44,6 @@ export async function confirmAsSlugAction(formData: FormData): Promise<void> {
   redirect(res.slug ? `/gua/${res.slug}` : `/r/${user.shortRef}`);
 }
 
-/** §D.4 keep-as-分身: commit non-main with the chosen visibility, stay pre-provisioned. */
-export async function keepAsAccountAction(formData: FormData): Promise<void> {
-  const platform = String(formData.get("platform") ?? "");
-  const rid = String(formData.get("rid") ?? "");
-  const visibility = (formData.get("visibility") === "public" ? "public" : "private") as Visibility;
-  const { user, req } = await ownedResolvedRequest(rid, platform);
-
-  const res = await commitBinding({ requestId: req.id, asMain: false, visibility, mintSlug: false });
-  if (!res.ok && res.error === "duplicate_binding") {
-    redirect(`/add/${platform}/confirm?rid=${rid}&err=dup`);
-  }
-  // Falls through here on success AND on not_resolvable (double-submit after a prior commit) —
-  // both mean "the binding is done", so land the user on their 正身.
-  redirect(`/r/${user.shortRef}`);
-}
-
 /** §D.3 wrong-account / §D.4 取消: a real cancel — commit nothing. */
 export async function cancelRequestAction(formData: FormData): Promise<void> {
   const platform = String(formData.get("platform") ?? "");

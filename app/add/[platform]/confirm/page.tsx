@@ -10,7 +10,6 @@ import {
   cancelRequestAction,
   confirmAsSlugAction,
   confirmOrdinaryAction,
-  keepAsAccountAction,
 } from "./actions";
 
 export default async function ConfirmPage({
@@ -76,33 +75,34 @@ export default async function ConfirmPage({
         ) : null}
 
         {user.slug ? (
-          // Owner already provisioned → ordinary bind (§D.3), commit here.
+          // Owner already provisioned → ordinary bind of a non-primary 分身 (§D.3).
           <OrdinaryConfirm
             platform={platform}
+            platformLabel={adapter.label}
             rid={req!.id}
             confirm={confirmOrdinaryAction}
             cancel={cancelRequestAction}
           />
         ) : adapter.slugEligible ? (
-          // Pre-provisioned + slug-eligible platform → slug-confirm (§D.4).
+          // First (main) binding on a slug-eligible platform → accept-as-primary or cancel (§D.4).
           <SlugConfirm
             platform={platform}
+            platformLabel={adapter.label}
             rid={req!.id}
             slugUrl={`${SITE_ORIGIN}/gua/${deriveSlug(req!.resolvedHandle!)}`}
             taken={err === "slug_taken" || !(await isSlugAvailable(deriveSlug(req!.resolvedHandle!)))}
             confirmAsSlug={confirmAsSlugAction}
-            keepAsAccount={keepAsAccountAction}
             cancel={cancelRequestAction}
           />
         ) : (
-          // Not slug-eligible (e.g. a future miin-only path) → keep-as-分身 / cancel only (§D.5).
+          // Not slug-eligible (future miin-only; currently dead — miin 404s) → cancel only.
           <SlugConfirm
             platform={platform}
+            platformLabel={adapter.label}
             rid={req!.id}
             slugUrl=""
             taken={true}
             confirmAsSlug={confirmAsSlugAction}
-            keepAsAccount={keepAsAccountAction}
             cancel={cancelRequestAction}
           />
         )}

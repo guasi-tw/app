@@ -35,7 +35,7 @@ export default async function AddAccountPage({
         <p className="lede">產生一則含驗證碼的貼文範本，發佈後貼回網址即可完成綁定。</p>
         <form action={createRequestAction}>
           <input type="hidden" name="platform" value={platform} />
-          <button type="submit" className="btn-primary">產生驗證貼文範本</button>
+          <button type="submit" className="btn-primary">產生驗證貼文</button>
         </form>
         <footer className="foot">guasi.tw</footer>
       </main>

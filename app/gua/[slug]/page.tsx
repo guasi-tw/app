@@ -17,7 +17,7 @@ export default async function IdentityCardPage({
   return (
     <main className="wrap">
       <h1 className="wordmark sm">{user.displayName ?? slug}</h1>
-      <p className="lede">正身頁建置中（Slice 3）。</p>
+      <p className="lede">正身頁施工中（Slice 3）。</p>
       <footer className="foot">guasi.tw/gua/{slug}</footer>
     </main>
   );

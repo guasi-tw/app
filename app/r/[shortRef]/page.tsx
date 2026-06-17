@@ -48,7 +48,7 @@ export default async function PreProvisionedPage({
           {err === "slug_taken" || !(await isSlugAvailable(selectedSlug!)) ? (
             <>
               <p className="error">{SITE_ORIGIN}/gua/{selectedSlug!} 已被使用 —— 請改用其他帳號。</p>
-              <a className="btn-secondary" href="/add/threads">驗證其他帳號 →</a>
+              <a className="btn-secondary" href="/add">驗證其他帳號 →</a>
             </>
           ) : (
             <form action={provisionExistingAction} className="confirm-actions">
@@ -78,7 +78,7 @@ export default async function PreProvisionedPage({
             </div>
           ) : null}
 
-          <a className="btn-primary" href="/add/threads">
+          <a className="btn-primary" href="/add">
             ＋ 驗證另一個帳號當主要帳號 →
           </a>
         </>
