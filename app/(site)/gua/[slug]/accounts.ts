@@ -12,6 +12,7 @@ function toView(a: LinkedAccount, variant: AccountVariant): AccountView {
   const clickable = a.condition === "active";
   return {
     id: a.id,
+    accountId: a.accountId,
     handle: a.handle,
     platform: a.platform,
     platformLabel: adapter?.label ?? a.platform,

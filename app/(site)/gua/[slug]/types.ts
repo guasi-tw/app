@@ -3,6 +3,8 @@ export type AccountVariant = "main" | "active" | "flagged" | "private";
 /** Plain, serialisable row the server hands to the client card. */
 export type AccountView = {
   id: string;
+  /** Platform-authoritative account id (lowercased handle for Threads) — scopes re-verify. */
+  accountId: string;
   handle: string;
   /** Platform key (e.g. "threads") — drives the icon. */
   platform: string;
