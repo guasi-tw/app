@@ -42,6 +42,11 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
   user-facing view count). Note: it's **client-side, so it counts CDN-cached views** (server
   logs would undercount); use a custom event (`track('profile_view', { handle })`) if
   per-handle attribution needs to be cleaner. Mind the Hobby vs Pro event caps + retention.
+- [ ] **Isolate previews under `preview.guasi.tw` (operator-only, parked)** — give Vercel preview
+  deployments their own subdomain instead of the rotating `*.vercel.app` hashes, optionally paired with
+  a persistent Neon staging branch (stable preview DB) and an Auth.js parent-domain cookie that could
+  fix the preview-OAuth PKCE failure. Options, DNS, and caveats written up in
+  [`preview-environment.md`](docs/preview-environment.md) — raised 2026-06-17, decide later.
 - [x] **Detailed wireframes for each page** — ✅ done (v0.7.0-design, **approved**): all 9 surfaces +
   data-model deltas in
   [`mvp-wireframes-design.md`](docs/superpowers/specs/2026-06-16-mvp-wireframes-design.md). This is the
