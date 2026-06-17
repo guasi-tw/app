@@ -276,3 +276,68 @@ body {
 }
 .platform-tile.disabled { color: var(--muted); background: #101015; border-style: dashed; cursor: not-allowed; }
 .tag-wip { font-size: 0.8rem; color: var(--muted); border: 1px solid #2a2a33; border-radius: 0.4rem; padding: 0.1rem 0.5rem; }
+
+/* ── Identity Card (/gua/{slug}) ───────────────────────────────────── */
+.idcard {
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.id-header { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; text-align: center; }
+.id-avatar { width: 5rem; height: 5rem; border-radius: 50%; object-fit: cover; background: #15151c; border: 1px solid #2a2a33; }
+.id-name { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: 0.03em; }
+.id-bio { margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--muted); max-width: 22rem; }
+.id-badge {
+  display: inline-block; padding: 0.25rem 0.7rem;
+  font-size: 0.8rem; letter-spacing: 0.08em; color: #1a1500;
+  background: var(--accent); border-radius: 999px; font-weight: 700;
+}
+
+.id-toggle { display: flex; gap: 0; align-self: center; border: 1px solid #2a2a33; border-radius: 999px; overflow: hidden; }
+.id-toggle button {
+  padding: 0.4rem 1rem; background: transparent; border: none; color: var(--muted);
+  font: inherit; font-size: 0.85rem; cursor: pointer;
+}
+.id-toggle button.active { background: #15151c; color: var(--fg); }
+
+.tabbar { display: flex; gap: 0; border-bottom: 1px solid #2a2a33; }
+.tabbar .tab {
+  flex: 1; padding: 0.7rem 0; background: transparent; border: none;
+  border-bottom: 2px solid transparent; color: var(--muted);
+  font: inherit; font-size: 0.95rem; cursor: pointer; text-align: center;
+}
+.tabbar .tab.active { color: var(--fg); border-bottom-color: var(--accent); }
+
+.acct-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.acct-pill {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  padding: 0.85rem 1rem; background: #15151c; border: 1px solid #2a2a33;
+  border-radius: 0.6rem; color: var(--fg); text-decoration: none;
+}
+a.acct-pill:hover { border-color: var(--accent); }
+.acct-pill.main { border-color: var(--accent); background: #1a160b; }
+.acct-pill.flag { opacity: 0.85; border-style: dashed; border-color: #3a2f10; }
+.acct-pill.priv { border-style: dashed; }
+.acct-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.acct-id { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.acct-handle { font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+.acct-meta { font-size: 0.78rem; color: var(--muted); }
+.acct-out { color: var(--accent); font-size: 1rem; flex-shrink: 0; }
+.acct-warn { font-size: 0.78rem; color: var(--accent); }
+
+.acct-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.chip {
+  padding: 0.3rem 0.65rem; font-size: 0.75rem; background: transparent;
+  border: 1px solid #34343f; border-radius: 0.5rem; color: var(--fg);
+  font: inherit; cursor: pointer;
+}
+.chip:hover { border-color: var(--accent); }
+
+.id-manage-links { display: flex; flex-direction: column; gap: 0.6rem; padding-top: 0.5rem; }
+.id-foot { display: flex; flex-direction: column; gap: 0.75rem; align-items: center; padding-top: 1rem; text-align: center; }
+.id-foot a { color: var(--accent); }
