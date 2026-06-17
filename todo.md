@@ -80,6 +80,15 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
       deliberately omitted the flag). The `updateUserProfile` write path is already reusable.
   - [ ] **Later platforms** — IG + miin adapters once the Threads slice proves the `PlatformAdapter` seam.
 
+- [x] **About page (`/about`)** — ✅ done (v0.11.0), **PR open, not yet merged**: public, mobile-first
+  關於 guasi intro page (Traditional Chinese) ending in a Google-login register CTA. guasi-first narrative
+  (正身 demoted to a `(tsiànn-sin)` gloss); copy in a typed `content.ts` with accuracy-constraint tests;
+  thin static Server Component + CSS module — fully additive, built in an isolated worktree.
+  ([spec](docs/superpowers/specs/2026-06-16-about-page-design.md) · [plan](docs/superpowers/plans/2026-06-16-about-page.md))
+  - [ ] **Link to `/about` from the home page** — deliberately excluded from the PR to avoid touching
+    shared `app/page.tsx` (parallel in-flight work); add a "關於 guasi" link once merged.
+  - [ ] **Swap the static 範例 公開頁 card for a real screenshot/link** once Slice 3 (Identity Card) ships.
+
 ## Deferred to Phase 2
 
 - [ ] **Auto-capture validation posts via `@gua.si.tw`** — detect the tagged verification
