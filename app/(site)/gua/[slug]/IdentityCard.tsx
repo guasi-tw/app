@@ -127,7 +127,7 @@ export function IdentityCard({
               <a className="btn-secondary" href="/add">
                 {lockManage ? "＋ 驗證主要帳號" : "＋ 註冊分身"}
               </a>
-              <button type="button" className="btn-secondary" disabled>編輯個人資料</button>
+              <a className="btn-secondary" href="/settings">編輯個人資料</a>
               <form action={signOutAction}>
                 <button type="submit" className="btn-secondary" style={{ width: "100%" }}>登出</button>
               </form>
