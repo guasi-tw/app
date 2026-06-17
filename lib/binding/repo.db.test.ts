@@ -8,7 +8,6 @@ import {
   markResolved,
   cancelRequest,
   commitBinding,
-  provisionExistingAccount,
   discloseBinding,
   setMainBinding,
   reportCondition,
@@ -81,6 +80,14 @@ describe.skipIf(!hasDb)("binding repo (DB)", () => {
     expect(la?.isMain).toBe(true);
     expect(la?.visibility).toBe("public"); // forced despite visibility:"private"
     expect((await prisma.user.findUnique({ where: { id: u.id } }))?.slug).toBe("MintMe");
+    expect(await prisma.bindingEvent.count({ where: { userId: u.id, eventType: "set_main" } })).toBe(1);
+  });
+
+  it("commitBinding (ordinary, non-main) writes no set_main event", async () => {
+    const u = await freshUser("br-nomain@example.com", "BrNoMain0");
+    const res = await commitBinding({ requestId: (await resolvedRequest(u.id, "plainrow")).id, asMain: false, visibility: "private", mintSlug: false });
+    expect(res.ok).toBe(true);
+    expect(await prisma.bindingEvent.count({ where: { userId: u.id, eventType: "set_main" } })).toBe(0);
   });
 
   it("commitBinding returns slug_taken on a case-insensitive slug clash (first-claim-wins)", async () => {
@@ -208,16 +215,4 @@ describe.skipIf(!hasDb)("binding repo (DB)", () => {
     expect(await reportCondition(other.id, res.linkedAccountId, "hacked")).toEqual({ ok: false, error: "not_found" });
   });
 
-  it("provisionExistingAccount sets main + public + mints slug from the handle (§D.5)", async () => {
-    const u = await freshUser("br-prov@example.com", "BrProv001");
-    const res = await commitBinding({ requestId: (await resolvedRequest(u.id, "ProvMe")).id, asMain: false, visibility: "private", mintSlug: false });
-    expect(res.ok).toBe(true);
-    if (!res.ok) return;
-    const prov = await provisionExistingAccount(u.id, res.linkedAccountId);
-    expect(prov).toEqual({ ok: true, slug: "ProvMe" });
-    const la = await prisma.linkedAccount.findUnique({ where: { id: res.linkedAccountId } });
-    expect(la?.isMain).toBe(true);
-    expect(la?.visibility).toBe("public");
-    expect((await prisma.user.findUnique({ where: { id: u.id } }))?.slug).toBe("ProvMe");
-  });
 });

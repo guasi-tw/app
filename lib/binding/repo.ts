@@ -136,6 +136,17 @@ export async function commitBinding(params: {
           proofRecordId: proof.id,
         },
       });
+      if (params.asMain) {
+        // The original main designation belongs in the timeline too (§C.2).
+        await tx.bindingEvent.create({
+          data: {
+            userId: req.userId,
+            platform: req.platform,
+            accountId: req.resolvedAccountId!,
+            eventType: "set_main",
+          },
+        });
+      }
       let slug: string | null = null;
       if (params.mintSlug) {
         slug = deriveSlug(req.resolvedHandle!);
@@ -218,44 +229,3 @@ export async function reportCondition(
   return { ok: true };
 }
 
-export type ProvisionResult =
-  | { ok: true; slug: string }
-  | { ok: false; error: "slug_taken" | "not_found" };
-
-/**
- * §D.5 setup picker: designate an ALREADY-verified account as 主要帳號 — set isMain + force public +
- * mint the slug from its handle. No new request/proof (the binding already exists).
- */
-export async function provisionExistingAccount(
-  userId: string,
-  linkedAccountId: string,
-): Promise<ProvisionResult> {
-  const acct = await prisma.linkedAccount.findUnique({ where: { id: linkedAccountId } });
-  if (!acct || acct.userId !== userId) return { ok: false, error: "not_found" };
-  const slug = deriveSlug(acct.handle);
-  try {
-    await prisma.$transaction(async (tx) => {
-      await tx.linkedAccount.updateMany({
-        where: { userId, isMain: true },
-        data: { isMain: false },
-      });
-      await tx.linkedAccount.update({
-        where: { id: linkedAccountId },
-        data: { isMain: true, visibility: "public" },
-      });
-      await tx.user.update({ where: { id: userId }, data: { slug } });
-    });
-    return { ok: true, slug };
-  } catch (e) {
-    if ((e as { code?: string }).code === "P2002") return { ok: false, error: "slug_taken" };
-    throw e;
-  }
-}
-
-/** Eligible existing main-account candidates for the §D.5 picker (verified, slug-eligible platforms). */
-export function listProvisionCandidates(userId: string) {
-  return prisma.linkedAccount.findMany({
-    where: { userId, status: "verified", platform: "threads" }, // Slice 2: only Threads is slug-eligible
-    orderBy: { verifiedAt: "asc" },
-  });
-}
