@@ -44,6 +44,24 @@ Working list of next steps. For current product/identity decisions see [`CLAUDE.
   user-facing view count). Note: it's **client-side, so it counts CDN-cached views** (server
   logs would undercount); use a custom event (`track('profile_view', { handle })`) if
   per-handle attribution needs to be cleaner. Mind the Hobby vs Pro event caps + retention.
+- [ ] **Smoke-test the Identity Card routing/redirects (v0.13.1, PR #19)** — manual pass on the
+  Vercel preview before/after merge. These are auth-state + slug-presence redirects that the unit tests
+  mock out; the high-value cases are **browser-only** (real `history.replaceState`, redirect loops).
+  Needs your logged-in account (ideally one **with** a slug) + a second browser/incognito for
+  non-owner/logged-out. Check:
+  - [ ] **公開/管理 toggle URL sync** — on `/gua/{slug}` as owner, 管理檢視 → URL becomes `?view=manage`
+    (no reload); 公開檢視 → URL drops to clean `/gua/{slug}`; **Back** button behaves sanely (leaves the
+    page, doesn't re-toggle — `replaceState` adds no history entry).
+  - [ ] **Deep-link** `/gua/{slug}?view=manage` fresh (owner) → opens on 管理檢視.
+  - [ ] **`?view=manage` owner-only** — logged-out/other account on `/gua/{slug}?view=manage` →
+    clean `/gua/{slug}`, public view, **no redirect loop**.
+  - [ ] **Short link** `/r/{shortRef}` (owner, has slug) → lands on **public** `/gua/{slug}` (not manage).
+  - [ ] **Header 我的正身** (owner, has slug) → straight to `/gua/{slug}` (no `/r` flash).
+  - [ ] **`/login` while logged in** → bounces to own page (no loop); logged out → form with **使用 Google 繼續**.
+  - [ ] **Slug-less owner** (no verified main) — header + `/login` → `/r/{shortRef}` inline management card.
+  - Note: preview logins proxy through prod via `AUTH_REDIRECT_PROXY_URL`; a flaky preview *login* is that
+    known quirk, not the redirect logic. Optional follow-up: a lightweight automated route-smoke script
+    for the logged-out/redirect-only cases.
 - [x] **Detailed wireframes for each page** — ✅ done (v0.7.0-design, **approved**): all 9 surfaces +
   data-model deltas in
   [`mvp-wireframes-design.md`](docs/superpowers/specs/2026-06-16-mvp-wireframes-design.md). This is the
