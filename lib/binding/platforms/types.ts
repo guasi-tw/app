@@ -42,6 +42,9 @@ export interface PlatformAdapter {
   /** Whether a slug may be minted from a handle proven here (§A.4 — IG/Threads yes, miin no). */
   readonly slugEligible: boolean;
 
+  /** Live public profile URL for a stored (bare, no leading @) handle. */
+  profileUrl(handle: string): string;
+
   /**
    * Validate the pasted URL against THIS platform + parse out the post id (§D.2 security gate).
    * Returns null for wrong-platform domains, look-alike hosts, non-HTTPS, or non-canonical paths.
