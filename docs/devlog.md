@@ -46,7 +46,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 - **Root metadata** (`app/layout.tsx`): `metadataBase` (= `SITE_ORIGIN`) so crawler image URLs resolve absolute; `openGraph` + `twitter` (`summary_large_image`); `siteName: "我是"`.
 - **Copy fixes (actor clarity + brand):** dropped ambiguous **主動** from the hero + meta description (it misread as *the site* verifying; now plainly *you* verify — `驗證並串連你擁有的社群帳號`), and led the homepage hero with the **brand 我是** instead of the tagline 我是正身. Swept the repo; left genuine 主動方/主動登記 and historical plan snapshots untouched.
 - **`/about` contact line** — `有任何問題或建議，歡迎來信：support@guasi.tw` (mailto), above the footer; copy in the typed `content.ts`.
-- **Global site chrome** — `<SiteHeader>` (top-left 我 icon + **我是** → home; top-right context action: 登入/免費註冊 logged-out, 我的正身 logged-in) and `<SiteFooter>` (`guasi.tw · 關於，我是什麼` → `/about`, the pun). Both live in **one** place: `app/(site)/layout.tsx`.
+- **Global site chrome** — `<SiteHeader>` (top-left 我 icon + **我是** → home; top-right context action: 登入/免費註冊 logged-out, 我的正身 logged-in) and `<SiteFooter>` (`guasi.tw · 關於，我是什麼` → `/about`, the pun). Both live in **one** place: `app/(site)/layout.tsx`, and render as matched **fixed, full-width translucent-blur bars** (header `border-bottom`, footer flush-to-bottom `border-top`) so content scrolls cleanly under them. The About page's own in-flow footer was dropped as redundant (contact line — `support@guasi.tw` — kept there).
 - **Route-group refactor** — created the `(site)` group and moved home, `about`, `add`, `onboarding`, `login`, **`gua`, `r`** into it so every user-facing page inherits the chrome with no per-page wiring. Left outside: `post-login` (redirect), `api`. `not-found.tsx` keeps explicit chrome (it renders under the *root* layout, not a group). Removed the now-duplicate `我是什麼？` link from the card's `id-foot`.
 - **Docs & conventions governance (same PR):**
   - New maintained docs: **[`routes.md`](routes.md)** (route inventory + `(site)` chrome model),
@@ -61,8 +61,10 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
   - **Corrected stale CLAUDE.md "Locked decisions"** that contradicted shipped code: proof-snapshot
     (deferred; MVP links to live post), unbinding (no self-service in MVP), binding uniqueness
     (per-正身, not global), site login (Google only; email deferred).
-  - New CLAUDE.md sections: **Who's working on this**, **Devlog format**, **"Raise a PR"/"ship it"**,
-    **GitHub upload safety** (3 adopted from `sans_cube`'s conventions).
+  - New CLAUDE.md sections: **Who's working on this**, **Devlog format**, **"Raise a PR"/"ship it"**
+    (the agent preps + opens the PR and **stops** — the user reviews the preview and squash-merges
+    manually; **tagging is a separate explicit step** that pulls `main` first), and **GitHub upload
+    safety** (3 adopted from `sans_cube`'s conventions).
 
 **Key technical learnings:**
 - `[insight]` **Route groups are the idiomatic "shared chrome for a subset" mechanism.** A page **cannot** opt out of a parent layout's chrome via a flag/prop — the child can't suppress parent UI; faking it (pathname-sniffing, context, CSS-hide) is an anti-pattern. The healthy control is *file location*; for multiple chrome combos, a `<SiteChrome header footer>` component configured **per route-group layout** (never per page).
