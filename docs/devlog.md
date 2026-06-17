@@ -14,6 +14,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.12.1](#v0121--short-ref-routing-fix-public-slug-owners-land-on-the-management-tab-2026-06-17-0240) | **`/r/{shortRef}` routing fix + slug-less owner management tab.** The private short-link gated on login **before** the public-slug check, so a logged-out visitor to a public identity's short-link was bounced to `/login` → index instead of the public card. Reordered so the slug redirect wins for everyone. New behaviour: unknown ref → `/`; **has slug + owner → `/gua/{slug}?view=manage`** (lands on 管理檢視); has slug + anyone else → `/gua/{slug}`; no slug + logged-out/non-owner → `/`; **no slug + owner → the `IdentityCard` management tab rendered inline at `/r/{shortRef}`**, locked to 管理檢視 (no public toggle, 🔒 尚未公開 banner, add button → `/add` which is already main-only for slug-less users). `IdentityCard` gains `initialManage`/`lockManage` props + nullable `publicUrl`; `/gua/{slug}` honors `?view=manage` (owner-only); extracted shared **`buildAccountGroups()`**. Removed the orphaned §D.5 `provisionExistingAction` (promote-existing-account picker gone; tested lib fn kept). 113 tests (13 new). |
 | [v0.12.0](#v0120--identity-card-public-page-slice-3-2026-06-17-0031) | **Slice 3: Identity Card public page (`/gua/{slug}`).** Replaced the stub with the real server-rendered Linktree: header (avatar/name/bio) + `N 個分身` badge + 帳號/時間軸 tabs + account rows (featured ★主要 → active oldest-first → flagged last), each active row a ↗ click-out to the live platform profile. **Owner-only 公開 ⇄ 管理 toggle** (segmented control, not a 3rd tab) reveals private rows + stubbed manage chips + ＋註冊分身; **functional 登出 / 切換帳號**. New read model **`listIdentityAccounts`** (visibility filter, main/active/flagged split, oldest-first, badge count excludes private+flagged), adapter **`profileUrl(handle)`**, Google **`prompt: "select_account"`** (fixes 切換帳號), **複製連結** share button, 時間軸 placeholder (Slice 4). Server formats rows + resolves URLs so the client card is a dumb view. Post-verify fixes (same PR): explicit `★ 主要` tag on the main row, owner footer no longer self-links, and a **`/post-login` dispatcher** that routes returning (provisioned) users to `/gua/{slug}` instead of forcing onboarding. 100 tests. |
 | [v0.11.0](#v0110--about-page-about-guasi-intro--register-cta-2026-06-16-2211) | **About page (`/about`).** New public, mobile-first 關於 guasi page (Traditional Chinese), **purely additive** (one route, no edits to existing files). **guasi-first** narrative: universal hook「這真的是我」→ **guasi（我是）** → 正身 demoted to a `(tsiànn-sin)` gloss; two **範例** anchors (verification post + 公開頁 card), platform strip (Threads · Instagram · miin.cc · 更多陸續支援), Google-login CTA → `/login`. Copy extracted to a typed `content.ts` with **accuracy-constraint tests** (Google-only, **no** Email/snapshot claims, 6-digit code); thin static **Server Component + CSS module** (`globals.css` untouched). 48 tests. Built in an isolated worktree → PR (not yet merged). |
 | [v0.10.0](#v0100--add-flow-refinements-add-platform-picker--primary-only-first-binding-2026-06-16-2153) | **Add-flow refinements (UI/routing).** New **`/add` platform picker** (Threads live; IG/miin disabled `施工中` — state derived from the adapter registry). Onboarding now routes a new 正身 to `/add` (provisioned → `/gua/{slug}`); all add-account entries go through `/add`. **First (main) binding simplified to accept-as-primary or cancel** — dropped the public/private toggle + keep-as-分身 (the main account is always public), cancel hints to delete the verification post; `OrdinaryConfirm` (non-primary 分身) keeps its visibility choice. Copy: `產生驗證貼文`, `施工中`. 80 tests. |
@@ -31,6 +32,32 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
 
 ---
+
+## v0.12.1 — short-ref routing fix: public-slug owners land on the management tab (2026-06-17 02:40)
+
+**Review:** not yet (tests + `tsc --noEmit` green; manually verified on the Vercel preview)
+
+**What was built:**
+- **Reordered `/r/{shortRef}` resolution so the public-slug redirect wins before the login gate.** The bug: the page called `redirect("/login")` for any logged-out viewer *before* looking up the owner or checking for a slug, so a logged-out visitor to a public identity's short-link never reached the `/gua/{slug}` redirect — they bounced to login → index.
+- **New routing table for `/r/{shortRef}`:**
+  - unknown short-ref → `/` (main page)
+  - has slug + **owner** → `/gua/{slug}?view=manage` (public page, opened on the **管理檢視** tab)
+  - has slug + anyone else (logged-out or non-owner) → `/gua/{slug}` (public view)
+  - no slug + logged-out / logged-in non-owner → `/`
+  - no slug + **owner** → the `IdentityCard` **management tab rendered inline** at `/r/{shortRef}`, locked to 管理檢視 (no 公開/管理 toggle, 🔒 尚未公開 banner), with the add button forcing the main binding via `/add`.
+- **`IdentityCard` props** — added `initialManage` (start on 管理檢視) and `lockManage` (force manage + hide the toggle + show the 尚未公開 banner + swap ＋註冊分身 → ＋驗證主要帳號); `publicUrl` is now nullable (no `ShareLink` when there's nothing public yet).
+- **`/gua/{slug}`** — honors `?view=manage` (owner-only) → `initialManage`; the toggle is still client state so it only sets the *initial* tab.
+- **`buildAccountGroups()`** — extracted the `toView` + main/active/flagged/private bucketing into `app/gua/[slug]/accounts.ts`, shared by both `/gua/{slug}` and the inline `/r/{shortRef}` render (no duplication).
+- **Removed** the orphaned §D.5 `provisionExistingAction` route action — the "promote an already-verified account to main" picker no longer has a surface; the tested lib fn `provisionExistingAccount` stays for a possible later redesign (tracked in `todo.md`).
+- **Tests** — 13 new across both routers (full suite 113). Server-component routers tested by mocking deps + the (client) `IdentityCard`, asserting `redirect`/`permanentRedirect` calls and the props handed to the card.
+
+**Key technical learnings:**
+- `[gotcha]` **Guard ordering in a Server Component is the whole behaviour** — an early `redirect()` short-circuits everything after it (it throws), so a login gate placed above a public-resource check silently makes that resource private. Resolve the resource and do the public redirect *first*, then gate the private branches.
+- `[insight]` **A slug-less owner has no `/gua/{slug}` to land on, so the "management tab" is reused inline at `/r/{shortRef}`** via `lockManage` rather than built as a second UI. Same component, two mount points; the public/manage toggle is hidden because there's no public view to switch to yet.
+- `[note]` **Testing Server Components in the node env (no jsdom/RTL):** mock the client child component so it isn't invoked — JSX still produces a React element whose `.props` you can assert on — and make `redirect`/`permanentRedirect` throw so control flow matches production (code after a redirect must not run).
+
+**Process learnings:**
+- `[note]` **The slug-less-owner management surface shipped as a pragmatic reuse, not a designed surface** — what an owner with zero/some unprovisioned accounts should see (and its relationship to onboarding + the removed §D.5 picker) is deferred to a `todo.md` item, to revisit alongside Slice 5 (Manage).
 
 ## v0.12.0 — Identity Card public page (Slice 3) (2026-06-17 00:31)
 

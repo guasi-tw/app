@@ -1,37 +1,19 @@
 import { notFound } from "next/navigation";
-import { findUserBySlug, listIdentityAccounts } from "@/lib/identity/repo";
+import { findUserBySlug } from "@/lib/identity/repo";
 import { getCurrentUser } from "@/lib/identity/session";
-import { getAdapter } from "@/lib/binding/platforms";
 import { SITE_ORIGIN } from "@/lib/binding/constants";
 import { IdentityCard } from "./IdentityCard";
-import type { AccountVariant, AccountView } from "./types";
-import type { LinkedAccount } from "@prisma/client";
-
-function fmtDate(d: Date): string {
-  return d.toISOString().slice(0, 10); // YYYY-MM-DD
-}
-
-function toView(a: LinkedAccount, variant: AccountVariant): AccountView {
-  const adapter = getAdapter(a.platform);
-  const clickable = a.condition === "active";
-  return {
-    id: a.id,
-    handle: a.handle,
-    platform: a.platform,
-    platformLabel: adapter?.label ?? a.platform,
-    verifiedAt: fmtDate(a.verifiedAt),
-    profileUrl: clickable ? adapter?.profileUrl(a.handle) ?? null : null,
-    variant,
-    flagged: a.condition !== "active",
-  };
-}
+import { buildAccountGroups } from "./accounts";
 
 export default async function IdentityCardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ view?: string }>;
 }) {
   const { slug } = await params;
+  const { view } = await searchParams;
 
   // Case-insensitive lookup via the citext slug column
   const user = await findUserBySlug(slug);
@@ -40,14 +22,7 @@ export default async function IdentityCardPage({
   const viewer = await getCurrentUser();
   const isOwner = viewer?.id === user.id;
 
-  const data = await listIdentityAccounts(user.id, { includePrivate: isOwner });
-
-  const accounts = {
-    main: data.main ? toView(data.main, "main") : null,
-    active: data.active.map((a) => toView(a, "active")),
-    flagged: data.flagged.map((a) => toView(a, "flagged")),
-    private: data.privateAccounts.map((a) => toView(a, "private")),
-  };
+  const { accounts, count } = await buildAccountGroups(user.id, isOwner);
 
   // Growth footer destination for a logged-in viewer → their own page.
   const ownerHomeUrl = viewer
@@ -61,12 +36,13 @@ export default async function IdentityCardPage({
       displayName={user.displayName ?? slug}
       bio={user.bio}
       avatarUrl={user.avatarUrl}
-      count={data.count}
+      count={count}
       isOwner={isOwner}
       publicUrl={`${SITE_ORIGIN}/gua/${slug}`}
       viewerLoggedIn={!!viewer}
       ownerHomeUrl={ownerHomeUrl}
       accounts={accounts}
+      initialManage={isOwner && view === "manage"}
     />
   );
 }
