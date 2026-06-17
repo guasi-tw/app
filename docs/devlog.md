@@ -14,6 +14,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.11.0](#v0110--about-page-about-guasi-intro--register-cta-2026-06-16-2211) | **About page (`/about`).** New public, mobile-first 關於 guasi page (Traditional Chinese), **purely additive** (one route, no edits to existing files). **guasi-first** narrative: universal hook「這真的是我」→ **guasi（我是）** → 正身 demoted to a `(tsiànn-sin)` gloss; two **範例** anchors (verification post + 公開頁 card), platform strip (Threads · Instagram · miin.cc · 更多陸續支援), Google-login CTA → `/login`. Copy extracted to a typed `content.ts` with **accuracy-constraint tests** (Google-only, **no** Email/snapshot claims, 6-digit code); thin static **Server Component + CSS module** (`globals.css` untouched). 48 tests. Built in an isolated worktree → PR (not yet merged). |
 | [v0.10.0](#v0100--add-flow-refinements-add-platform-picker--primary-only-first-binding-2026-06-16-2153) | **Add-flow refinements (UI/routing).** New **`/add` platform picker** (Threads live; IG/miin disabled `施工中` — state derived from the adapter registry). Onboarding now routes a new 正身 to `/add` (provisioned → `/gua/{slug}`); all add-account entries go through `/add`. **First (main) binding simplified to accept-as-primary or cancel** — dropped the public/private toggle + keep-as-分身 (the main account is always public), cancel hints to delete the verification post; `OrdinaryConfirm` (non-primary 分身) keeps its visibility choice. Copy: `產生驗證貼文`, `施工中`. 80 tests. |
 | [v0.9.0](#v090--slice-2-add-account--commit-on-confirm-binding-2026-06-16-2039) | **Slice 2: Add Account (註冊分身) + commit-on-confirm binding.** 4 Prisma models (`BindingRequest`/`LinkedAccount`/`ProofRecord`/`BindingEvent`) + the binding lib: scoped single-use auth code, growth-engine post template, **`PlatformAdapter` seam + Threads adapter** (tokenless crawler-UA SSR, author from `og:title` authority, spoof-defended, query-free canonical proof URL), and the **commit-on-confirm** repo (durable artifacts written in one transaction at confirm; per-owner uniqueness, NOT global; slug minted first-claim-wins). The `/add/threads` wizard (copy/compose → paste-back → resolve), the confirm step, and the `/r/{shortRef}` provisioning picker. 79 tests (incl. live-DB). |
 | [v0.8.1](#v081--avatar-sharplibvips-runtime-fix--imaging-smoke-gate-2026-06-16-1005) | **Avatar sharp/libvips production fix + imaging smoke gate.** Avatar upload 500'd on Vercel with `ERR_DLOPEN_FAILED: libvips-cpp.so` — root cause was a **file-tracing gap**: libvips ships in the *separate* `@img/sharp-libvips-linux-x64` package, which Next's tracer can't follow from sharp's runtime-resolved `require`, so the 18MB `.so` installed but never reached the function bundle. Fixed with **`outputFileTracingIncludes`** for `@img/**` (bundler-agnostic — Turbopack & Webpack both failed without it; `serverExternalPackages` alone insufficient). Also: **lazy `import("sharp")`** (bio-only saves no longer load the native module), stopped **swallowing** the avatar error, new token-gated **`/api/health/imaging`** probe + **smoke check** (observational gate; hard branch-protection needs paid GitHub). Plus the **`AUTH_REDIRECT_PROXY_URL`-on-prod** doc fix (preview-login `InvalidCheck: pkceCodeVerifier`). |
@@ -29,6 +30,27 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
 
 ---
+
+## v0.11.0 — About page (/about): guasi intro + register CTA (2026-06-16 22:11)
+
+**Review:** not yet
+
+**Design docs:**
+- About page (關於 guasi): [Spec](superpowers/specs/2026-06-16-about-page-design.md) [Plan](superpowers/plans/2026-06-16-about-page.md)
+
+**What was built:**
+- **New public `/about` page** (關於 guasi) — mobile-first, single-column, Traditional Chinese; **purely additive** (one new route under `app/about/`, no edits to existing app files).
+- **guasi-first narrative:** opens on the universal hook「帳號被封了，你要怎麼說『這真的是我』？」→ reveals **guasi（我是）** as the answer (the brand is the recall anchor) → demotes **正身** to a one-line romanization gloss `(tsiànn-sin)`, not a culture lesson. Two concrete **範例** anchors bracket the 3-step flow: a verification post (step-2 output) and a 驗明正身 公開頁 card (step-3 output); plus a supported-platforms strip (Threads · Instagram · miin.cc · 更多陸續支援) and a Google-login CTA → `/login`.
+- **Architecture:** copy lives in a typed `app/about/content.ts` (TDD'd); `page.tsx` is a thin **static Server Component** styled by a co-located **CSS module** (`globals.css` untouched). 11 new content-contract tests (48 total green); `next build` makes `/about` a static route.
+
+**Key technical learnings:**
+- `[insight]` **TDD a static marketing page by testing its content *contract*, not its render.** Extracting copy into a typed `content.ts` let the repo's node-only Vitest assert the accuracy constraints (CTA→`/login`, exact platform list, **no** Email/snapshot claims, 正身 romanization-only) — guarding copy against future drift without adding jsdom/testing-library (which the repo deliberately avoids).
+- `[gotcha]` **First-draft marketing copy drifted from the real build in three places** — it claimed stored screenshots ("封了還能查"), Email login, and an alpha auth code `ABCDEF`. Reality: `ProofRecord` is **link-only** (snapshot columns nullable, §A.1), site login is **Google-only**, and the code is **6 digits** (`lib/binding/code.ts`). Each was verified against schema/code before shipping; the content test now pins all three.
+- `[note]` **CSS Module for isolation** — using `app/about/about.module.css` instead of editing shared `globals.css` keeps the page conflict-free against parallel in-flight branches.
+- `[note]` Built in an **isolated git worktree** (`~/Source/github/guasi-tw/about`, branch off `main`) so it ran fully parallel to the slice work without ever touching that worktree.
+
+**Process learnings:**
+- `[note]` **Visual brainstorming companion** drove the key design calls (guasi-first over 正身-first; the 合院/house metaphor was explored then rejected as an extra hop). Ran brainstorm → spec → plan → subagent-driven implementation in one session (per request); two-stage review per task caught a copy/test contradiction (本尊 used narratively in the hook vs. as a definitional gloss) and three a11y gaps (CTA heading level, decorative ✔/avatar `aria-hidden`).
 
 ## v0.10.0 — Add-flow refinements: /add platform picker + primary-only first binding (2026-06-16 21:53)
 
