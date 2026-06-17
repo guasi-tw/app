@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import type { AccountGroups } from "./types";
 import { AccountRow } from "./AccountRow";
 import { ShareLink } from "./ShareLink";
@@ -36,11 +37,20 @@ export function IdentityCard({
   initialManage = false,
   lockManage = false,
 }: Props) {
+  const pathname = usePathname();
   const [mode, setMode] = useState<"public" | "manage">(
     lockManage || initialManage ? "manage" : "public",
   );
   const [tab, setTab] = useState<"accounts" | "timeline">("accounts");
   const manage = isOwner && (lockManage || mode === "manage");
+
+  // Keep the URL in sync with the active view (manage ⇒ ?view=manage, public ⇒ clean path)
+  // without a navigation — the component owns the view state client-side.
+  function selectMode(next: "public" | "manage") {
+    setMode(next);
+    const url = next === "manage" ? `${pathname}?view=manage` : pathname;
+    window.history.replaceState(null, "", url);
+  }
 
   return (
     <main className="idcard">
@@ -57,14 +67,14 @@ export function IdentityCard({
             <button
               type="button"
               className={mode === "public" ? "active" : ""}
-              onClick={() => setMode("public")}
+              onClick={() => selectMode("public")}
             >
               公開檢視
             </button>
             <button
               type="button"
               className={mode === "manage" ? "active" : ""}
-              onClick={() => setMode("manage")}
+              onClick={() => selectMode("manage")}
             >
               管理檢視
             </button>

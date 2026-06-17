@@ -31,14 +31,14 @@ stripped from the URL.
 |-----|------|------|--------|---------|
 | `/` | `app/(site)/page.tsx` | public | yes | Home / wordmark. Logged in → link to 我的正身; logged out → login CTA. |
 | `/about` | `app/(site)/about/page.tsx` | public | yes | 關於 guasi marketing page. Copy in `content.ts`, styled by `about.module.css`. |
-| `/login` | `app/(site)/login/page.tsx` | public | yes | Google OAuth sign-in → `/post-login`. |
+| `/login` | `app/(site)/login/page.tsx` | public | yes | Google OAuth sign-in → `/post-login`. **Already logged in → redirected to their own 正身** (`ownerHomePath`: `/gua/{slug}` if a slug exists, else `/r/{shortRef}`) — no login button shown to a signed-in user. |
 | `/onboarding` | `app/(site)/onboarding/page.tsx` | required | yes | Set avatar / display name / bio for the 正身. |
 | `/add` | `app/(site)/add/page.tsx` | required | yes | Platform picker (Threads active; IG / miin.cc 施工中). |
 | `/add/{platform}` | `app/(site)/add/[platform]/page.tsx` | required | yes | Per-platform 分身 binding: produce the verification post template + wizard. Unknown platform → 404. |
 | `/add/{platform}/confirm` | `app/(site)/add/[platform]/confirm/page.tsx` | required | yes | Confirm + commit the binding (incl. slug minting on the main account). |
 | `/post-login` | `app/(auth)/post-login/page.tsx` | required | n/a (redirect) | Auth dispatcher: provisioned 正身 (has slug) → `/gua/{slug}`, else → `/onboarding`. No UI. |
-| `/gua/{slug}` | `app/(site)/gua/[slug]/page.tsx` | public | yes | Public Identity Card (驗明正身). Owner sees the management tab; others see the public card. (Also has its own `id-header`/`id-foot` chrome.) |
-| `/r/{shortRef}` | `app/(site)/r/[shortRef]/page.tsx` | public | yes | Short link → redirects to `/gua/{slug}` (owner → manage tab; slug-less owner renders the card inline). |
+| `/gua/{slug}` | `app/(site)/gua/[slug]/page.tsx` | public | yes | Public Identity Card (驗明正身). Everyone lands on the public card; the owner can toggle to 管理檢視 (the toggle keeps the URL in sync — `?view=manage` ⇄ clean path). `?view=manage` is honored on load for the owner only; a non-owner/logged-out visitor is redirected to the clean `/gua/{slug}`. (Also has its own `id-header`/`id-foot` chrome.) |
+| `/r/{shortRef}` | `app/(site)/r/[shortRef]/page.tsx` | public | yes | Short link → redirects to `/gua/{slug}` for everyone (owner included); slug-less owner renders the card inline. |
 | `*` (404) | `app/not-found.tsx` | public | yes (explicit) | Global not-found. Renders chrome explicitly (root layout, not the `(site)` group). |
 
 ## API routes

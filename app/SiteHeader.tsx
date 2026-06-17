@@ -1,4 +1,5 @@
 import { getCurrentUser } from "@/lib/identity/session";
+import { ownerHomePath } from "@/lib/identity/urls";
 
 // Global top-bar for the app/funnel pages (NOT the public Identity Card, which has
 // its own profile chrome). Conventional layout: top-left = icon + brand → home;
@@ -14,7 +15,7 @@ export async function SiteHeader() {
       </a>
       <nav className="site-actions">
         {user ? (
-          <a className="site-cta-ghost" href={`/r/${user.shortRef}`}>
+          <a className="site-cta-ghost" href={ownerHomePath(user)}>
             我的正身
           </a>
         ) : (
