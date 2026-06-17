@@ -7,7 +7,9 @@ export default function LoginPage() {
       <form
         action={async () => {
           "use server";
-          await signIn("google", { redirectTo: "/onboarding" });
+          // Land on the post-login dispatcher, which routes returning (provisioned)
+          // 正身 to their /gua page and new users to onboarding.
+          await signIn("google", { redirectTo: "/post-login" });
         }}
       >
         <button type="submit">使用 Google 登入</button>
