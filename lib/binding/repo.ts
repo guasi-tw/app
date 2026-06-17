@@ -51,9 +51,17 @@ export function markResolved(
   });
 }
 
-/** A real cancel (§D.3 wrong-account / §D.4 取消) — commit nothing. */
+/**
+ * A real cancel (§D.3 wrong-account / §D.4 取消) — commit nothing. Guarded to only cancel a request
+ * still in flight (pending/resolved): a concurrent commit may have flipped it to `verified`, and we
+ * must never overwrite a committed binding's request to `cancelled` (keeps the ledger trail honest).
+ * `updateMany` makes the lost race a no-op rather than an error.
+ */
 export function cancelRequest(id: string) {
-  return prisma.bindingRequest.update({ where: { id }, data: { status: "cancelled" } });
+  return prisma.bindingRequest.updateMany({
+    where: { id, status: { in: ["pending", "resolved"] } },
+    data: { status: "cancelled" },
+  });
 }
 
 export function isExpired(req: { expiresAt: Date; status: string }): boolean {
