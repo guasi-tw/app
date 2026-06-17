@@ -325,7 +325,12 @@ a.acct-pill:hover { border-color: var(--accent); }
 .acct-pill.priv { border-style: dashed; }
 .acct-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
 .acct-id { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
-.acct-handle { font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+.acct-name-line { display: flex; align-items: center; gap: 0.4rem; min-width: 0; }
+.acct-handle { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acct-main-tag {
+  flex-shrink: 0; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em;
+  color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 0.05rem 0.45rem;
+}
 .acct-meta { font-size: 0.78rem; color: var(--muted); }
 .acct-out { color: var(--accent); font-size: 1rem; flex-shrink: 0; }
 .acct-warn { font-size: 0.78rem; color: var(--accent); }

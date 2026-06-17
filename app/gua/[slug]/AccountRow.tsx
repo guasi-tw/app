@@ -37,7 +37,12 @@ export function AccountRow({
     <>
       <div className="acct-row">
         <div className="acct-id">
-          <span className="acct-handle">@{account.handle}</span>
+          <span className="acct-name-line">
+            <span className="acct-handle">@{account.handle}</span>
+            {account.variant === "main" && (
+              <span className="acct-main-tag">★ 主要</span>
+            )}
+          </span>
           <span className="acct-meta">驗證於 {account.verifiedAt}</span>
         </div>
         {account.profileUrl && !manage && <span className="acct-out" aria-hidden>↗</span>}
