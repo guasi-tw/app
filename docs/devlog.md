@@ -14,6 +14,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.12.0](#v0120--identity-card-public-page-slice-3-2026-06-17-0031) | **Slice 3: Identity Card public page (`/gua/{slug}`).** Replaced the stub with the real server-rendered Linktree: header (avatar/name/bio) + `N 個分身` badge + 帳號/時間軸 tabs + account rows (featured ★主要 → active oldest-first → flagged last), each active row a ↗ click-out to the live platform profile. **Owner-only 公開 ⇄ 管理 toggle** (segmented control, not a 3rd tab) reveals private rows + stubbed manage chips + ＋註冊分身; **functional 登出 / 切換帳號**. New read model **`listIdentityAccounts`** (visibility filter, main/active/flagged split, oldest-first, badge count excludes private+flagged), adapter **`profileUrl(handle)`**, Google **`prompt: "select_account"`** (fixes 切換帳號), **複製連結** share button, 時間軸 placeholder (Slice 4). Server formats rows + resolves URLs so the client card is a dumb view. 97 tests. |
 | [v0.11.0](#v0110--about-page-about-guasi-intro--register-cta-2026-06-16-2211) | **About page (`/about`).** New public, mobile-first 關於 guasi page (Traditional Chinese), **purely additive** (one route, no edits to existing files). **guasi-first** narrative: universal hook「這真的是我」→ **guasi（我是）** → 正身 demoted to a `(tsiànn-sin)` gloss; two **範例** anchors (verification post + 公開頁 card), platform strip (Threads · Instagram · miin.cc · 更多陸續支援), Google-login CTA → `/login`. Copy extracted to a typed `content.ts` with **accuracy-constraint tests** (Google-only, **no** Email/snapshot claims, 6-digit code); thin static **Server Component + CSS module** (`globals.css` untouched). 48 tests. Built in an isolated worktree → PR (not yet merged). |
 | [v0.10.0](#v0100--add-flow-refinements-add-platform-picker--primary-only-first-binding-2026-06-16-2153) | **Add-flow refinements (UI/routing).** New **`/add` platform picker** (Threads live; IG/miin disabled `施工中` — state derived from the adapter registry). Onboarding now routes a new 正身 to `/add` (provisioned → `/gua/{slug}`); all add-account entries go through `/add`. **First (main) binding simplified to accept-as-primary or cancel** — dropped the public/private toggle + keep-as-分身 (the main account is always public), cancel hints to delete the verification post; `OrdinaryConfirm` (non-primary 分身) keeps its visibility choice. Copy: `產生驗證貼文`, `施工中`. 80 tests. |
 | [v0.9.0](#v090--slice-2-add-account--commit-on-confirm-binding-2026-06-16-2039) | **Slice 2: Add Account (註冊分身) + commit-on-confirm binding.** 4 Prisma models (`BindingRequest`/`LinkedAccount`/`ProofRecord`/`BindingEvent`) + the binding lib: scoped single-use auth code, growth-engine post template, **`PlatformAdapter` seam + Threads adapter** (tokenless crawler-UA SSR, author from `og:title` authority, spoof-defended, query-free canonical proof URL), and the **commit-on-confirm** repo (durable artifacts written in one transaction at confirm; per-owner uniqueness, NOT global; slug minted first-claim-wins). The `/add/threads` wizard (copy/compose → paste-back → resolve), the confirm step, and the `/r/{shortRef}` provisioning picker. 79 tests (incl. live-DB). |
@@ -30,6 +31,25 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
 
 ---
+
+## v0.12.0 — Identity Card public page (Slice 3) (2026-06-17 00:31)
+
+**Review:** not yet
+
+**Design docs:**
+- Identity Card public page: [Spec](superpowers/specs/2026-06-16-identity-card-public-page-design.md) [Plan](superpowers/plans/2026-06-17-identity-card-public-page.md)
+
+**What was built:**
+- **Real `/gua/{slug}` Identity Card** — replaces the Slice 1 stub with a server-rendered, mobile-first Linktree: header (avatar/name/bio) + `N 個分身` badge + 帳號/時間軸 tab bar + an account list rendered as pills.
+- **Account list ordering** — featured **★主要** main on top, then **active** 分身 oldest-verified-first (most credible, §6.7), then **flagged** (banned/hacked) last as dashed warning rows (`⚠ 已回報遭盜用 · 此帳號已非本人`, no click-out). Each active row is a ↗ click-out to its **live platform profile** (`https://www.threads.com/@{handle}`).
+- **Owner-only 公開 ⇄ 管理 toggle** — a segmented control (NOT a third tab); 公開檢視 is the default. 管理檢視 additionally shows **private** rows (dashed) + **stubbed** manage chips (設為公開/設為主要/回報·恢復, all disabled this slice) + ＋註冊分身 (→ `/add`) + a disabled 編輯個人資料, and **functional 登出 / 切換帳號**.
+- **`listIdentityAccounts` read model** (`lib/identity/repo.ts`) — visibility filter (owner-only private inclusion), main/active/flagged bucketing, oldest-first ordering, and a badge `count` that excludes private + flagged.
+- **Adapter `profileUrl(handle)`** on `PlatformAdapter` + Threads impl; **Google `prompt: "select_account"`** so 切換帳號 reliably shows the account chooser; **複製連結** share button (clipboard + manual-select fallback); 時間軸 tab → `時間軸施工中（Slice 4）` placeholder.
+
+**Key technical learnings:**
+- `[insight]` **The server formats every row (date string + adapter-resolved profile URL) and hands a plain `AccountView[]` to the client card, which stays a dumb view.** Keeps platform/URL logic + Prisma types server-side; the `"use client"` `IdentityCard` only owns toggle/tab UI state and ships no adapter code to the browser.
+- `[note]` **Flagged-main demotion rule** lives entirely in `listIdentityAccounts`: a `isMain` account that is banned/hacked is dropped from `main` (→ `null`), sinks into `flagged`, and is excluded from the badge count — the render layer never special-cases it.
+- `[gotcha]` **`prompt: "select_account"` is required for 切換帳號 to work** — without it Google can silently re-pick the last account, so sign-out→sign-in lands back in the same 正身. Also: **next-auth v5 stores the provider's `authorization` config under `providers[0].options`, not at the top level** — the provider-config test must assert `options.authorization.params.prompt`, not `authorization.params.prompt`.
 
 ## v0.11.0 — About page (/about): guasi intro + register CTA (2026-06-16 22:11)
 
