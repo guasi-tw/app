@@ -112,11 +112,13 @@ export function IdentityCard({
 
       <footer className="id-foot">
         <ShareLink url={publicUrl} />
-        {viewerLoggedIn ? (
-          <a href={ownerHomeUrl ?? "/"}>前往你的正身 →</a>
-        ) : (
-          <a href="/login">建立你的正身 →</a>
-        )}
+        {/* The owner is already on their own 正身 — no self-referential link. */}
+        {!isOwner &&
+          (viewerLoggedIn ? (
+            <a href={ownerHomeUrl ?? "/"}>前往你的正身 →</a>
+          ) : (
+            <a href="/login">建立你的正身 →</a>
+          ))}
       </footer>
     </main>
   );
