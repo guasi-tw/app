@@ -98,14 +98,14 @@ Working list of next steps. For current product/identity decisions see [`CLAUDE.
       alongside Slice 5 (Manage) + the 編輯個人資料 surface decision.
   - [ ] **Later platforms** — IG + miin adapters once the Threads slice proves the `PlatformAdapter` seam.
 
-- [x] **About page (`/about`)** — ✅ done (v0.11.0), **PR open, not yet merged**: public, mobile-first
+- [x] **About page (`/about`)** — ✅ done (v0.11.0), **merged + live**: public, mobile-first
   關於 guasi intro page (Traditional Chinese) ending in a Google-login register CTA. guasi-first narrative
   (正身 demoted to a `(tsiànn-sin)` gloss); copy in a typed `content.ts` with accuracy-constraint tests;
-  thin static Server Component + CSS module — fully additive, built in an isolated worktree.
-  ([spec](docs/superpowers/specs/2026-06-16-about-page-design.md) · [plan](docs/superpowers/plans/2026-06-16-about-page.md))
+  thin Server Component + CSS module — fully additive.
   - [x] **Link to `/about` from the home page** — ✅ done (v0.13.0): a global `<SiteHeader>`/`<SiteFooter>`
     (in the `(site)` route-group layout) links to `/about` from every page (`關於，我是什麼`).
-  - [ ] **Swap the static 範例 公開頁 card for a real screenshot/link** once Slice 3 (Identity Card) ships.
+  - [ ] **Swap the static 範例 公開頁 card for a real screenshot/link** — Slice 3 (Identity Card) has
+    shipped (v0.12.0), so this is now actionable.
 
 ## Deferred to Phase 2
 
