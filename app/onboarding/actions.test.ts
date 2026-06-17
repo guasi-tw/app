@@ -17,7 +17,7 @@ vi.mock("sharp", () => {
 
 const updateUserProfile = vi.fn();
 const redirect = vi.fn();
-let currentUser: { id: string; shortRef: string } | null = null;
+let currentUser: { id: string; shortRef: string; slug?: string | null } | null = null;
 
 vi.mock("@/lib/identity/session", () => ({
   getCurrentUser: () => Promise.resolve(currentUser),
@@ -57,7 +57,7 @@ describe("saveProfileAction — sharp unavailable (linux-x64 deploy)", () => {
       displayName: "阿明",
       bio: "嗨，我是阿明",
     });
-    expect(redirect).toHaveBeenCalledWith("/r/abc123");
+    expect(redirect).toHaveBeenCalledWith("/add");
   });
 
   it("treats an empty avatar field as no avatar (no sharp load)", async () => {
@@ -75,7 +75,7 @@ describe("saveProfileAction — sharp unavailable (linux-x64 deploy)", () => {
       displayName: "阿明",
       bio: null,
     });
-    expect(redirect).toHaveBeenCalledWith("/r/abc123");
+    expect(redirect).toHaveBeenCalledWith("/add");
   });
 
   it("fails gracefully (no crash) when an avatar is uploaded but sharp can't load", async () => {
@@ -93,5 +93,13 @@ describe("saveProfileAction — sharp unavailable (linux-x64 deploy)", () => {
     expect(result?.errors?.avatar).toBe("頭像處理失敗，請再試一次");
     expect(updateUserProfile).not.toHaveBeenCalled();
     expect(redirect).not.toHaveBeenCalled();
+  });
+
+  it("redirects a provisioned user (with slug) back to their /gua page", async () => {
+    currentUser = { id: "user_123", shortRef: "abc123", slug: "alice" };
+    const result = await saveProfileAction({}, formOf({ displayName: "阿明", bio: "" }));
+
+    expect(result).toBeUndefined();
+    expect(redirect).toHaveBeenCalledWith("/gua/alice");
   });
 });
