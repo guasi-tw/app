@@ -239,6 +239,10 @@ the current feature branch — this counts as the user authorizing the commit/pu
 the PR and **squash-merge on GitHub themselves**. Don't run `gh pr merge` or otherwise merge unless
 explicitly told to.
 
+**Keep the devlog current as the PR evolves.** The devlog entry is written when the PR opens, but a
+PR under review keeps gaining commits — if you add follow-up commits after opening it, **refresh the
+`vX.Y.Z` entry (and TL;DR row) to match the final state** so it doesn't silently fall behind before merge.
+
 **Tagging is a separate, explicit step.** Only when the user says **"tag it"** (or similar), *after*
 they've merged:
 1. `git checkout main && git pull` **first** — a squash-merge created a new commit on `main`, so local

@@ -63,8 +63,9 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
     (per-正身, not global), site login (Google only; email deferred).
   - New CLAUDE.md sections: **Who's working on this**, **Devlog format**, **"Raise a PR"/"ship it"**
     (the agent preps + opens the PR and **stops** — the user reviews the preview and squash-merges
-    manually; **tagging is a separate explicit step** that pulls `main` first), and **GitHub upload
-    safety** (3 adopted from `sans_cube`'s conventions).
+    manually; **tagging is a separate explicit step** that pulls `main` first; refresh the devlog if
+    the PR gains commits after opening), and **GitHub upload safety** (3 adopted from `sans_cube`'s
+    conventions).
 
 **Key technical learnings:**
 - `[insight]` **Route groups are the idiomatic "shared chrome for a subset" mechanism.** A page **cannot** opt out of a parent layout's chrome via a flag/prop — the child can't suppress parent UI; faking it (pathname-sniffing, context, CSS-hide) is an anti-pattern. The healthy control is *file location*; for multiple chrome combos, a `<SiteChrome header footer>` component configured **per route-group layout** (never per page).
