@@ -168,6 +168,10 @@ Executed the [implementation plan](../plans/2026-06-17-identity-card-public-page
 
 **Plan deviation (1):** the plan's `providers.test.ts` asserted `providers[0].authorization.params.prompt`, but next-auth v5 normalizes the provider config under `providers[0].options` — the test now reads `options.authorization.params.prompt`. Implementation code unchanged from the plan. **`編輯個人資料`** rendered as a disabled stub (edit route not built yet) — as flagged in the plan's self-review.
 
+**Deferral (2):** the spec's `AccountRow` description mentions a **platform icon** on each pill; the plan's Task 6 dropped it and the build renders handle + 驗證於 {date} only. Acceptable for the Threads-only MVP — **deferred** until a second platform ships (when an icon actually disambiguates rows). Flagged by the fresh-context code review.
+
+**Code review:** ✓ ship-ready (fresh-context `superpowers:code-reviewer`, 2026-06-17). Verified the visibility/owner-private gating (non-owner never sees private; badge excludes private+flagged; flagged-main demoted), the clean client/server boundary (no Prisma/adapter leakage; `AccountView` plain+serialisable), click-out safety (`rel="noopener noreferrer"`, flagged rows inert `<div>`s), and all six spec decisions. No blocking issues; only the platform-icon deferral above.
+
 **Manual verify on preview:** _pending_ — to be walked through after the PR opens a preview deploy.
 
 _(append per working session)_
