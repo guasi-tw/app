@@ -80,6 +80,10 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
       is scoped to *bound 分身*, not profile fields); (b) add an `onboardedAt`-style flag so first login
       routes to the wizard while returning users route to their page + this edit surface (Slice 1
       deliberately omitted the flag). The `updateUserProfile` write path is already reusable.
+      **Partly addressed (v0.12.0):** a **`/post-login` dispatcher** now routes *provisioned* 正身
+      (have a `slug`) straight to `/gua/{slug}` instead of onboarding. Still open: an
+      onboarded-but-no-main-yet user (no slug) still lands on onboarding — the `onboardedAt` flag is
+      what cleanly separates brand-new from returning-unprovisioned.
   - [ ] **Later platforms** — IG + miin adapters once the Threads slice proves the `PlatformAdapter` seam.
 
 - [x] **About page (`/about`)** — ✅ done (v0.11.0), **PR open, not yet merged**: public, mobile-first

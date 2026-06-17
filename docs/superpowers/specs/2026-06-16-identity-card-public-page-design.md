@@ -126,7 +126,7 @@ Shown to everyone, but the destination + copy depend on the viewer:
 - [x] Google provider `prompt: "select_account"` in `lib/auth/providers.ts` + a test asserting the param.
 - [x] 時間軸 tab → `時間軸施工中（Slice 4）` placeholder.
 - [x] `globals.css` Linktree styles.
-- [ ] Manual verify on preview (see below).
+- [x] Manual verify on preview — ✅ passed (2026-06-17, on the PR #16 preview).
 - [x] Devlog v0.12.0 entry + todo.md Slice 3 checked (tag v0.12.0 after squash-merge to `main`).
 
 ---
@@ -172,6 +172,12 @@ Executed the [implementation plan](../plans/2026-06-17-identity-card-public-page
 
 **Code review:** ✓ ship-ready (fresh-context `superpowers:code-reviewer`, 2026-06-17). Verified the visibility/owner-private gating (non-owner never sees private; badge excludes private+flagged; flagged-main demoted), the clean client/server boundary (no Prisma/adapter leakage; `AccountView` plain+serialisable), click-out safety (`rel="noopener noreferrer"`, flagged rows inert `<div>`s), and all six spec decisions. No blocking issues; only the platform-icon deferral above.
 
-**Manual verify on preview:** _pending_ — to be walked through after the PR opens a preview deploy.
+**Manual verify on preview:** ✅ **passed** (2026-06-17, PR #16 preview) — all six checklist scenarios confirmed by the owner. Three issues surfaced during the walkthrough and were fixed on the same branch:
+
+1. **Owner saw a self-referential growth link** (`前往你的正身 →` pointing at the page they were already on). Fixed: footer link hidden when `isOwner` (`IdentityCard.tsx`).
+2. **The main binding wasn't obviously "main,"** especially for a 正身 with a single binding (gold border alone didn't read as 主要). Fixed: explicit **`★ 主要`** pill next to the handle on the main row (`AccountRow.tsx` + `globals.css`).
+3. **Login forced every user through onboarding** — `/login` hard-coded `redirectTo: "/onboarding"`. Fixed: new **`/post-login` dispatcher** (`app/(auth)/post-login/`) branches on `user.slug` — provisioned 正身 → `/gua/{slug}`, new/unprovisioned → `/onboarding`. (Out of this slice's scope but in the same login flow being verified; +3 tests. The remaining onboarded-but-no-main-yet case still routes to onboarding — proper fix is the `onboardedAt` flag tracked in todo.md.)
+
+Re-verified after the fixes: `tsc` clean, `next build` clean, full suite **100 passed**.
 
 _(append per working session)_
