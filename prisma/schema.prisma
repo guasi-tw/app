@@ -51,8 +51,11 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
+  accounts        Account[]
+  sessions        Session[]
+  bindingRequests BindingRequest[]
+  linkedAccounts  LinkedAccount[]
+  bindingEvents   BindingEvent[]
 }
 
 model Account {
@@ -88,4 +91,124 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// --- 正身 binding model — Slice 2 (§H of mvp-wireframes-design) ---
+// commit-on-confirm: BindingRequest holds pending state; LinkedAccount + ProofRecord
+// + BindingEvent(bound) + (for a provisioning bind) User.slug are written only at the
+// terminal confirm. No snapshots (§A.1), no global uniqueness lock (§A.6), no unbind (§A.5).
+
+enum Platform {
+  threads
+  instagram
+  miin
+}
+
+enum BindingRequestStatus {
+  pending   // code issued, awaiting post + URL paste-back
+  resolved  // code matched + author resolved; awaiting user confirm
+  verified  // committed → LinkedAccount + ProofRecord + bound event
+  cancelled // user hit a real cancel — nothing to reverse
+  expired   // TTL passed with no confirm/cancel
+}
+
+enum LinkedAccountStatus {
+  verified
+  unbound // reserved for a future/admin path (§A.5); no MVP UI writes it
+}
+
+enum AccountCondition {
+  active
+  banned
+  hacked
+}
+
+enum Visibility {
+  public
+  private
+}
+
+enum BindingEventType {
+  bound
+  unbound
+  reported_banned
+  reported_hacked
+  re_verified
+}
+
+model BindingRequest {
+  id                  String               @id @default(cuid())
+  userId              String
+  platform            Platform
+  code                String               // 6-digit, scoped to THIS request (§6.2)
+  status              BindingRequestStatus @default(pending)
+
+  // resolved-author fields — set when status flips to `resolved` (§H.2)
+  resolvedAccountId   String?
+  resolvedHandle      String?
+  resolvedDisplayName String?
+  proofPostUrl        String?
+
+  expiresAt           DateTime
+  consumedAt          DateTime?            // single-use — set on commit
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, platform, status])
+}
+
+model LinkedAccount {
+  id          String              @id @default(cuid())
+  userId      String
+  platform    Platform
+  accountId   String              // platform's authoritative id (lowercased handle for Threads)
+  handle      String
+  displayName String?
+  status      LinkedAccountStatus @default(verified)
+  condition   AccountCondition    @default(active)
+  visibility  Visibility          @default(private)
+  isMain      Boolean             @default(false)
+  createdAt   DateTime            @default(now())
+  verifiedAt  DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt // for the FUTURE search feature (§C/§H.2), not the timeline
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  proofRecords ProofRecord[]
+
+  @@unique([userId, platform, accountId]) // per-正身 uniqueness (§A.6) — NOT global
+  @@index([platform, accountId])          // search-by-account (§C)
+}
+
+model ProofRecord {
+  id                String   @id @default(cuid())
+  linkedAccountId   String
+  proofPostUrl      String   // the "查看貼文 ↗" target (§E.2) — live URL, no snapshot (§A.1)
+  authCode          String
+  authorHandle      String
+  authorDisplayName String?
+  // snapshot columns — nullable/unused in MVP (§A.1); Phase 2 fills them (additive)
+  snapshotContent   String?  @db.Text
+  snapshotImage     String?
+  archiveUrl        String?
+  capturedAt        DateTime @default(now())
+  verifiedAt        DateTime @default(now())
+
+  linkedAccount LinkedAccount @relation(fields: [linkedAccountId], references: [id], onDelete: Cascade)
+}
+
+model BindingEvent {
+  id            String           @id @default(cuid())
+  userId        String
+  platform      Platform
+  accountId     String
+  eventType     BindingEventType
+  reason        String?
+  proofRecordId String?          // set for `bound` / `re_verified`
+  createdAt     DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt]) // timeline read path (Slice 4), newest-first
 }
