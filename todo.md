@@ -84,6 +84,16 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
       (have a `slug`) straight to `/gua/{slug}` instead of onboarding. Still open: an
       onboarded-but-no-main-yet user (no slug) still lands on onboarding — the `onboardedAt` flag is
       what cleanly separates brand-new from returning-unprovisioned.
+    - [ ] **Rethink the "no slug, owner" state on `/r/{shortRef}`** (needs deeper design). Current
+      behaviour (shipped during the redirect rework): an owner who has **no slug yet** lands on the
+      `IdentityCard` management tab rendered **inline at `/r/{shortRef}`**, locked to 管理檢視 (no public
+      toggle, 🔒 尚未公開 banner), with the add button forcing the main binding via `/add`. This was a
+      pragmatic reuse of the public card, but the slug-less management surface deserves its own thinking:
+      what exactly an owner with zero/some verified-but-unprovisioned accounts should see and do, how it
+      relates to onboarding (items above) and the removed §D.5 "promote an existing verified account →
+      main" picker (the tested `provisionExistingAccount` lib fn still exists, no UI), whether a
+      dedicated route/layout beats reusing `IdentityCard`, and the empty (zero-account) case. Revisit
+      alongside Slice 5 (Manage) + the 編輯個人資料 surface decision.
   - [ ] **Later platforms** — IG + miin adapters once the Threads slice proves the `PlatformAdapter` seam.
 
 - [x] **About page (`/about`)** — ✅ done (v0.11.0), **PR open, not yet merged**: public, mobile-first

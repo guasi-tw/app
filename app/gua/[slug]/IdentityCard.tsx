@@ -12,10 +12,15 @@ type Props = {
   avatarUrl: string | null;
   count: number;
   isOwner: boolean;
-  publicUrl: string;
+  /** Public identity-card URL, or null when not yet public (slug-less owner). */
+  publicUrl: string | null;
   viewerLoggedIn: boolean;
   ownerHomeUrl: string | null;
   accounts: AccountGroups;
+  /** Start in 管理檢視 instead of 公開檢視 (owner only). */
+  initialManage?: boolean;
+  /** Lock to 管理檢視 and hide the public/manage toggle (slug-less owner — no public page exists). */
+  lockManage?: boolean;
 };
 
 export function IdentityCard({
@@ -28,10 +33,14 @@ export function IdentityCard({
   viewerLoggedIn,
   ownerHomeUrl,
   accounts,
+  initialManage = false,
+  lockManage = false,
 }: Props) {
-  const [mode, setMode] = useState<"public" | "manage">("public");
+  const [mode, setMode] = useState<"public" | "manage">(
+    lockManage || initialManage ? "manage" : "public",
+  );
   const [tab, setTab] = useState<"accounts" | "timeline">("accounts");
-  const manage = isOwner && mode === "manage";
+  const manage = isOwner && (lockManage || mode === "manage");
 
   return (
     <main className="idcard">
@@ -40,7 +49,10 @@ export function IdentityCard({
         <h1 className="id-name">{displayName}</h1>
         {bio && <p className="id-bio">{bio}</p>}
         <span className="id-badge">{count} 個分身</span>
-        {isOwner && (
+        {lockManage && (
+          <div className="banner">🔒 你的正身頁尚未公開（只有你看得到）</div>
+        )}
+        {isOwner && !lockManage && (
           <div className="id-toggle">
             <button
               type="button"
@@ -97,7 +109,9 @@ export function IdentityCard({
 
           {manage && (
             <div className="id-manage-links">
-              <a className="btn-secondary" href="/add">＋ 註冊分身</a>
+              <a className="btn-secondary" href="/add">
+                {lockManage ? "＋ 驗證主要帳號" : "＋ 註冊分身"}
+              </a>
               <button type="button" className="btn-secondary" disabled>編輯個人資料</button>
               <form action={signOutAction}>
                 <button type="submit" className="btn-secondary" style={{ width: "100%" }}>登出</button>
@@ -111,7 +125,7 @@ export function IdentityCard({
       )}
 
       <footer className="id-foot">
-        <ShareLink url={publicUrl} />
+        {publicUrl && <ShareLink url={publicUrl} />}
         {/* The owner is already on their own 正身 — no self-referential link. */}
         {!isOwner &&
           (viewerLoggedIn ? (
