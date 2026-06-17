@@ -437,6 +437,19 @@ a.acct-pill:hover { border-color: var(--accent); }
   font: inherit; cursor: pointer;
 }
 .chip:hover { border-color: var(--accent); }
+.chip.is-static { cursor: default; opacity: 0.7; }
+.chip.is-static:hover { border-color: #34343f; }
+a.chip.recover { text-decoration: none; }
+
+.confirm-panel {
+  width: 100%; margin-top: 0.4rem; padding: 0.65rem 0.8rem;
+  border-radius: 0.55rem; border: 1px solid #34343f; background: #15151c;
+}
+.confirm-panel.warn { border-color: #5a4a12; background: #1a160b; }
+.confirm-panel.danger { border-color: #5a1f1f; background: #1a0d0d; }
+.confirm-msg { margin: 0 0 0.55rem; font-size: 0.8rem; line-height: 1.55; color: var(--fg); }
+.confirm-row { display: flex; gap: 0.5rem; align-items: center; }
+.btn-primary.sm, .btn-secondary.sm { padding: 0.32rem 0.8rem; font-size: 0.78rem; }
 
 .id-manage-links { display: flex; flex-direction: column; gap: 0.6rem; padding-top: 0.5rem; }
 .id-foot { display: flex; flex-direction: column; gap: 0.75rem; align-items: center; padding-top: 1rem; text-align: center; }
