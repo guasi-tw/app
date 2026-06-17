@@ -11,9 +11,10 @@ type Props = {
   template: string;
   composeIntentUrl: string | null;
   igNote?: boolean;
+  recover?: string | null;
 };
 
-export function AddAccountWizard({ platform, label, rid, template, composeIntentUrl, igNote }: Props) {
+export function AddAccountWizard({ platform, label, rid, template, composeIntentUrl, igNote, recover }: Props) {
   const [state, action, pending] = useActionState<SubmitState, FormData>(submitProofUrlAction, {});
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
@@ -70,6 +71,7 @@ export function AddAccountWizard({ platform, label, rid, template, composeIntent
         <label className="label" htmlFor="url">貼文發佈後，把貼文網址貼回這裡</label>
         <input type="hidden" name="platform" value={platform} />
         <input type="hidden" name="rid" value={rid} />
+        {recover ? <input type="hidden" name="recover" value={recover} /> : null}
         <input id="url" name="url" type="url" required placeholder={`https://www.threads.net/@你的帳號/post/…`} className="input" />
         {state.error ? <p className="error">{state.error}</p> : null}
         <button type="submit" className="btn-primary" disabled={pending}>

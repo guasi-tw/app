@@ -12,10 +12,10 @@ export default async function AddAccountPage({
   searchParams,
 }: {
   params: Promise<{ platform: string }>;
-  searchParams: Promise<{ rid?: string }>;
+  searchParams: Promise<{ rid?: string; recover?: string }>;
 }) {
   const { platform } = await params;
-  const { rid } = await searchParams;
+  const { rid, recover } = await searchParams;
 
   // Unknown / not-yet-built platform (IG/miin in Slice 2) → generic 404 (the registry has no adapter).
   const adapter = getAdapter(platform);
@@ -35,6 +35,7 @@ export default async function AddAccountPage({
         <p className="lede">產生一則含驗證碼的貼文範本，發佈後貼回網址即可完成綁定。</p>
         <form action={createRequestAction}>
           <input type="hidden" name="platform" value={platform} />
+          {recover ? <input type="hidden" name="recover" value={recover} /> : null}
           <button type="submit" className="btn-primary">產生驗證貼文</button>
         </form>
       </main>
@@ -58,6 +59,7 @@ export default async function AddAccountPage({
         template={template}
         composeIntentUrl={adapter.composeIntentUrl ? adapter.composeIntentUrl(template) : null}
         igNote={platform === "instagram"}
+        recover={recover ?? null}
       />
     </main>
   );
