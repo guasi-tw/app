@@ -22,8 +22,12 @@ describe("aboutContent — accuracy constraints", () => {
   });
 
   it("makes no Email / magic-link login claim (Google-only today)", () => {
-    expect(blob).not.toMatch(/email/i);
-    expect(blob).not.toContain("magic");
+    // The support contact (support@guasi.tw) is a help address, not a login
+    // method — exclude it so it doesn't trip the email-login guard.
+    const { contact: _contact, ...loginRelevant } = aboutContent;
+    const loginBlob = JSON.stringify(loginRelevant);
+    expect(loginBlob).not.toMatch(/email/i);
+    expect(loginBlob).not.toContain("magic");
   });
 
   it("makes no snapshot / screenshot durability claim (link-only today)", () => {

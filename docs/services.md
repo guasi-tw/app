@@ -27,9 +27,9 @@ committed to. This is the *inventory*; **dollar costs** live in
 
 | Tech | Role |
 |---|---|
-| **Next.js** (App Router) + **React** + **TypeScript** | Full-stack web app (UI + API) — *scaffolded* |
+| **Next.js** (App Router) + **React** + **TypeScript** | Full-stack web app (UI + API) |
 | **Prisma** | ORM + migrations against Neon |
-| **Auth.js (NextAuth v5)** | Passwordless auth — Google OAuth + email magic-link / OTP |
+| **Auth.js (NextAuth v5)** | Passwordless auth — Google OAuth (email magic-link/OTP deferred) |
 
 ## Domain & handles (assets, not services)
 

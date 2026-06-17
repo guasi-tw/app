@@ -1,6 +1,6 @@
 # Deployment, CI/CD & Repo Conventions
 
-**Status:** decisions / planning (2026-06-15). **GitHub org [`guasi-tw`](https://github.com/guasi-tw) created**, repo **`guasi-tw/app`** pushed, hello-world **scaffolded + deployed to Vercel with [`guasi.tw`](https://guasi.tw) live** (CI/CD + SSL); Neon still pending — see the §5 scaffold checklist for current state. Stack is locked in the parent spec §12 (Next.js + TypeScript on Vercel · Neon Postgres via Prisma · Auth.js · Vercel Blob).
+**Status:** infra shipped, in active feature development. The scaffold, Vercel CI/CD with [`guasi.tw`](https://guasi.tw) live (SSL), Neon + Prisma migrations, and Google login are all in place; current state lives in [`devlog.md`](devlog.md) (TL;DR table) and [`../todo.md`](../todo.md). This doc is the north-star infra plan; the stack is locked (Next.js + TypeScript on Vercel · Neon Postgres via Prisma · Auth.js · Vercel Blob).
 
 > **Legend:** **[DECIDED]** · **[REC]** recommendation, final call is the operator's · **[OPEN]** TBD.
 

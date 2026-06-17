@@ -39,12 +39,12 @@ const buildAccountGroups = vi.fn((..._args: unknown[]) =>
     count: 0,
   }),
 );
-vi.mock("@/app/gua/[slug]/accounts", () => ({
+vi.mock("@/app/(site)/gua/[slug]/accounts", () => ({
   buildAccountGroups: (...args: unknown[]) => buildAccountGroups(...args),
 }));
 
 // Mock the (client) card so the test stays in node env and we can inspect props.
-vi.mock("@/app/gua/[slug]/IdentityCard", () => ({
+vi.mock("@/app/(site)/gua/[slug]/IdentityCard", () => ({
   IdentityCard: (props: Record<string, unknown>) => props,
 }));
 

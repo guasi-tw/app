@@ -1,7 +1,7 @@
 import Google from "next-auth/providers/google";
 
 // MVP: Google is the only login method. Email (magic-link/OTP) is a deferred,
-// additive provider — see 2026-06-15-email-login-future-feature.md.
+// additive provider — see docs/email-login-design.md.
 //
 // `prompt: "select_account"` forces Google's account chooser on every login so the
 // 切換帳號 flow works — without it Google can silently re-pick the last account.

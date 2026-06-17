@@ -1,8 +1,8 @@
 import { permanentRedirect, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/identity/session";
 import { findUserByShortRef } from "@/lib/identity/repo";
-import { IdentityCard } from "@/app/gua/[slug]/IdentityCard";
-import { buildAccountGroups } from "@/app/gua/[slug]/accounts";
+import { IdentityCard } from "@/app/(site)/gua/[slug]/IdentityCard";
+import { buildAccountGroups } from "@/app/(site)/gua/[slug]/accounts";
 
 export default async function ShortRefPage({
   params,

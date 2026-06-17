@@ -8,7 +8,7 @@ export default async function Home() {
     <main className="wrap">
       <h1 className="wordmark">我是 · guasi</h1>
       <p className="lede">
-        我是正身 —— 主動驗證並串連你擁有的社群帳號，讓某個帳號被封時，存活的帳號能為你證明。
+        我是 —— 驗證並串連你擁有的社群帳號，讓某個帳號被封時，存活的帳號能為你證明。
       </p>
       {user ? (
         <div className="status">
@@ -27,7 +27,6 @@ export default async function Home() {
           <a href="/login">建立你的正身 · 登入</a>
         </p>
       )}
-      <footer className="foot">guasi.tw</footer>
     </main>
   );
 }

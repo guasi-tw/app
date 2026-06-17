@@ -108,7 +108,6 @@ export default async function ConfirmPage({
         )}
       </div>
       )}
-      <footer className="foot">guasi.tw</footer>
     </main>
   );
 }

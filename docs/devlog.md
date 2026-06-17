@@ -14,6 +14,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.13.0](#v0130--site-identity-favicon-og-image--global-site-chrome-2026-06-17) | **Site identity + global chrome.** Added the **favicon** (`app/icon.svg` + `icon.png`/`apple-icon.png` from the gold 我 coin) and a **1200×630 OG share card** (`opengraph-image.png` → also `twitter:image`), wired root `metadataBase` + `openGraph`/`twitter`. Copy: dropped ambiguous **主動** (actor clarity — *you* verify) and led the hero with the brand **我是** (not the tagline 我是正身); added a **`support@guasi.tw`** contact line on `/about`. Introduced a **global `<SiteHeader>` + `<SiteFooter>`** via a single **`(site)` route-group layout** — moved home/about/add/onboarding/login/gua/r into `(site)/` so all inherit chrome with no per-page wiring (public card + `/r` now chromed too). New **`docs/routes.md`** route inventory; CLAUDE.md brand/terminology + copy-clarity conventions. **Docs governance (same PR):** new maintained docs (`routes.md`, `product-decisions.md`, `brand-and-voice.md`, migrated `email-login-design.md`), a two-tier "maintained vs historical-specs" rule, de-referenced the specs from CLAUDE.md/README, and **corrected stale Locked decisions** (snapshot/unbind/uniqueness/login) flagged by a salvage audit. 114 tests. |
 | [v0.12.3](#v0123--about-page-alignment--guarantee-2026-06-17) | **About-page mock realigned to the live card + guarantee.** Reworked the `/about` 驗明正身 example card to mirror the real `/gua/{slug}` UI: added the `3 個分身` badge, 帳號/時間軸 tab bar, handle-first rows with a `★ 主要` tag on the main account and a `平台 · 驗證於 {date}` meta line + `↗` click-out — replacing the old platform-on-top / `✔ 已驗證` layout. Carried in the new same-owner **guarantee** line (`✓ …由本人公開貼文驗證。`) above the rows. Content-only (typed `content.ts` + CSS module); +1 accuracy test (12 total). |
 | [v0.12.2](#v0122--public-card-trust-hint-2026-06-17) | **Public Identity Card trust hint.** Added a one-line callout above the account list on the public `/gua/{slug}` 帳號 tab — `✓ 以下帳號皆經 guasi 確認屬於同一人，由本人公開貼文驗證。` — making the page's guarantee explicit to visitors. Public view only (hidden in 管理檢視). New `.id-hint` style (muted callout, accent left-border). Copy-only; no logic change. |
 | [v0.12.1](#v0121--short-ref-routing-fix-public-slug-owners-land-on-the-management-tab-2026-06-17-0240) | **`/r/{shortRef}` routing fix + slug-less owner management tab.** The private short-link gated on login **before** the public-slug check, so a logged-out visitor to a public identity's short-link was bounced to `/login` → index instead of the public card. Reordered so the slug redirect wins for everyone. New behaviour: unknown ref → `/`; **has slug + owner → `/gua/{slug}?view=manage`** (lands on 管理檢視); has slug + anyone else → `/gua/{slug}`; no slug + logged-out/non-owner → `/`; **no slug + owner → the `IdentityCard` management tab rendered inline at `/r/{shortRef}`**, locked to 管理檢視 (no public toggle, 🔒 尚未公開 banner, add button → `/add` which is already main-only for slug-less users). `IdentityCard` gains `initialManage`/`lockManage` props + nullable `publicUrl`; `/gua/{slug}` honors `?view=manage` (owner-only); extracted shared **`buildAccountGroups()`**. Removed the orphaned §D.5 `provisionExistingAction` (promote-existing-account picker gone; tested lib fn kept). 113 tests (13 new). |
@@ -34,6 +35,56 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
 
 ---
+
+## v0.13.0 — site identity: favicon, OG image + global site chrome (2026-06-17)
+
+**Review:** not yet
+
+> _A meaningful session despite a deliberately **presentation-only** feature (favicon, OG card,
+> consistent header/footer) — no business/data logic changed, but it polishes the site from POC toward
+> "real product." The session's real weight was the **documentation clean-up**: correcting stale
+> Locked decisions, the two-tier maintained-vs-historical model, the salvage migration, and a
+> fresh-eyes consistency review now make it safe to **trust what a new session loads into context** —
+> the foundation everything after depends on._
+
+**What was built:**
+- **Favicon** from the gold 我 coin avatar (`guasi-avatar.svg`): `app/icon.svg` (primary), `app/icon.png` 32² (raster fallback), `app/apple-icon.png` 180² (opaque) — via Next's file-convention icons.
+- **Social share card** — `app/opengraph-image.png`, a 1200×630 branded card (coin + **我是正身** + `驗證並串連你擁有的社群帳號` + `guasi.tw`). Next's `opengraph-image` convention auto-emits **both** `og:image` and `twitter:image`. Rendered **locally with sharp and committed as a static asset** (not generated at runtime).
+- **Root metadata** (`app/layout.tsx`): `metadataBase` (= `SITE_ORIGIN`) so crawler image URLs resolve absolute; `openGraph` + `twitter` (`summary_large_image`); `siteName: "我是"`.
+- **Copy fixes (actor clarity + brand):** dropped ambiguous **主動** from the hero + meta description (it misread as *the site* verifying; now plainly *you* verify — `驗證並串連你擁有的社群帳號`), and led the homepage hero with the **brand 我是** instead of the tagline 我是正身. Swept the repo; left genuine 主動方/主動登記 and historical plan snapshots untouched.
+- **`/about` contact line** — `有任何問題或建議，歡迎來信：support@guasi.tw` (mailto), above the footer; copy in the typed `content.ts`.
+- **Global site chrome** — `<SiteHeader>` (top-left 我 icon + **我是** → home; top-right context action: 登入/免費註冊 logged-out, 我的正身 logged-in) and `<SiteFooter>` (`guasi.tw · 關於，我是什麼` → `/about`, the pun). Both live in **one** place: `app/(site)/layout.tsx`, and render as matched **fixed, full-width translucent-blur bars** (header `border-bottom`, footer flush-to-bottom `border-top`) so content scrolls cleanly under them. The About page's own in-flow footer was dropped as redundant (contact line — `support@guasi.tw` — kept there).
+- **Route-group refactor** — created the `(site)` group and moved home, `about`, `add`, `onboarding`, `login`, **`gua`, `r`** into it so every user-facing page inherits the chrome with no per-page wiring. Left outside: `post-login` (redirect), `api`. `not-found.tsx` keeps explicit chrome (it renders under the *root* layout, not a group). Removed the now-duplicate `我是什麼？` link from the card's `id-foot`.
+- **Docs & conventions governance (same PR):**
+  - New maintained docs: **[`routes.md`](routes.md)** (route inventory + `(site)` chrome model),
+    **[`product-decisions.md`](product-decisions.md)** (slug provisioning / anti-squatting / binding
+    uniqueness / 404 rules — migrated from the routing + wireframes specs), **[`brand-and-voice.md`](brand-and-voice.md)**
+    (naming / language / voice / marketing, incl. the welcomed-puns voice), and
+    **[`email-login-design.md`](email-login-design.md)** (`git mv`'d out of `superpowers/specs/`,
+    re-headed as the maintained deferred-feature design).
+  - **Two-tier docs rule** added to CLAUDE.md: maintained `docs/*.md` are kept current; the
+    `docs/superpowers/*` specs/plans are historical (allowed to stale, not source of truth).
+    De-referenced all spec links from CLAUDE.md + README.
+  - **Corrected stale CLAUDE.md "Locked decisions"** that contradicted shipped code: proof-snapshot
+    (deferred; MVP links to live post), unbinding (no self-service in MVP), binding uniqueness
+    (per-正身, not global), site login (Google only; email deferred).
+  - New CLAUDE.md sections: **Who's working on this**, **Devlog format**, **"Raise a PR"/"ship it"**
+    (the agent preps + opens the PR and **stops** — the user reviews the preview and squash-merges
+    manually; **tagging is a separate explicit step** that pulls `main` first; refresh the devlog if
+    the PR gains commits after opening), and **GitHub upload safety** (3 adopted from `sans_cube`'s
+    conventions).
+
+**Key technical learnings:**
+- `[insight]` **Route groups are the idiomatic "shared chrome for a subset" mechanism.** A page **cannot** opt out of a parent layout's chrome via a flag/prop — the child can't suppress parent UI; faking it (pathname-sniffing, context, CSS-hide) is an anti-pattern. The healthy control is *file location*; for multiple chrome combos, a `<SiteChrome header footer>` component configured **per route-group layout** (never per page).
+- `[gotcha]` The global **`not-found.tsx` renders under the ROOT layout, not a route group**, so it does *not* inherit `(site)` chrome — it needs `<SiteHeader>`/`<SiteFooter>` rendered explicitly.
+- `[gotcha]` **Moving route directories leaves Next's generated `.next/types/validator.ts` pointing at old paths** → phantom `TS2307` errors from `tsc`. Clear `.next/types` (regenerated on build/dev); the source is fine.
+- `[insight]` **OG images: render PNG locally, commit it.** Social crawlers don't render SVG, and CJK glyphs need a font present at render time — Vercel's Linux build has no guaranteed CJK fallback, so generating at runtime risks tofu. Rendering on macOS (PingFang/STHeiti) and committing the PNG sidesteps it.
+- `[gotcha]` An accuracy test serialized the whole About content blob and asserted `not.toMatch(/email/i)` to forbid an email-*login* claim — adding a `email:` **contact key** tripped it. Narrowed the test to exclude the contact block (intent = login methods, not a support address).
+- `[note]` `next lint` was **removed in Next 16** and `next build` no longer runs ESLint — `tsc` + `vitest` are the gates. (`<img>` for the static SVG icon carries an inline eslint-disable regardless.)
+
+**Process learnings:**
+- `[insight]` The brand/tagline/concept distinction (我是 / 我是正身 / 正身) was buried in a dense CLAUDE.md "Name:" bullet — dense enough that it produced a wrong `siteName: "我是正身"`. Promoting it to a scannable convention (+ a memory) is the fix; bury-in-prose ≠ in-context.
+- `[insight]` **Before retiring "design specs" as authoritative, run a fresh-context salvage audit.** A subagent cross-checked every spec against the maintained docs + code and found three CLAUDE.md "Locked decisions" that had silently gone *wrong* (snapshot/unbind/uniqueness) plus design that lived *only* in specs (slug/anti-squatting). The maintained-vs-historical split only works if you migrate the still-current bits first — de-referencing without auditing would have lost real decisions and frozen contradictions in place.
 
 ## v0.12.3 — about-page alignment + guarantee (2026-06-17)
 

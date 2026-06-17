@@ -37,7 +37,6 @@ export default async function AddAccountPage({
           <input type="hidden" name="platform" value={platform} />
           <button type="submit" className="btn-primary">產生驗證貼文</button>
         </form>
-        <footer className="foot">guasi.tw</footer>
       </main>
     );
   }
@@ -60,7 +59,6 @@ export default async function AddAccountPage({
         composeIntentUrl={adapter.composeIntentUrl ? adapter.composeIntentUrl(template) : null}
         igNote={platform === "instagram"}
       />
-      <footer className="foot">guasi.tw</footer>
     </main>
   );
 }
