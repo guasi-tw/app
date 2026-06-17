@@ -175,6 +175,31 @@ export async function discloseBinding(userId: string, linkedAccountId: string): 
   return { ok: true };
 }
 
+/**
+ * §C.2 set-as-main — re-point the ★ (never mints a slug; a main always already has one).
+ * Clears the previous main (it stays public — permanence — but loses the ★), forces the new
+ * main public (writing a `disclosed` event first if it was private), and writes `set_main`.
+ */
+export async function setMainBinding(userId: string, linkedAccountId: string): Promise<ManageResult> {
+  const acct = await prisma.linkedAccount.findUnique({ where: { id: linkedAccountId } });
+  if (!acct || acct.userId !== userId) return { ok: false, error: "not_found" };
+  if (acct.condition !== "active") return { ok: false, error: "not_active" };
+  const wasPrivate = acct.visibility === "private";
+  await prisma.$transaction(async (tx) => {
+    await tx.linkedAccount.updateMany({ where: { userId, isMain: true }, data: { isMain: false } });
+    await tx.linkedAccount.update({ where: { id: acct.id }, data: { isMain: true, visibility: "public" } });
+    if (wasPrivate) {
+      await tx.bindingEvent.create({
+        data: { userId, platform: acct.platform, accountId: acct.accountId, eventType: "disclosed" },
+      });
+    }
+    await tx.bindingEvent.create({
+      data: { userId, platform: acct.platform, accountId: acct.accountId, eventType: "set_main" },
+    });
+  });
+  return { ok: true };
+}
+
 export type ProvisionResult =
   | { ok: true; slug: string }
   | { ok: false; error: "slug_taken" | "not_found" };

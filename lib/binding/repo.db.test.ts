@@ -10,6 +10,7 @@ import {
   commitBinding,
   provisionExistingAccount,
   discloseBinding,
+  setMainBinding,
 } from "./repo";
 
 const hasDb = !!process.env.DATABASE_URL;
@@ -142,6 +143,45 @@ describe.skipIf(!hasDb)("binding repo (DB)", () => {
     const res = await commitBinding({ requestId: (await resolvedRequest(owner.id, "ownonly")).id, asMain: false, visibility: "private", mintSlug: false });
     if (!res.ok) return;
     expect(await discloseBinding(other.id, res.linkedAccountId)).toEqual({ ok: false, error: "not_found" });
+  });
+
+  it("setMainBinding re-points the ★ to a public row, clearing the old main, writing only set_main", async () => {
+    const u = await freshUser("br-main1@example.com", "BrMain001");
+    const first = await commitBinding({ requestId: (await resolvedRequest(u.id, "firstmain")).id, asMain: true, visibility: "public", mintSlug: true });
+    const second = await commitBinding({ requestId: (await resolvedRequest(u.id, "second")).id, asMain: false, visibility: "public", mintSlug: false });
+    if (!first.ok || !second.ok) return;
+
+    const ok = await setMainBinding(u.id, second.linkedAccountId);
+    expect(ok).toEqual({ ok: true });
+    expect((await prisma.linkedAccount.findUnique({ where: { id: first.linkedAccountId } }))?.isMain).toBe(false);
+    const newMain = await prisma.linkedAccount.findUnique({ where: { id: second.linkedAccountId } });
+    expect(newMain?.isMain).toBe(true);
+    expect(newMain?.visibility).toBe("public"); // old main stays public (permanence)
+    expect((await prisma.linkedAccount.findUnique({ where: { id: first.linkedAccountId } }))?.visibility).toBe("public");
+    expect(await prisma.bindingEvent.count({ where: { userId: u.id, eventType: "set_main", accountId: "second" } })).toBe(1);
+    expect(await prisma.bindingEvent.count({ where: { userId: u.id, eventType: "disclosed" } })).toBe(0); // was already public
+  });
+
+  it("setMainBinding on a PRIVATE row forces it public + writes both disclosed and set_main", async () => {
+    const u = await freshUser("br-main2@example.com", "BrMain002");
+    await commitBinding({ requestId: (await resolvedRequest(u.id, "rootmain")).id, asMain: true, visibility: "public", mintSlug: true });
+    const priv = await commitBinding({ requestId: (await resolvedRequest(u.id, "privrow")).id, asMain: false, visibility: "private", mintSlug: false });
+    if (!priv.ok) return;
+
+    await setMainBinding(u.id, priv.linkedAccountId);
+    const row = await prisma.linkedAccount.findUnique({ where: { id: priv.linkedAccountId } });
+    expect(row?.isMain).toBe(true);
+    expect(row?.visibility).toBe("public");
+    expect(await prisma.bindingEvent.count({ where: { userId: u.id, eventType: "disclosed", accountId: "privrow" } })).toBe(1);
+    expect(await prisma.bindingEvent.count({ where: { userId: u.id, eventType: "set_main", accountId: "privrow" } })).toBe(1);
+  });
+
+  it("setMainBinding refuses a flagged (non-active) account", async () => {
+    const u = await freshUser("br-main3@example.com", "BrMain003");
+    const res = await commitBinding({ requestId: (await resolvedRequest(u.id, "flagme")).id, asMain: false, visibility: "public", mintSlug: false });
+    if (!res.ok) return;
+    await prisma.linkedAccount.update({ where: { id: res.linkedAccountId }, data: { condition: "hacked" } });
+    expect(await setMainBinding(u.id, res.linkedAccountId)).toEqual({ ok: false, error: "not_active" });
   });
 
   it("provisionExistingAccount sets main + public + mints slug from the handle (§D.5)", async () => {
