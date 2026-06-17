@@ -378,7 +378,7 @@ body {
 .id-header { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; text-align: center; }
 .id-avatar { width: 5rem; height: 5rem; border-radius: 50%; object-fit: cover; background: #15151c; border: 1px solid #2a2a33; }
 .id-name { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: 0.03em; }
-.id-bio { margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--muted); max-width: 22rem; }
+.id-bio { margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--muted); max-width: 22rem; white-space: pre-line; }
 .id-badge {
   display: inline-block; padding: 0.25rem 0.7rem;
   font-size: 0.8rem; letter-spacing: 0.08em; color: #1a1500;
