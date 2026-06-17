@@ -1,12 +1,13 @@
-# Future Feature — Email Login (Magic-link + OTP) for Auth.js
+# Email Login (Magic-link + OTP) — Design
 
-**Date:** 2026-06-15
-**Status:** 🔵 Deferred — design parked for a future milestone. **Not** in the Google-only auth MVP.
-**Parent milestone:** [`2026-06-15-authjs-site-login-design.md`](2026-06-15-authjs-site-login-design.md)
-(Google-only site login). This doc holds the email-login design that was scoped *out* of that
-milestone so it isn't lost — pick it up when adding a passwordless email method.
-**North star:** [`2026-06-14-identity-backup-design.md`](2026-06-14-identity-backup-design.md) §12
-(stack: Auth.js v5, Resend, Prisma adapter) and §8 (`users`/正身, `email_tokens`).
+**Status:** 🔵 Deferred feature — **not** in the current Google-only auth MVP, but this is the
+**maintained, authoritative design** for it (kept current — unlike the historical
+`docs/superpowers/specs/*`). Pick it up when adding a passwordless email method; the Google-only MVP
+is built so email is **additive** (see "Forward-compatibility" below).
+**Origin:** migrated 2026-06-17 from `docs/superpowers/specs/2026-06-15-email-login-future-feature.md`.
+**Context:** site login = **Google OAuth only today** (CLAUDE.md "Locked decisions"); stack = Auth.js
+v5 + Resend (from `send.guasi.tw`) + Prisma adapter; `User` = 正身, joined to email login by verified
+email.
 
 > **Why deferred:** the MVP ships **Google OAuth only** for speed and minimal surface. Email login
 > adds real complexity (email delivery, OTP brute-force/lockout-DoS, custom session minting). The

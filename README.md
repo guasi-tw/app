@@ -13,19 +13,23 @@ their surviving verified accounts can vouch for a new one — and anyone can pub
 
 > Tagline: **我是正身.** · Domain: `guasi.tw` · Handle: `@gua.si.tw`
 
-Status: **early scaffold** — a Next.js walking skeleton (the hello-world landing page);
-product features not yet implemented. See the docs below.
+Status: **implementation underway.** Google login, 正身 onboarding, account binding (Threads), the
+public Identity Card, and the `/about` page are live. Current state → [`docs/devlog.md`](docs/devlog.md)
+(top of the TL;DR table); what's next → [`todo.md`](todo.md).
 
 ## Docs
 
 - [`docs/product-pitch.md`](docs/product-pitch.md) — non-technical product overview (Traditional Chinese).
-- [`docs/superpowers/specs/2026-06-14-identity-backup-design.md`](docs/superpowers/specs/2026-06-14-identity-backup-design.md) — full product + architecture spec (source of truth).
-- [`docs/deployment.md`](docs/deployment.md) — deployment model, CI/CD & repo conventions (the principle this scaffold executes).
-- [`docs/superpowers/specs/2026-06-15-walking-skeleton-design.md`](docs/superpowers/specs/2026-06-15-walking-skeleton-design.md) — Milestone 1: scaffold + Vercel CI/CD + domain.
-- [`docs/superpowers/specs/2026-06-15-db-skeleton-design.md`](docs/superpowers/specs/2026-06-15-db-skeleton-design.md) — Milestone 2 (current): Neon + Prisma + migrations + `/api/health`.
-- [`docs/devlog.md`](docs/devlog.md) — running log of decisions and learnings.
+- [`docs/product-decisions.md`](docs/product-decisions.md) — current product/identity decisions (slug provisioning, anti-squatting, binding uniqueness, routing).
+- [`docs/routes.md`](docs/routes.md) — inventory of every route (URL, auth, chrome, purpose).
+- [`docs/platform-verification.md`](docs/platform-verification.md) — how author + code text are read on Threads / IG / miin.cc.
+- [`docs/deployment.md`](docs/deployment.md) — deployment model, CI/CD & repo conventions.
+- [`docs/devlog.md`](docs/devlog.md) — running log of decisions and learnings (newest first).
 - [`CLAUDE.md`](CLAUDE.md) — project context and locked decisions.
 - [`todo.md`](todo.md) — working list of next steps.
+
+> `docs/superpowers/specs/*` and `docs/superpowers/plans/*` are historical design notes from each
+> milestone — kept for the record, **not** maintained as the source of truth.
 
 ## Local development
 
