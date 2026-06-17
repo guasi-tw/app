@@ -197,6 +197,29 @@ Slice 5 only **writes** the new events; Slice 4 renders them. Two constraints th
 
 ---
 
+## L. Rendering & revalidation
+
+- **[DECIDED] `/gua/{slug}` is already dynamically rendered.** `page.tsx` calls `getCurrentUser()` →
+  `auth()`, which reads the session cookie on every request, so the route opts out of the Full Route
+  Cache (and is not CDN-cached). Every load — owner *or* logged-out visitor — re-queries the live DB
+  (`findUserBySlug` + `buildAccountGroups`), so any Slice 5 mutation is reflected on the **next page
+  load, for everyone**. No data-layer staleness to design around.
+- **[DECIDED] Every mutating server action calls `revalidatePath`** before returning, to clear the
+  **client-side Router Cache** (otherwise the owner who just acted, or soft-navigates back, can see the
+  pre-mutation render):
+  - Manage actions (disclose / set-main / condition flags / re-verify) → `revalidatePath(\`/gua/${slug}\`)`
+    and, for the slug-less card, `revalidatePath(\`/r/${shortRef}\`)`.
+  - Profile edits (name / bio / avatar) → also `revalidatePath(\`/gua/${slug}\`)` (those fields render on
+    the public card) plus the edit page itself.
+  - With the pattern-A inline confirm (a form submission), the post-`revalidatePath` re-render moves the
+    row to its new bucket automatically (disclosed row leaves the private group; flagged row swaps to the
+    recovery pill) — no manual client state-sync beyond collapsing the confirm panel.
+- **[DECIDED] Avatar cache-busting.** `<img src={avatarUrl}>` will serve a stale image if a new upload
+  overwrites the same Blob URL. The avatar step must write a **unique path per upload** (or append
+  `?v={updatedAt}`) so a changed avatar shows immediately.
+
+---
+
 ## I. Out of scope (unchanged)
 
 Self-service unbind (§A.5), proof snapshots / archive (Phase 2), `@gua.si.tw` auto-capture (Phase 2),
