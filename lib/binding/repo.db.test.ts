@@ -9,6 +9,7 @@ import {
   cancelRequest,
   commitBinding,
   provisionExistingAccount,
+  discloseBinding,
 } from "./repo";
 
 const hasDb = !!process.env.DATABASE_URL;
@@ -117,6 +118,30 @@ describe.skipIf(!hasDb)("binding repo (DB)", () => {
     await commitBinding({ requestId: (await resolvedRequest(u.id, "boundacct")).id, asMain: false, visibility: "private", mintSlug: false });
     expect((await findLinkedAccount(u.id, "threads", "boundacct"))?.handle).toBe("boundacct");
     expect(await findLinkedAccount(u.id, "threads", "neveracct")).toBeNull();
+  });
+
+  it("discloseBinding flips a private row to public + writes a disclosed event (idempotent)", async () => {
+    const u = await freshUser("br-disc@example.com", "BrDisc001");
+    const res = await commitBinding({ requestId: (await resolvedRequest(u.id, "discme")).id, asMain: false, visibility: "private", mintSlug: false });
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+
+    const ok = await discloseBinding(u.id, res.linkedAccountId);
+    expect(ok).toEqual({ ok: true });
+    expect((await prisma.linkedAccount.findUnique({ where: { id: res.linkedAccountId } }))?.visibility).toBe("public");
+    expect(await prisma.bindingEvent.count({ where: { userId: u.id, eventType: "disclosed" } })).toBe(1);
+
+    // Idempotent: disclosing an already-public row writes no second event.
+    await discloseBinding(u.id, res.linkedAccountId);
+    expect(await prisma.bindingEvent.count({ where: { userId: u.id, eventType: "disclosed" } })).toBe(1);
+  });
+
+  it("discloseBinding rejects an account owned by someone else", async () => {
+    const owner = await freshUser("br-disc-own@example.com", "BrDiscOwn");
+    const other = await freshUser("br-disc-oth@example.com", "BrDiscOth");
+    const res = await commitBinding({ requestId: (await resolvedRequest(owner.id, "ownonly")).id, asMain: false, visibility: "private", mintSlug: false });
+    if (!res.ok) return;
+    expect(await discloseBinding(other.id, res.linkedAccountId)).toEqual({ ok: false, error: "not_found" });
   });
 
   it("provisionExistingAccount sets main + public + mints slug from the handle (§D.5)", async () => {

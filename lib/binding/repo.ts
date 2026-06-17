@@ -159,6 +159,22 @@ export async function commitBinding(params: {
   }
 }
 
+export type ManageResult = { ok: true } | { ok: false; error: "not_found" | "not_active" };
+
+/** §C.1 disclose — private → public (one-way). Idempotent: a public row writes no event. */
+export async function discloseBinding(userId: string, linkedAccountId: string): Promise<ManageResult> {
+  const acct = await prisma.linkedAccount.findUnique({ where: { id: linkedAccountId } });
+  if (!acct || acct.userId !== userId) return { ok: false, error: "not_found" };
+  if (acct.visibility === "public") return { ok: true };
+  await prisma.$transaction(async (tx) => {
+    await tx.linkedAccount.update({ where: { id: acct.id }, data: { visibility: "public" } });
+    await tx.bindingEvent.create({
+      data: { userId, platform: acct.platform, accountId: acct.accountId, eventType: "disclosed" },
+    });
+  });
+  return { ok: true };
+}
+
 export type ProvisionResult =
   | { ok: true; slug: string }
   | { ok: false; error: "slug_taken" | "not_found" };
