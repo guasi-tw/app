@@ -1,7 +1,8 @@
 .page {
   min-height: 100dvh;
-  /* clear the fixed global site header */
+  /* clear the fixed global site header (top) + footer (bottom) */
   padding-top: 3.4rem;
+  padding-bottom: 3.5rem;
 }
 
 .inner {
@@ -399,10 +400,3 @@
   border-bottom-color: var(--accent);
 }
 
-.footer {
-  padding: 1.1rem 1.4rem 1.5rem;
-  text-align: center;
-  font-size: 0.75rem;
-  color: var(--muted);
-  letter-spacing: 0.1em;
-}

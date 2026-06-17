@@ -95,6 +95,4 @@ export const aboutContent = {
     label: "有任何問題或建議，歡迎來信：",
     email: "support@guasi.tw",
   },
-
-  footer: "guasi.tw　·　我是正身",
 } as const;

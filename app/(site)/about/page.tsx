@@ -154,8 +154,6 @@ export default function AboutPage() {
             {c.contact.email}
           </a>
         </div>
-
-        <div className={styles.footer}>{c.footer}</div>
       </div>
     </main>
   );
