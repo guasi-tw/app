@@ -31,6 +31,12 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
     root iCloud records untouched), **API key obtained + a test send succeeded.** Wiring it in
     (`RESEND_API_KEY` in Vercel/local, a `send.guasi.tw` from-address, the email provider) happens at
     the **deferred email milestone**, not the Google MVP.
+- [ ] **Set up ESLint (dev tooling)** — the repo has **no ESLint installed** and the
+  `package.json` `"lint": "next lint"` script is dead (Next 16 removed `next lint` — it errors
+  with "Invalid project directory … /lint"). Today the only static gate is `npx tsc --noEmit`.
+  Add ESLint 9 flat config (`eslint.config.mjs`) with `eslint-config-next` + TS rules, fix the
+  `lint` script, and wire it into the gates (and ideally the GitHub Action). Surfaced during the
+  Slice 2 plan review (2026-06-16); until then, plans use `npx tsc --noEmit` as the type/lint gate.
 - [ ] **Enable Vercel Web Analytics (operator-only)** — turn on Vercel Web Analytics to
   monitor traffic per URL / per `/[handle]` page for *operational* purposes (not a
   user-facing view count). Note: it's **client-side, so it counts CDN-cached views** (server
@@ -57,6 +63,12 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
   - [ ] **Slice 4 — Timeline tab** — render the append-only `binding_events` ledger (+ `created_at`).
   - [ ] **Slice 5 — Manage tab** — disclose (one-way), set-as-main (forces public), condition flags
     (banned/hacked), 恢復·重新驗證.
+    - [ ] **Re-verify of an already-bound account** (deferred from Slice 2, decided 2026-06-16): the
+      append-only refresh — add a new immutable `proof_record` + a `re_verified` `binding_event`, bump
+      `updated_at`, and (if `banned`/`hacked`) restore `condition → active`; for an already-`active`
+      account it's simply "verified again" (fresh proof, no condition change). **Single row — never a
+      duplicate** (`(userId, platform, accountId)` unique). This is the same commit path the Manage
+      恢復·重新驗證 button uses. Slice 2 only *notifies* "已綁定" and writes nothing.
     - [ ] **Give 編輯個人資料 a real edit surface** (avatar/name/bio). Slice 1 shortcut: the `/r/{shortRef}`
       "編輯個人資料" link points at **`/onboarding`**, which doubles as the editor (the form pre-fills from
       the current `User` row and `saveProfileAction` is already an `UPDATE`). What's wrong is only the

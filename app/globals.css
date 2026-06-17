@@ -201,3 +201,60 @@ body {
   align-items: center;
   gap: 0.6rem;
 }
+
+/* --- Slice 2: Add Account wizard + confirm --- */
+.wizard { width: 100%; max-width: 28rem; display: flex; flex-direction: column; gap: 1rem; text-align: left; }
+.template {
+  white-space: pre-wrap;
+  background: #15151c;
+  border: 1px solid #2a2a33;
+  border-radius: 0.6rem;
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: var(--fg);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.wizard-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.paste-form { gap: 0.5rem; }
+.credibility { background: #1a160b; border: 1px solid #3a2f10; border-radius: 0.6rem; padding: 0.75rem; }
+/* Clearly-clickable secondary control (works as both <a> and <button>). NOT .btn-stub (that looks disabled). */
+.btn-secondary {
+  display: inline-block;
+  text-align: center;
+  padding: 0.7rem 0.9rem;
+  background: transparent;
+  border: 1px solid #34343f;
+  border-radius: 0.6rem;
+  color: var(--fg);
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+}
+.confirm-card {
+  width: 100%;
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background: #15151c;
+  border: 1px solid #2a2a33;
+  border-radius: 0.6rem;
+  text-align: left;
+}
+.confirm-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+.confirm-actions fieldset { border: 1px solid #2a2a33; border-radius: 0.6rem; padding: 0.6rem 0.85rem; display: flex; flex-direction: column; gap: 0.4rem; }
+.gate { display: flex; gap: 0.5rem; align-items: flex-start; color: var(--fg); }
+.hint.warn, .warn { color: var(--accent); }
+.url-preview { font-weight: 700; color: var(--fg); word-break: break-all; }
+.picker { width: 100%; max-width: 28rem; display: flex; flex-direction: column; gap: 0.5rem; text-align: left; }
+.picker-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #15151c;
+  border: 1px solid #2a2a33;
+  border-radius: 0.6rem;
+}
