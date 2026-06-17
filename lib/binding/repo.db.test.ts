@@ -11,6 +11,7 @@ import {
   provisionExistingAccount,
   discloseBinding,
   setMainBinding,
+  reportCondition,
 } from "./repo";
 
 const hasDb = !!process.env.DATABASE_URL;
@@ -182,6 +183,29 @@ describe.skipIf(!hasDb)("binding repo (DB)", () => {
     if (!res.ok) return;
     await prisma.linkedAccount.update({ where: { id: res.linkedAccountId }, data: { condition: "hacked" } });
     expect(await setMainBinding(u.id, res.linkedAccountId)).toEqual({ ok: false, error: "not_active" });
+  });
+
+  it("reportCondition('hacked') flags the row + writes reported_hacked; ('banned') → reported_banned", async () => {
+    const u = await freshUser("br-cond@example.com", "BrCond001");
+    const h = await commitBinding({ requestId: (await resolvedRequest(u.id, "hackedone")).id, asMain: false, visibility: "public", mintSlug: false });
+    const b = await commitBinding({ requestId: (await resolvedRequest(u.id, "bannedone")).id, asMain: false, visibility: "public", mintSlug: false });
+    if (!h.ok || !b.ok) return;
+
+    expect(await reportCondition(u.id, h.linkedAccountId, "hacked")).toEqual({ ok: true });
+    expect((await prisma.linkedAccount.findUnique({ where: { id: h.linkedAccountId } }))?.condition).toBe("hacked");
+    expect(await prisma.bindingEvent.count({ where: { userId: u.id, eventType: "reported_hacked", accountId: "hackedone" } })).toBe(1);
+
+    expect(await reportCondition(u.id, b.linkedAccountId, "banned")).toEqual({ ok: true });
+    expect((await prisma.linkedAccount.findUnique({ where: { id: b.linkedAccountId } }))?.condition).toBe("banned");
+    expect(await prisma.bindingEvent.count({ where: { userId: u.id, eventType: "reported_banned", accountId: "bannedone" } })).toBe(1);
+  });
+
+  it("reportCondition rejects an account the caller does not own", async () => {
+    const owner = await freshUser("br-cond-own@example.com", "BrCondOwn");
+    const other = await freshUser("br-cond-oth@example.com", "BrCondOth");
+    const res = await commitBinding({ requestId: (await resolvedRequest(owner.id, "mineonly")).id, asMain: false, visibility: "public", mintSlug: false });
+    if (!res.ok) return;
+    expect(await reportCondition(other.id, res.linkedAccountId, "hacked")).toEqual({ ok: false, error: "not_found" });
   });
 
   it("provisionExistingAccount sets main + public + mints slug from the handle (§D.5)", async () => {

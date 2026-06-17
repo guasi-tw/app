@@ -1,5 +1,5 @@
 // lib/binding/repo.ts
-import type { Platform, Visibility } from "@prisma/client";
+import type { AccountCondition, Platform, Visibility } from "@prisma/client";
 import { prisma } from "@/lib/db/client";
 import { BINDING_CODE_TTL_MINUTES } from "./constants";
 import { deriveSlug } from "./slug";
@@ -195,6 +195,24 @@ export async function setMainBinding(userId: string, linkedAccountId: string): P
     }
     await tx.bindingEvent.create({
       data: { userId, platform: acct.platform, accountId: acct.accountId, eventType: "set_main" },
+    });
+  });
+  return { ok: true };
+}
+
+/** §C.3 condition flags — these only LOWER trust; recovery is re-verify only (§C.4). */
+export async function reportCondition(
+  userId: string,
+  linkedAccountId: string,
+  condition: "banned" | "hacked",
+): Promise<ManageResult> {
+  const acct = await prisma.linkedAccount.findUnique({ where: { id: linkedAccountId } });
+  if (!acct || acct.userId !== userId) return { ok: false, error: "not_found" };
+  const eventType = condition === "hacked" ? "reported_hacked" : "reported_banned";
+  await prisma.$transaction(async (tx) => {
+    await tx.linkedAccount.update({ where: { id: acct.id }, data: { condition: condition as AccountCondition } });
+    await tx.bindingEvent.create({
+      data: { userId, platform: acct.platform, accountId: acct.accountId, eventType },
     });
   });
   return { ok: true };
