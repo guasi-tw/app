@@ -99,6 +99,20 @@ describe("threadsAdapter.resolvePost", () => {
   });
 });
 
+describe("threadsAdapter.profileUrl", () => {
+  it("builds the canonical threads.com profile URL from a bare handle", () => {
+    expect(threadsAdapter.profileUrl("alice")).toBe(
+      "https://www.threads.com/@alice",
+    );
+  });
+
+  it("does not double-prefix when the stored handle has no @", () => {
+    expect(threadsAdapter.profileUrl("bob.dev")).toBe(
+      "https://www.threads.com/@bob.dev",
+    );
+  });
+});
+
 describe("threadsAdapter.composeIntentUrl + hashtag", () => {
   it("builds a prefilled threads.com compose intent", () => {
     const url = threadsAdapter.composeIntentUrl!("hello world");

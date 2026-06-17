@@ -58,8 +58,10 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
     §H), `linked_accounts` (per-owner rows, §A.6), `binding_events` ledger, `proof_records`; the
     per-platform wizard; **start with ONE platform** (Threads — has the compose intent + tokenless SSR);
     the success/visibility step; the slug-confirm/provisioning (`/gua/{slug}` minting). The core.
-  - [ ] **Slice 3 — Identity Card public page (Accounts tab)** ⬅️ **NEXT** — the Linktree (header + featured main +
-    rows → live profile); now there's data to show.
+  - [x] **Slice 3 — Identity Card public page (Accounts tab)** — ✅ done (v0.12.0): the Linktree (header + featured
+    main + active/flagged rows → live profile click-out); owner-only 公開/管理 toggle (private rows + stubbed
+    chips + functional 登出/切換帳號); `listIdentityAccounts` read model; adapter `profileUrl`; Google
+    `select_account`; 複製連結 share; 時間軸 placeholder.
   - [ ] **Slice 4 — Timeline tab** — render the append-only `binding_events` ledger (+ `created_at`).
   - [ ] **Slice 5 — Manage tab** — disclose (one-way), set-as-main (forces public), condition flags
     (banned/hacked), 恢復·重新驗證.
@@ -78,6 +80,10 @@ Working list of next steps. See [`docs/superpowers/specs/2026-06-14-identity-bac
       is scoped to *bound 分身*, not profile fields); (b) add an `onboardedAt`-style flag so first login
       routes to the wizard while returning users route to their page + this edit surface (Slice 1
       deliberately omitted the flag). The `updateUserProfile` write path is already reusable.
+      **Partly addressed (v0.12.0):** a **`/post-login` dispatcher** now routes *provisioned* 正身
+      (have a `slug`) straight to `/gua/{slug}` instead of onboarding. Still open: an
+      onboarded-but-no-main-yet user (no slug) still lands on onboarding — the `onboardedAt` flag is
+      what cleanly separates brand-new from returning-unprovisioned.
   - [ ] **Later platforms** — IG + miin adapters once the Threads slice proves the `PlatformAdapter` seam.
 
 - [x] **About page (`/about`)** — ✅ done (v0.11.0), **PR open, not yet merged**: public, mobile-first

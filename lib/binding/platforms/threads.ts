@@ -128,6 +128,7 @@ export const threadsAdapter: PlatformAdapter = {
   serviceTag: "@gua.si.tw",
   hashtag: null, // Threads uses topics, not pasteable #tags (decided 2026-06-16) — omit it
   slugEligible: true, // §A.4 — IG/Threads may mint a slug
+  profileUrl: (handle: string) => `https://www.threads.com/@${handle}`,
   parsePostUrl,
   resolvePost,
   composeIntentUrl: (text: string) =>
