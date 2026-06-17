@@ -11,6 +11,7 @@ import {
   discloseBinding,
   setMainBinding,
   reportCondition,
+  reverifyBinding,
 } from "./repo";
 
 const hasDb = !!process.env.DATABASE_URL;
@@ -213,6 +214,34 @@ describe.skipIf(!hasDb)("binding repo (DB)", () => {
     const res = await commitBinding({ requestId: (await resolvedRequest(owner.id, "mineonly")).id, asMain: false, visibility: "public", mintSlug: false });
     if (!res.ok) return;
     expect(await reportCondition(other.id, res.linkedAccountId, "hacked")).toEqual({ ok: false, error: "not_found" });
+  });
+
+  it("reverifyBinding refreshes a flagged row: new ProofRecord + re_verified, restores active, keeps one row", async () => {
+    const u = await freshUser("br-rev@example.com", "BrRev0001");
+    const res = await commitBinding({ requestId: (await resolvedRequest(u.id, "revacct")).id, asMain: false, visibility: "public", mintSlug: false });
+    if (!res.ok) return;
+    await prisma.linkedAccount.update({ where: { id: res.linkedAccountId }, data: { condition: "hacked" } });
+
+    // A fresh resolved request from the SAME account (accountId === handle for Threads).
+    const fresh = await resolvedRequest(u.id, "revacct");
+    const out = await reverifyBinding({ requestId: fresh.id, linkedAccountId: res.linkedAccountId });
+    expect(out).toEqual({ ok: true });
+
+    const row = await prisma.linkedAccount.findUnique({ where: { id: res.linkedAccountId } });
+    expect(row?.condition).toBe("active");
+    expect(await prisma.linkedAccount.count({ where: { userId: u.id, accountId: "revacct" } })).toBe(1); // never a dup row
+    expect(await prisma.proofRecord.count({ where: { linkedAccountId: res.linkedAccountId } })).toBe(2); // original + refresh
+    expect(await prisma.bindingEvent.count({ where: { userId: u.id, eventType: "re_verified" } })).toBe(1);
+    expect((await prisma.bindingRequest.findUnique({ where: { id: fresh.id } }))?.status).toBe("verified");
+  });
+
+  it("reverifyBinding rejects when the resolved author is a different account", async () => {
+    const u = await freshUser("br-rev2@example.com", "BrRev0002");
+    const res = await commitBinding({ requestId: (await resolvedRequest(u.id, "realacct")).id, asMain: false, visibility: "public", mintSlug: false });
+    if (!res.ok) return;
+    const wrong = await resolvedRequest(u.id, "wrongacct"); // different resolvedAccountId
+    expect(await reverifyBinding({ requestId: wrong.id, linkedAccountId: res.linkedAccountId })).toEqual({ ok: false, error: "account_mismatch" });
+    expect(await prisma.bindingEvent.count({ where: { userId: u.id, eventType: "re_verified" } })).toBe(0);
   });
 
 });
