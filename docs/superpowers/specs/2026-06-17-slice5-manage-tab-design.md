@@ -31,10 +31,12 @@ multi-line support.
 
 A single small migration — everything else (`Visibility`, `AccountCondition`, `ProofRecord`,
 `updatedAt`, the per-owner `@@unique([userId, platform, accountId])`) already exists from Slice 2.
+**This migration ships FIRST, as its own release, ahead of the feature code — see §M.**
 
 1. **[DECIDED] `User.onboardedAt DateTime?`** (nullable). Set **once**, when the onboarding profile
    form is first saved (in `saveProfileAction`, only if currently null). Distinguishes a brand-new 正身
-   from a returning-but-unprovisioned one — see §F routing.
+   from a returning-but-unprovisioned one — see §F routing. **Backfilled** to `createdAt` for existing
+   rows in the Release-1 migration (§M) so current users are never re-routed to the first-time wizard.
 2. **[DECIDED] Two new `BindingEventType` values** (additive enum): **`disclosed`** and **`set_main`**.
    The timeline (§E.2 / Slice 4) is the append-only public ledger, and visibility/main changes are now
    recorded there (§C.1, §C.2).
@@ -220,6 +222,31 @@ Slice 5 only **writes** the new events; Slice 4 renders them. Two constraints th
 
 ---
 
+## M. Release phasing (two-phase — schema first)
+
+**[DECIDED] Ship the §B schema delta to production FIRST, ahead of the feature code.** The migration is
+purely additive and backward-compatible (a nullable column + two *unused* enum values), so deploying it
+alone changes no behavior but makes the **production DB forward-compatible**. Feature work then develops
+and tests on Vercel previews (each branches the Neon DB from prod) against a schema prod already has —
+**no migration racing with feature merges**, and a compatible prod DB throughout testing.
+
+- **Release 1 — schema only (its own PR → merge → prod):**
+  - `prisma/schema.prisma`: add `User.onboardedAt DateTime?`; add `disclosed` + `set_main` to
+    `BindingEventType`. New migration.
+  - **Backfill** `onboardedAt = createdAt` for all existing users (so returning users skip the wizard
+    once Release 2's routing goes live; new users get it stamped on onboarding completion in Release 2).
+  - **[note] Enum adds belong in this release**, where nothing consumes them yet — sidesteps the
+    Postgres "can't use a new enum value in the same transaction that adds it" restriction at feature time.
+  - **[note] No app code** reads/writes the new column or enum values in Release 1 — it is behavior-inert.
+  - **Verify:** `prisma migrate deploy` runs clean in the Vercel build; prod DB shows the column + enum
+    values; the existing app still behaves identically.
+- **Release 2 — features (one or more PRs):** everything in §C–§L, built on the already-migrated schema.
+  Can be sliced further (e.g. Manage actions → edit surface) since the DB no longer moves.
+  - **[note]** Stamp `onboardedAt` on onboarding completion; optionally re-backfill any rows still null
+    that clearly onboarded (has slug / linked accounts) — covers the small Release-1→2 window.
+
+---
+
 ## I. Out of scope (unchanged)
 
 Self-service unbind (§A.5), proof snapshots / archive (Phase 2), `@gua.si.tw` auto-capture (Phase 2),
@@ -232,7 +259,7 @@ Timeline tab itself (Slice 4 — Slice 5 only writes its events).
 
 | Area | Files (representative) |
 |---|---|
-| Schema + migration | `prisma/schema.prisma` (`onboardedAt`, 2 enum values) + new migration |
+| **Schema + migration — RELEASE 1 (§M)** | `prisma/schema.prisma` (`onboardedAt`, 2 enum values) + new migration (incl. `onboardedAt = createdAt` backfill) — **ships alone, first** |
 | Manage actions + inline confirm | `app/(site)/gua/[slug]/AccountRow.tsx` (un-stub `ManageChips`, add inline-confirm client state), `app/(site)/gua/[slug]/actions.ts` (disclose / set-main / flag server actions) |
 | Repo | `lib/binding/repo.ts` — new `discloseBinding`, `setMainBinding`, `reportCondition`, `reverifyBinding`; add `set_main` to `commitBinding`; **remove** `provisionExistingAccount` + `listProvisionCandidates` |
 | Re-verify entry | scoped Add-flow entry from a flagged row → `/add/{platform}` carrying the target account; same-account guard in the confirm/commit |

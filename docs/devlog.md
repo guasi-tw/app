@@ -62,6 +62,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 **Process learnings:**
 - `[note]` First session using the brainstorming **visual companion** (browser mockups) — recorded the opt-in in CLAUDE.md. Worked well for comparing confirm patterns / edit-surface placement / state flows; conceptual decisions stayed in the terminal.
+- `[insight]` **Two-phase release** (spec §M): ship the additive schema delta (nullable column + 2 unused enum values) to prod **first, as its own PR**, then build features against the already-migrated DB. Because previews branch Neon from prod, a schema-first release means every feature preview inherits the columns — no migration racing feature merges, and a compatible prod DB throughout testing. Generalizes beyond Slice 5.
 
 ---
 
