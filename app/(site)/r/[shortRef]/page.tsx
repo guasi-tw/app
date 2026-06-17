@@ -19,8 +19,9 @@ export default async function ShortRefPage({
   const isOwner = !!viewer && viewer.id === owner.id;
 
   if (owner.slug) {
-    // Public page exists. Owner lands on the management tab; everyone else sees the public card.
-    if (isOwner) redirect(`/gua/${owner.slug}?view=manage`);
+    // Public page exists — everyone (owner included) lands on the public card.
+    // The owner can switch to 管理檢視 from there.
+    if (isOwner) redirect(`/gua/${owner.slug}`);
     permanentRedirect(`/gua/${owner.slug}`);
   }
 

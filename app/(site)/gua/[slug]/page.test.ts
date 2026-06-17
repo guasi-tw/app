@@ -3,8 +3,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const notFound = vi.fn(() => {
   throw new Error("notFound");
 });
+const redirect = vi.fn((url: string) => {
+  throw new Error(`redirect:${url}`);
+});
 vi.mock("next/navigation", () => ({
   notFound: () => notFound(),
+  redirect: (url: string) => redirect(url),
 }));
 
 type User = {
@@ -69,16 +73,21 @@ describe("/gua/[slug] page", () => {
     expect(props.initialManage).toBe(false);
   });
 
-  it("non-owner with ?view=manage → does NOT get the management tab", async () => {
+  it("non-owner with ?view=manage → redirected to the clean public URL", async () => {
     currentUser = { id: "someone-else", slug: null, shortRef: "y" };
-    const { props } = await call("alice", "manage");
-    expect(props.isOwner).toBe(false);
-    expect(props.initialManage).toBe(false);
+    await expect(call("alice", "manage")).rejects.toThrow("redirect:/gua/alice");
+    expect(redirect).toHaveBeenCalledWith("/gua/alice");
   });
 
-  it("logged-out visitor → public view, not owner", async () => {
+  it("logged-out visitor with ?view=manage → redirected to the clean public URL", async () => {
     currentUser = null;
-    const { props } = await call("alice", "manage");
+    await expect(call("alice", "manage")).rejects.toThrow("redirect:/gua/alice");
+    expect(redirect).toHaveBeenCalledWith("/gua/alice");
+  });
+
+  it("non-owner without ?view=manage → public view, not owner", async () => {
+    currentUser = { id: "someone-else", slug: null, shortRef: "y" };
+    const { props } = await call("alice");
     expect(props.isOwner).toBe(false);
     expect(props.initialManage).toBe(false);
   });

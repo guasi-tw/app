@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { findUserBySlug } from "@/lib/identity/repo";
 import { getCurrentUser } from "@/lib/identity/session";
 import { SITE_ORIGIN } from "@/lib/binding/constants";
@@ -21,6 +21,10 @@ export default async function IdentityCardPage({
 
   const viewer = await getCurrentUser();
   const isOwner = viewer?.id === user.id;
+
+  // 管理檢視 is owner-only — a non-owner (or logged-out) viewer can't manage this
+  // page, so strip ?view=manage and send them to the clean public URL.
+  if (view === "manage" && !isOwner) redirect(`/gua/${slug}`);
 
   const { accounts, count } = await buildAccountGroups(user.id, isOwner);
 

@@ -77,11 +77,11 @@ describe("/r/[shortRef] router", () => {
     expect(redirect).toHaveBeenCalledWith("/");
   });
 
-  it("has slug + owner → public page's management tab", async () => {
+  it("has slug + owner → public page (not the manage tab)", async () => {
     owner = fullOwner({ slug: "alice" });
     currentUser = { id: "u1" };
-    await expect(call()).rejects.toThrow("redirect:/gua/alice?view=manage");
-    expect(redirect).toHaveBeenCalledWith("/gua/alice?view=manage");
+    await expect(call()).rejects.toThrow("redirect:/gua/alice");
+    expect(redirect).toHaveBeenCalledWith("/gua/alice");
   });
 
   it("has slug + logged-out → public page", async () => {

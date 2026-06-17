@@ -37,8 +37,8 @@ stripped from the URL.
 | `/add/{platform}` | `app/(site)/add/[platform]/page.tsx` | required | yes | Per-platform 分身 binding: produce the verification post template + wizard. Unknown platform → 404. |
 | `/add/{platform}/confirm` | `app/(site)/add/[platform]/confirm/page.tsx` | required | yes | Confirm + commit the binding (incl. slug minting on the main account). |
 | `/post-login` | `app/(auth)/post-login/page.tsx` | required | n/a (redirect) | Auth dispatcher: provisioned 正身 (has slug) → `/gua/{slug}`, else → `/onboarding`. No UI. |
-| `/gua/{slug}` | `app/(site)/gua/[slug]/page.tsx` | public | yes | Public Identity Card (驗明正身). Owner sees the management tab; others see the public card. (Also has its own `id-header`/`id-foot` chrome.) |
-| `/r/{shortRef}` | `app/(site)/r/[shortRef]/page.tsx` | public | yes | Short link → redirects to `/gua/{slug}` (owner → manage tab; slug-less owner renders the card inline). |
+| `/gua/{slug}` | `app/(site)/gua/[slug]/page.tsx` | public | yes | Public Identity Card (驗明正身). Everyone lands on the public card; the owner can toggle to 管理檢視 (the toggle keeps the URL in sync — `?view=manage` ⇄ clean path). `?view=manage` is honored on load for the owner only; a non-owner/logged-out visitor is redirected to the clean `/gua/{slug}`. (Also has its own `id-header`/`id-foot` chrome.) |
+| `/r/{shortRef}` | `app/(site)/r/[shortRef]/page.tsx` | public | yes | Short link → redirects to `/gua/{slug}` for everyone (owner included); slug-less owner renders the card inline. |
 | `*` (404) | `app/not-found.tsx` | public | yes (explicit) | Global not-found. Renders chrome explicitly (root layout, not the `(site)` group). |
 
 ## API routes
