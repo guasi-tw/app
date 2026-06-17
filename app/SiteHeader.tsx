@@ -12,9 +12,15 @@ export async function SiteHeader() {
         <img src="/guasi-avatar.svg" alt="" width={26} height={26} />
         <span>我是</span>
       </a>
+      {/* 我的正身: once a main 分身 is verified the slug exists → link straight to the
+          public card (skips the /r redirect hop). Slug-less owners fall back to
+          /r/{shortRef}, which always resolves (renders the management card inline). */}
       <nav className="site-actions">
         {user ? (
-          <a className="site-cta-ghost" href={`/r/${user.shortRef}`}>
+          <a
+            className="site-cta-ghost"
+            href={user.slug ? `/gua/${user.slug}` : `/r/${user.shortRef}`}
+          >
             我的正身
           </a>
         ) : (
