@@ -1,28 +1,12 @@
 .page {
   min-height: 100dvh;
+  /* clear the fixed global site header */
+  padding-top: 3.4rem;
 }
 
 .inner {
   max-width: 30rem;
   margin: 0 auto;
-}
-
-/* top bar */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.9rem 1.25rem;
-  border-bottom: 1px solid #16161d;
-}
-.topbarBrand {
-  font-weight: 800;
-  color: var(--accent);
-  letter-spacing: 0.04em;
-}
-.topbarLabel {
-  font-size: 0.8rem;
-  color: var(--muted);
 }
 
 /* generic section */
@@ -397,6 +381,24 @@
 }
 
 /* footer */
+.contact {
+  padding: 1.6rem 1.4rem 0.4rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.contactLink {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.contactLink:hover {
+  border-bottom-color: var(--accent);
+}
+
 .footer {
   padding: 1.1rem 1.4rem 1.5rem;
   text-align: center;

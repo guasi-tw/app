@@ -12,12 +12,6 @@ export default function AboutPage() {
   return (
     <main className={styles.page}>
       <div className={styles.inner}>
-        {/* top bar */}
-        <div className={styles.topbar}>
-          <span className={styles.topbarBrand}>{c.topbar.brand}</span>
-          <span className={styles.topbarLabel}>{c.topbar.label}</span>
-        </div>
-
         {/* 1 hook */}
         <section className={styles.section}>
           <h1 className={styles.hookTitle}>{c.hook.title}</h1>
@@ -153,6 +147,13 @@ export default function AboutPage() {
           </a>
           <div className={styles.ctaNote}>{c.cta.note}</div>
         </section>
+
+        <div className={styles.contact}>
+          {c.contact.label}{" "}
+          <a className={styles.contactLink} href={`mailto:${c.contact.email}`}>
+            {c.contact.email}
+          </a>
+        </div>
 
         <div className={styles.footer}>{c.footer}</div>
       </div>

@@ -8,8 +8,6 @@ export type AboutAccount = {
 };
 
 export const aboutContent = {
-  topbar: { brand: "guasi", label: "關於" },
-
   hook: {
     title: "帳號被封了，你要怎麼說「這真的是我」？",
     body: "2026 年 6 月，Meta 一波大封號，許多人一夕失去經營多年的主帳號。新帳號沒有歷史，舊帳號已無法發聲；冒名者卻搶著喊「本尊回來了」。最該證明自己的那一刻，你反而最沒辦法證明。",
@@ -91,6 +89,11 @@ export const aboutContent = {
     buttonLabel: "以 Google 登入，建立我的正身 →",
     href: "/login",
     note: "免費 · 無需密碼",
+  },
+
+  contact: {
+    label: "有任何問題或建議，歡迎來信：",
+    email: "support@guasi.tw",
   },
 
   footer: "guasi.tw　·　我是正身",

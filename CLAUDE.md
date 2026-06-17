@@ -44,6 +44,7 @@ into an implementation plan first.
 - [`docs/superpowers/specs/2026-06-15-db-skeleton-design.md`](docs/superpowers/specs/2026-06-15-db-skeleton-design.md) — the Neon + Prisma + migrations + token-gated `/api/health` milestone (shipped as v0.5.0); execution tracker incl. preview-branching + the first GitHub Action (smoke test).
 - [`docs/superpowers/specs/2026-06-16-mvp-wireframes-design.md`](docs/superpowers/specs/2026-06-16-mvp-wireframes-design.md) — **MVP wireframes & page flows** (v0.7.0-design, approved): the 9 surfaces (Home, Create Identity, Add Account per-platform wizard, Identity Card = Accounts/Timeline/Manage, pre-provisioned state), plus the decisions that **change** parent specs — snapshots dropped (link to live post), slug minted at main-account designation, IG/Threads-only slug source, no self-service unbind, no binding-uniqueness lock, the `/r/{short_ref}` short-link, and the `binding_requests` commit-on-confirm lifecycle. **The build doc for the next implementation tasks** (to be built incrementally, one page/slice at a time).
 - [`docs/superpowers/specs/2026-06-16-about-page-design.md`](docs/superpowers/specs/2026-06-16-about-page-design.md) — the public **`/about` page** design (shipped as v0.11.0): guasi-first narrative (正身 demoted to a `(tsiànn-sin)` gloss), section structure, final 繁中 copy, and the accuracy constraints locked to the current build (Google-only login, no snapshot claim, `gua/{slug}` example is a static 範例).
+- [`docs/routes.md`](docs/routes.md) — inventory of every App Router route: URL, file, auth requirement, whether it renders the global site chrome (header/footer), and purpose. Includes the `(site)` route-group chrome model. The current map of the URL surface.
 - [`docs/services.md`](docs/services.md) — single inventory of every external service/account (status + role + scope); the "what we use," paired with the cost ledger below.
 - [`docs/operating-costs.md`](docs/operating-costs.md) — running ledger of operational costs (Vercel Pro, domain, future services).
 - [`docs/devlog.md`](docs/devlog.md) — running log of decisions and learnings, newest first.
@@ -135,6 +136,16 @@ push pre-emptive verification.
   user-facing UI string, product copy, and doc. Never Simplified (简体). Use Taiwan vocabulary
   (e.g. 登入 not 登录, 帳號 not 账号, 驗證 not 验证, 建置 not 搭建). The only exception is
   user-supplied data we render verbatim (e.g. a person's Google display name).
+- **Brand & terminology (don't mix these up):**
+  - **我是** — the **brand name** (paired with `guasi` / domain `guasi.tw`). Use plain **我是**
+    for brand/identity fields (e.g. OG `siteName`, wordmark, "the 我是 service").
+  - **我是正身** — the **tagline** only. Use where a slogan fits, *not* as the brand name.
+  - **正身 (tsiànn-sin)** — the **product concept** term used in UI copy ("建立你的正身",
+    "驗明正身 page"). Not the brand.
+  - Quick rule: brand → **我是**; slogan → **我是正身**; the thing a user creates → **正身**.
+- **Copy clarity:** make the *actor* unambiguous in user-facing copy. The **user** verifies their
+  own accounts (we provide the mechanism), so prefer "驗證並串連你擁有的社群帳號" over
+  "主動驗證…" (which misreads as the site doing the verifying).
 - Versioning: three-part semver (`vX.Y.Z`). Releases that ship code get a git tag; design-only
   sessions use `vX.Y.0-design` with no tag.
 - **Git/PRs:** private GitHub remote **`guasi-tw/app`**. Branch off `main` for work, open a PR,

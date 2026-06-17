@@ -36,7 +36,6 @@ export default async function PlatformPickerPage() {
           );
         })}
       </div>
-      <footer className="foot">guasi.tw</footer>
     </main>
   );
 }

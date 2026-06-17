@@ -68,6 +68,84 @@ body {
   color: var(--muted);
 }
 
+.foot a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.foot a:hover {
+  text-decoration: underline;
+}
+
+/* --- Global site header (app/funnel pages; not the public Identity Card) --- */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1.1rem;
+  background: rgba(11, 11, 15, 0.82);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #16161d;
+}
+.site-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--fg);
+  text-decoration: none;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.site-brand img {
+  display: block;
+}
+.site-brand:hover {
+  color: var(--accent);
+}
+.site-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+.site-link {
+  color: var(--fg);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.site-link:hover {
+  color: var(--accent);
+}
+.site-cta {
+  background: var(--accent);
+  color: #1a1500;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.site-cta:hover {
+  filter: brightness(1.06);
+}
+.site-cta-ghost {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 0.9rem;
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.site-cta-ghost:hover {
+  background: #1a160b;
+}
+
 /* --- Slice 1: onboarding + pre-provisioned --- */
 .wordmark.sm {
   font-size: clamp(1.75rem, 7vw, 2.75rem);
@@ -282,7 +360,8 @@ body {
   width: 100%;
   max-width: 28rem;
   margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
+  /* top padding clears the fixed global site header */
+  padding: 3.8rem 1.25rem 4rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
