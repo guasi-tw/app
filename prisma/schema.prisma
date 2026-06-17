@@ -50,6 +50,7 @@ model User {
   bio           String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  onboardedAt   DateTime?   // first onboarding completion (§F routing)
 
   accounts        Account[]
   sessions        Session[]
@@ -134,6 +135,8 @@ enum BindingEventType {
   reported_banned
   reported_hacked
   re_verified
+  disclosed   // NEW — account went private → public (one-way)
+  set_main    // NEW — account designated the main 分身
 }
 
 model BindingRequest {
