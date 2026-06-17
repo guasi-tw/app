@@ -14,5 +14,6 @@ export default async function PostLoginPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   else if (user.slug) redirect(`/gua/${user.slug}`);
-  else redirect("/onboarding");
+  else if (user.onboardedAt) redirect(`/r/${user.shortRef}`); // pre-provisioned card, not the wizard
+  else redirect("/onboarding"); // genuine first-timer
 }

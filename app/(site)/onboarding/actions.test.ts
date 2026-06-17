@@ -53,10 +53,10 @@ describe("saveProfileAction — sharp unavailable (linux-x64 deploy)", () => {
 
     // No errors surfaced, profile persisted, redirected to the 驗明正身 page.
     expect(result).toBeUndefined();
-    expect(updateUserProfile).toHaveBeenCalledWith("user_123", {
-      displayName: "阿明",
-      bio: "嗨，我是阿明",
-    });
+    expect(updateUserProfile).toHaveBeenCalledWith(
+      "user_123",
+      expect.objectContaining({ displayName: "阿明", bio: "嗨，我是阿明", onboardedAt: expect.any(Date) }),
+    );
     expect(redirect).toHaveBeenCalledWith("/add");
   });
 
@@ -71,10 +71,10 @@ describe("saveProfileAction — sharp unavailable (linux-x64 deploy)", () => {
     );
 
     expect(result).toBeUndefined();
-    expect(updateUserProfile).toHaveBeenCalledWith("user_123", {
-      displayName: "阿明",
-      bio: null,
-    });
+    expect(updateUserProfile).toHaveBeenCalledWith(
+      "user_123",
+      expect.objectContaining({ displayName: "阿明", bio: null, onboardedAt: expect.any(Date) }),
+    );
     expect(redirect).toHaveBeenCalledWith("/add");
   });
 

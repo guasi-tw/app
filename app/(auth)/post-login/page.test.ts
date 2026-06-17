@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const redirect = vi.fn();
-let currentUser: { id: string; shortRef: string; slug?: string | null } | null = null;
+let currentUser: { id: string; shortRef: string; slug?: string | null; onboardedAt?: Date | null } | null = null;
 
 vi.mock("next/navigation", () => ({
   redirect: (...args: unknown[]) => redirect(...args),
@@ -30,8 +30,14 @@ describe("post-login dispatcher", () => {
     expect(redirect).toHaveBeenCalledWith("/gua/alice");
   });
 
-  it("sends a not-yet-provisioned user (no slug) to onboarding", async () => {
-    currentUser = { id: "u1", shortRef: "abc123", slug: null };
+  it("sends a slug-less but already-onboarded user to their /r card (not the wizard)", async () => {
+    currentUser = { id: "u1", shortRef: "abc123", slug: null, onboardedAt: new Date("2026-06-01") };
+    await PostLoginPage();
+    expect(redirect).toHaveBeenCalledWith("/r/abc123");
+  });
+
+  it("sends a genuine first-timer (no slug, no onboardedAt) to onboarding", async () => {
+    currentUser = { id: "u1", shortRef: "abc123", slug: null, onboardedAt: null };
     await PostLoginPage();
     expect(redirect).toHaveBeenCalledWith("/onboarding");
   });

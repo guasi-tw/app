@@ -50,6 +50,7 @@ export async function saveProfileAction(
     displayName: nameRes.ok ? nameRes.value : "",
     bio: bioRes.ok ? bioRes.value : null,
     ...(avatarUrl ? { avatarUrl } : {}),
+    ...(user.onboardedAt ? {} : { onboardedAt: new Date() }), // stamp once, on first completion (§F)
   });
 
   // New 正身 (no main yet) → pick a platform to set their main; a provisioned user
