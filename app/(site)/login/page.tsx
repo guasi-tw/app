@@ -21,7 +21,7 @@ export default async function LoginPage() {
           await signIn("google", { redirectTo: "/post-login" });
         }}
       >
-        <button type="submit">使用 Google 登入</button>
+        <button type="submit">使用 Google 繼續</button>
       </form>
     </main>
   );
