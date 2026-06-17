@@ -17,6 +17,8 @@ function toView(a: LinkedAccount, variant: AccountVariant): AccountView {
   return {
     id: a.id,
     handle: a.handle,
+    platform: a.platform,
+    platformLabel: adapter?.label ?? a.platform,
     verifiedAt: fmtDate(a.verifiedAt),
     profileUrl: clickable ? adapter?.profileUrl(a.handle) ?? null : null,
     variant,

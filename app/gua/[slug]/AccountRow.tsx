@@ -1,4 +1,5 @@
 import type { AccountView } from "./types";
+import { PlatformIcon } from "./PlatformIcon";
 
 const VARIANT_CLASS: Record<AccountView["variant"], string> = {
   main: "acct-pill main",
@@ -43,7 +44,14 @@ export function AccountRow({
               <span className="acct-main-tag">★ 主要</span>
             )}
           </span>
-          <span className="acct-meta">驗證於 {account.verifiedAt}</span>
+          <span className="acct-meta">
+            <span className="acct-plat">
+              <PlatformIcon platform={account.platform} />
+              {account.platformLabel}
+            </span>
+            {" · 驗證於 "}
+            {account.verifiedAt}
+          </span>
         </div>
         {account.profileUrl && !manage && <span className="acct-out" aria-hidden>↗</span>}
       </div>

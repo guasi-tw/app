@@ -4,6 +4,10 @@ export type AccountVariant = "main" | "active" | "flagged" | "private";
 export type AccountView = {
   id: string;
   handle: string;
+  /** Platform key (e.g. "threads") — drives the icon. */
+  platform: string;
+  /** Human label for the platform (e.g. "Threads"), from the adapter. */
+  platformLabel: string;
   /** Pre-formatted YYYY-MM-DD verification date. */
   verifiedAt: string;
   /** Live platform profile URL, or null when the row is flagged (no click-out). */
