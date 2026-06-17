@@ -93,6 +93,11 @@ export function IdentityCard({
         <p className="id-bio" style={{ textAlign: "center" }}>時間軸施工中（Slice 4）。</p>
       ) : (
         <>
+          {!manage && (
+            <p className="id-hint">
+              ✓ 以下帳號皆經 guasi 確認屬於同一人，由本人公開貼文驗證。
+            </p>
+          )}
           <div className="acct-list">
             {accounts.main && <AccountRow account={accounts.main} manage={manage} />}
             {accounts.active.map((a) => (

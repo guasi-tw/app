@@ -313,6 +313,12 @@ body {
 }
 .tabbar .tab.active { color: var(--fg); border-bottom-color: var(--accent); }
 
+.id-hint {
+  margin: 0; padding: 0.6rem 0.8rem;
+  font-size: 0.82rem; line-height: 1.6; color: var(--muted);
+  background: #15151c; border: 1px solid #2a2a33;
+  border-left: 3px solid var(--accent); border-radius: 0.5rem;
+}
 .acct-list { display: flex; flex-direction: column; gap: 0.6rem; }
 .acct-pill {
   display: flex; flex-direction: column; gap: 0.5rem;
