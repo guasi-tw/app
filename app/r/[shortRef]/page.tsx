@@ -35,9 +35,7 @@ export default async function PreProvisionedPage({
       <div className="slot empty">
         <span className="slot-label">主要帳號 · 尚未設定</span>
         {/* Stub — Slice 2 wires this to the Add Account / slug-confirm flow. */}
-        <button type="button" className="btn-stub" disabled>
-          設定主要帳號並開通公開網址 →（即將推出）
-        </button>
+        <a className="btn-primary" href="/add/threads">設定主要帳號並開通公開網址 →</a>
       </div>
 
       <p className="hint">
