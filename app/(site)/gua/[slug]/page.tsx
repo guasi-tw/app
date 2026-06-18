@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/identity/session";
 import { SITE_ORIGIN } from "@/lib/binding/constants";
 import { IdentityCard } from "./IdentityCard";
 import { buildAccountGroups } from "./accounts";
+import { buildTimeline } from "./timeline";
 
 export default async function IdentityCardPage({
   params,
@@ -26,7 +27,10 @@ export default async function IdentityCardPage({
   // page, so strip ?view=manage and send them to the clean public URL.
   if (view === "manage" && !isOwner) redirect(`/gua/${slug}`);
 
-  const { accounts, count, mainFlagged } = await buildAccountGroups(user.id, isOwner);
+  const [{ accounts, count, mainFlagged }, timeline] = await Promise.all([
+    buildAccountGroups(user.id, isOwner),
+    buildTimeline(user.id, isOwner),
+  ]);
 
   // Growth footer destination for a logged-in viewer → their own page.
   const ownerHomeUrl = viewer
@@ -46,6 +50,7 @@ export default async function IdentityCardPage({
       viewerLoggedIn={!!viewer}
       ownerHomeUrl={ownerHomeUrl}
       accounts={accounts}
+      timeline={timeline}
       mainFlagged={mainFlagged}
       initialManage={isOwner && view === "manage"}
     />

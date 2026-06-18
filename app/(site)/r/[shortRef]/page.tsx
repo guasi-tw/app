@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/identity/session";
 import { findUserByShortRef } from "@/lib/identity/repo";
 import { IdentityCard } from "@/app/(site)/gua/[slug]/IdentityCard";
 import { buildAccountGroups } from "@/app/(site)/gua/[slug]/accounts";
+import { buildTimeline } from "@/app/(site)/gua/[slug]/timeline";
 
 export default async function ShortRefPage({
   params,
@@ -30,7 +31,10 @@ export default async function ShortRefPage({
 
   // Owner without a slug: render the management tab inline, locked (can't switch to a
   // public view that doesn't exist yet). The add button mints the slug via the main binding.
-  const { accounts, count, mainFlagged } = await buildAccountGroups(owner.id, true);
+  const [{ accounts, count, mainFlagged }, timeline] = await Promise.all([
+    buildAccountGroups(owner.id, true),
+    buildTimeline(owner.id, true),
+  ]);
 
   return (
     <IdentityCard
@@ -43,6 +47,7 @@ export default async function ShortRefPage({
       viewerLoggedIn
       ownerHomeUrl={null}
       accounts={accounts}
+      timeline={timeline}
       mainFlagged={mainFlagged}
       lockManage
     />

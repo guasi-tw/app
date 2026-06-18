@@ -35,6 +35,9 @@ vi.mock("./accounts", () => ({
       count: 0,
     }),
 }));
+vi.mock("./timeline", () => ({
+  buildTimeline: () => Promise.resolve([{ id: "genesis", kind: "genesis" }]),
+}));
 vi.mock("./IdentityCard", () => ({
   IdentityCard: (props: Record<string, unknown>) => props,
 }));
@@ -90,5 +93,12 @@ describe("/gua/[slug] page", () => {
     const { props } = await call("alice");
     expect(props.isOwner).toBe(false);
     expect(props.initialManage).toBe(false);
+  });
+
+  it("builds and passes the timeline prop", async () => {
+    currentUser = { id: "u1", slug: "alice", shortRef: "x" };
+    const { props } = await call("alice");
+    expect(Array.isArray(props.timeline)).toBe(true);
+    expect((props.timeline as unknown[]).length).toBeGreaterThan(0);
   });
 });
