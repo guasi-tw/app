@@ -62,6 +62,18 @@ describe("landingContent — accuracy constraints", () => {
     expect(landingContent.exampleProfile.sectionDesc).toContain("連結");
     expect(landingContent.exampleProfile.shareCaption).toContain("各平台");
   });
+
+  it("the example profile demonstrates three distinct platforms (cross-platform story)", () => {
+    const platforms = [
+      ...new Set(landingContent.exampleProfile.accounts.map((a) => a.platform)),
+    ].sort();
+    expect(platforms).toEqual(["Instagram", "Threads", "miin.cc"]);
+  });
+
+  it("the example profile links to a real public 正身 card", () => {
+    expect(landingContent.exampleProfile.liveLink.href).toBe("/gua/gua.si.tw");
+    expect(landingContent.exampleProfile.liveLink.label).toContain("正身");
+  });
 });
 
 describe("landingContent — key anchor copy", () => {
