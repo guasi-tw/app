@@ -162,7 +162,7 @@ export function IdentityCard({
           (viewerLoggedIn ? (
             <a href={ownerHomeUrl ?? "/"}>前往你的正身 →</a>
           ) : (
-            <GoogleSignInButton label="建立你的正身 →" className="btn-as-link" />
+            <GoogleSignInButton label="以 Google 建立正身" className="btn-cta" />
           ))}
       </footer>
     </main>

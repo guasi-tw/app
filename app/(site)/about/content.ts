@@ -93,7 +93,7 @@ export const aboutContent = {
   cta: {
     title: "趁現在，先驗明你的正身",
     subtitle: "被封後就來不及了。建立正身只要幾分鐘。",
-    buttonLabel: "以 Google 登入，建立我的正身 →",
+    buttonLabel: "以 Google 建立正身",
     note: "免費 · 無需密碼",
   },
 

@@ -26,7 +26,7 @@ export async function SiteHeader() {
           // same OAuth flow; /post-login then routes new users to onboarding, returning users home.
           <>
             <GoogleSignInButton label="登入" className="site-link" />
-            <GoogleSignInButton label="使用 Google 免費註冊" className="site-cta" />
+            <GoogleSignInButton label="以 Google 建立正身" className="site-cta" />
           </>
         )}
       </nav>
