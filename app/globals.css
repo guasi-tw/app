@@ -171,7 +171,11 @@ body {
   display: flex; align-items: center; justify-content: center;
   font-size: 0.85rem; font-weight: 700; color: var(--accent);
 }
-.acct-menu-caret { font-size: 0.7rem; color: var(--muted); }
+.acct-menu-caret {
+  font-size: 0.95rem; line-height: 1; color: var(--fg);
+  transition: transform 0.15s;
+}
+.acct-menu-trigger[aria-expanded="true"] .acct-menu-caret { transform: rotate(180deg); }
 .acct-menu-pop {
   position: absolute; top: calc(100% + 0.4rem); right: 0; min-width: 9rem;
   display: flex; flex-direction: column; padding: 0.3rem;
