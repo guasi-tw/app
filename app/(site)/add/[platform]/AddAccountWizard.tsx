@@ -9,12 +9,13 @@ type Props = {
   label: string;
   rid: string;
   template: string;
+  postUrlPlaceholder: string;
   composeIntentUrl: string | null;
   igNote?: boolean;
   recover?: string | null;
 };
 
-export function AddAccountWizard({ platform, label, rid, template, composeIntentUrl, igNote, recover }: Props) {
+export function AddAccountWizard({ platform, label, rid, template, postUrlPlaceholder, composeIntentUrl, igNote, recover }: Props) {
   const [state, action, pending] = useActionState<SubmitState, FormData>(submitProofUrlAction, {});
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
@@ -72,7 +73,7 @@ export function AddAccountWizard({ platform, label, rid, template, composeIntent
         <input type="hidden" name="platform" value={platform} />
         <input type="hidden" name="rid" value={rid} />
         {recover ? <input type="hidden" name="recover" value={recover} /> : null}
-        <input id="url" name="url" type="url" required placeholder={`https://www.threads.net/@你的帳號/post/…`} className="input" />
+        <input id="url" name="url" type="url" required placeholder={postUrlPlaceholder} className="input" />
         {state.error ? <p className="error">{state.error}</p> : null}
         <button type="submit" className="btn-primary" disabled={pending}>
           {pending ? "驗證中…" : "驗證並繼續 →"}

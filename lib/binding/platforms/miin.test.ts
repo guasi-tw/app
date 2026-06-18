@@ -40,6 +40,7 @@ describe("miinAdapter.profileUrl + fields", () => {
     expect(miinAdapter.serviceTag).toBe("@gua_si_tw");
     expect(miinAdapter.hashtag).toBe("#guasi");
     expect(miinAdapter.slugEligible).toBe(false);
+    expect(miinAdapter.postUrlPlaceholder).toBe("https://miin.cc/story/…"); // miin example, not Threads
     expect(miinAdapter.composeIntentUrl).toBeUndefined(); // miin has no prefilled compose intent
   });
 });

@@ -106,6 +106,7 @@ export const miinAdapter: PlatformAdapter = {
   serviceTag: "@gua_si_tw",
   hashtag: "#guasi", // miin supports pasteable hashtags
   slugEligible: false, // a miin handle may not mint a slug (§1 out-of-scope rationale)
+  postUrlPlaceholder: "https://miin.cc/story/…",
   profileUrl: (handle: string) => `https://miin.cc/user/${handle}`,
   parsePostUrl,
   resolvePost,

@@ -77,7 +77,7 @@ export default async function ConfirmPage({
             這次不會重複綁定。日後若要更新證明（重新驗證），可到你的{" "}
             <strong>分身管理</strong> 操作（即將推出）。
           </p>
-          <a className="btn-primary" href={user.slug ? `/gua/${user.slug}` : `/r/${user.shortRef}`}>
+          <a className="btn-primary" href={user.slug ? `/gua/${user.slug}?view=manage` : `/r/${user.shortRef}`}>
             返回我的正身
           </a>
           <form action={cancelRequestAction}>

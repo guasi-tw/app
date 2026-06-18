@@ -113,6 +113,7 @@ export default async function AddAccountPage({
         label={adapter.label}
         rid={req!.id}
         template={template}
+        postUrlPlaceholder={adapter.postUrlPlaceholder}
         composeIntentUrl={adapter.composeIntentUrl ? adapter.composeIntentUrl(template) : null}
         igNote={platform === "instagram"}
         recover={recover ?? null}

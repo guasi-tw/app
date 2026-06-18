@@ -15,6 +15,15 @@ async function ownedResolvedRequest(rid: string, platform: string) {
   return { user, req: req! };
 }
 
+/**
+ * Where to land an owner after a bind/cancel/recover: their **management tab**, so they return to
+ * the surface they manage 分身 from (not the public card). A provisioned owner → `/gua/{slug}?view=manage`;
+ * a slug-less owner → `/r/{shortRef}` (which already renders the manage view inline).
+ */
+function manageHref(user: { slug: string | null; shortRef: string }): string {
+  return user.slug ? `/gua/${user.slug}?view=manage` : `/r/${user.shortRef}`;
+}
+
 /** §D.3 ordinary bind (owner already provisioned): commit non-main with the chosen visibility. */
 export async function confirmOrdinaryAction(formData: FormData): Promise<void> {
   const platform = String(formData.get("platform") ?? "");
@@ -27,8 +36,8 @@ export async function confirmOrdinaryAction(formData: FormData): Promise<void> {
     redirect(`/add/${platform}/confirm?rid=${rid}&err=dup`);
   }
   // Falls through here on success AND on not_resolvable (double-submit after a prior commit) —
-  // both mean "the binding is done", so land the user on their 正身.
-  redirect(user.slug ? `/gua/${user.slug}` : `/r/${user.shortRef}`);
+  // both mean "the binding is done", so land the user on their 正身 management tab.
+  redirect(manageHref(user));
 }
 
 /** §D.4 confirm-as-slug: commit as main + force public + mint slug. */
@@ -42,7 +51,8 @@ export async function confirmAsSlugAction(formData: FormData): Promise<void> {
     redirect(`/add/${platform}/confirm?rid=${rid}&err=${res.error}`); // slug_taken | duplicate_binding
   }
   // mintSlug:true always derives a slug on success; fall back to the short ref if somehow null.
-  redirect(res.slug ? `/gua/${res.slug}` : `/r/${user.shortRef}`);
+  // Land on the management tab so the new owner can keep adding/managing 分身.
+  redirect(res.slug ? `/gua/${res.slug}?view=manage` : `/r/${user.shortRef}`);
 }
 
 /** §D.3 wrong-account / §D.4 取消: a real cancel — commit nothing. */
@@ -51,7 +61,7 @@ export async function cancelRequestAction(formData: FormData): Promise<void> {
   const rid = String(formData.get("rid") ?? "");
   const { user, req } = await ownedResolvedRequest(rid, platform);
   await cancelRequest(req.id);
-  redirect(user.slug ? `/gua/${user.slug}` : `/r/${user.shortRef}`);
+  redirect(manageHref(user));
 }
 
 /** §C.4 confirm recovery: re-verify the SAME account (guarded), then return to the 正身 page. */
@@ -67,12 +77,12 @@ export async function recoverAction(formData: FormData): Promise<void> {
   }
   const linked = await findLinkedAccount(user.id, platform as Platform, recover);
   if (!linked) {
-    redirect(user.slug ? `/gua/${user.slug}` : `/r/${user.shortRef}`);
+    redirect(manageHref(user));
   }
   const res = await reverifyBinding({ requestId: req.id, linkedAccountId: linked!.id });
   if (!res.ok) {
     redirect(`/add/${platform}/confirm?rid=${rid}&recover=${encodeURIComponent(recover)}&err=${res.error}`);
   }
   if (user.slug) revalidatePath(`/gua/${user.slug}`);
-  redirect(user.slug ? `/gua/${user.slug}` : `/r/${user.shortRef}`);
+  redirect(manageHref(user));
 }
