@@ -83,10 +83,10 @@ Working list of next steps. For current product/identity decisions see [`CLAUDE.
     chips + functional 登出/切換帳號); `listIdentityAccounts` read model; adapter `profileUrl`; Google
     `select_account`; 複製連結 share; 時間軸 placeholder.
   - [ ] **Slice 4 — Timeline tab** — render the append-only `binding_events` ledger (+ `created_at`).
-  - [x] **Slice 5 — Manage tab** — ✅ done (v0.14.0), **PR open**: disclose (one-way), set-as-main
-    (forces public), condition flags (banned/hacked), 恢復·重新驗證, profile-edit surface
+  - [x] **Slice 5 — Manage tab** — ✅ done (v0.14.0), **merged + tagged** (2026-06-18): disclose (one-way),
+    set-as-main (forces public), condition flags (banned/hacked), 恢復·重新驗證, profile-edit surface
     (`/settings` + `/settings/avatar`), multi-line bio, `onboardedAt` routing. Two-phase release
-    (Release 1 schema merged; Release 2 features in PR). Built from the approved
+    (Release 1 schema + Release 2 features both merged; tagged `v0.14.0`). Built from the approved
     [`slice5-manage-tab-design.md`](docs/superpowers/specs/2026-06-17-slice5-manage-tab-design.md) +
     [plan](docs/superpowers/plans/2026-06-17-slice5-manage-tab.md).
     - [x] **Re-verify of an already-bound account** (deferred from Slice 2, decided 2026-06-16): the
