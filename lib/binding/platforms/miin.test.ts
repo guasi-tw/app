@@ -149,3 +149,61 @@ describe("miinAdapter.resolvePost (happy path)", () => {
     expect((await miinAdapter.resolvePost(PARSED, "012345")).displayName).toBeNull();
   });
 });
+
+describe("miinAdapter.resolvePost (failure taxonomy + logging)", () => {
+  function expectLogged(spy: ReturnType<typeof vi.spyOn>, kind: string, status: number | null) {
+    expect(spy).toHaveBeenCalledWith(
+      "[miin.resolvePost] fetch failed",
+      expect.objectContaining({ kind, storyId: "12345", status }),
+    );
+  }
+
+  it("classifies a network/fetch rejection as `network` (status null) and throws", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNRESET")));
+    await expect(miinAdapter.resolvePost(PARSED, "012345")).rejects.toThrow(/network/);
+    expectLogged(spy, "network", null);
+    spy.mockRestore();
+  });
+
+  it("classifies 401/403 as `auth_required` (the headline lockdown risk) and throws", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.stubGlobal("fetch", mockJson({}, { ok: false, status: 403 }));
+    await expect(miinAdapter.resolvePost(PARSED, "012345")).rejects.toThrow(/auth_required/);
+    expectLogged(spy, "auth_required", 403);
+    spy.mockRestore();
+  });
+
+  it("classifies 429 as `rate_limited` and throws", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.stubGlobal("fetch", mockJson({}, { ok: false, status: 429 }));
+    await expect(miinAdapter.resolvePost(PARSED, "012345")).rejects.toThrow(/rate_limited/);
+    expectLogged(spy, "rate_limited", 429);
+    spy.mockRestore();
+  });
+
+  it("classifies other non-2xx as `http_error` and throws", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.stubGlobal("fetch", mockJson({}, { ok: false, status: 500 }));
+    await expect(miinAdapter.resolvePost(PARSED, "012345")).rejects.toThrow(/http_error/);
+    expectLogged(spy, "http_error", 500);
+    spy.mockRestore();
+  });
+
+  it("classifies a 2xx with missing author as `shape_mismatch` and throws", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.stubGlobal("fetch", mockJson({ story: { data: { title: [], content: [] } } }));
+    await expect(miinAdapter.resolvePost(PARSED, "012345")).rejects.toThrow(/shape_mismatch/);
+    expectLogged(spy, "shape_mismatch", 200);
+    spy.mockRestore();
+  });
+
+  it("NEVER logs the auth code in the structured payload", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.stubGlobal("fetch", mockJson({}, { ok: false, status: 403 }));
+    await expect(miinAdapter.resolvePost(PARSED, "424242")).rejects.toThrow();
+    const logged = JSON.stringify(spy.mock.calls);
+    expect(logged).not.toContain("424242");
+    spy.mockRestore();
+  });
+});

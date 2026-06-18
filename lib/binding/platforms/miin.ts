@@ -7,6 +7,19 @@
 import { textHasCode } from "../code";
 import type { ParsedPostUrl, PlatformAdapter, ResolvedPost } from "./types";
 
+// miin's API is UNOFFICIAL (public + unauthenticated today, versioned v2/v3, could add auth /
+// rate-limits / change shape without notice). Every failure logs ONE structured, greppable line
+// (Vercel runtime logs — no log-aggregation service yet) then throws, so an operator can tell WHY
+// it broke. `kind` makes a lockdown (auth_required / rate_limited) visually distinct from a
+// transient blip (network) or a silent contract break (shape_mismatch) at a glance.
+type FailureKind = "network" | "auth_required" | "rate_limited" | "http_error" | "shape_mismatch";
+
+function failResolve(kind: FailureKind, storyId: string, status: number | null, message: string): never {
+  // NO PII, and NEVER the auth code — storyId is a public id; `message` is a fetch/HTTP detail only.
+  console.error("[miin.resolvePost] fetch failed", { kind, storyId, status, message });
+  throw new Error(`miin.resolvePost failed: ${kind}`);
+}
+
 // Canonical story path: /story/<numeric id>. The id is the trailing number of miin.cc/story/<id>.
 const STORY_PATH = /^\/story\/(\d+)\/?$/;
 
@@ -40,8 +53,28 @@ function parsePostUrl(raw: string): ParsedPostUrl | null {
 
 async function resolvePost(parsed: ParsedPostUrl, code: string): Promise<ResolvedPost> {
   const storyId = parsed.postId;
-  const resp = await fetch(parsed.fetchUrl, { headers: { Accept: "application/json" } });
-  const body: unknown = await resp.json();
+
+  let resp: Response;
+  try {
+    resp = await fetch(parsed.fetchUrl, { headers: { Accept: "application/json" } });
+  } catch (e) {
+    failResolve("network", storyId, null, e instanceof Error ? e.message : String(e));
+  }
+
+  if (!resp.ok) {
+    const kind: FailureKind =
+      resp.status === 401 || resp.status === 403 ? "auth_required"
+      : resp.status === 429 ? "rate_limited"
+      : "http_error";
+    failResolve(kind, storyId, resp.status, `HTTP ${resp.status}`);
+  }
+
+  let body: unknown;
+  try {
+    body = await resp.json();
+  } catch (e) {
+    failResolve("shape_mismatch", storyId, resp.status, e instanceof Error ? e.message : String(e));
+  }
 
   // Authoritative author — miin's own data keyed by the storyId we validated (§6.3), never parsed
   // from user page content. Nested shape per platform-verification §3.3.
@@ -49,7 +82,7 @@ async function resolvePost(parsed: ParsedPostUrl, code: string): Promise<Resolve
   const authorData = (data?.author as { data?: Record<string, unknown> } | undefined)?.data;
   const username = authorData?.username;
   if (!data || typeof username !== "string" || !username.trim()) {
-    throw new Error("miin.resolvePost failed: shape_mismatch");
+    failResolve("shape_mismatch", storyId, resp.status, "missing story.data.author.data.username");
   }
 
   const handle = username; // as returned (§3.2)
