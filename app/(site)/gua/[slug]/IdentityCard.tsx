@@ -64,18 +64,9 @@ export function IdentityCard({
   return (
     <main className="idcard">
       <header className="id-header">
-        {avatarUrl && <img className="id-avatar" src={avatarUrl} alt="" />}
-        <h1 className="id-name">{displayName}</h1>
-        {bio && <p className="id-bio">{bio}</p>}
-        {manage && (
-          <a className="btn-secondary sm" href="/settings">編輯個人資料</a>
-        )}
-        <span className="id-badge">{count} 個分身</span>
-        {lockManage && (
-          <div className="banner">🔒 你的正身頁尚未公開（只有你看得到）</div>
-        )}
         {isOwner && !lockManage && (
-          // An on/off switch (not a two-tab control): off = 公開檢視, on = 管理模式.
+          // An on/off switch (not a two-tab control), pinned at the very top above the avatar:
+          // off = 公開檢視, on = 管理模式.
           <div className="id-switch">
             <span className="id-switch-label">管理模式</span>
             <button
@@ -89,6 +80,16 @@ export function IdentityCard({
               <span className="knob" aria-hidden />
             </button>
           </div>
+        )}
+        {avatarUrl && <img className="id-avatar" src={avatarUrl} alt="" />}
+        <h1 className="id-name">{displayName}</h1>
+        {bio && <p className="id-bio">{bio}</p>}
+        {manage && (
+          <a className="btn-secondary sm" href="/settings">編輯個人資料</a>
+        )}
+        <span className="id-badge">{count} 個分身</span>
+        {lockManage && (
+          <div className="banner">🔒 你的正身頁尚未公開（只有你看得到）</div>
         )}
       </header>
 
