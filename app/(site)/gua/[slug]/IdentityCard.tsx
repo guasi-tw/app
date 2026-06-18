@@ -136,7 +136,7 @@ export function IdentityCard({
           {manage && (
             // Add a new 分身 — sits at the top, above the main account.
             <a className="btn-secondary id-add-account" href="/add">
-              {lockManage ? "＋ 驗證主要帳號" : "＋ 註冊分身"}
+              {lockManage ? "＋ 驗證主要帳號" : "＋ 綁定分身"}
             </a>
           )}
           <div className="acct-list">

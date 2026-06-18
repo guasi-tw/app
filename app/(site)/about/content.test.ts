@@ -39,7 +39,7 @@ describe("aboutContent — accuracy constraints", () => {
   it("has three how-it-works steps in order", () => {
     expect(aboutContent.how.steps.map((s) => s.title)).toEqual([
       "建立正身",
-      "註冊分身",
+      "綁定分身",
       "驗明正身",
     ]);
   });
