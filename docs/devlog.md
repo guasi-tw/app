@@ -51,7 +51,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 **What was built:**
 - **`listTimelineEvents(userId, { includePrivate })`** read model (`lib/identity/timeline.ts`) — joins
   `BindingEvent → LinkedAccount → ProofRecord` **in application code** (no Prisma relations exist between
-  them): 2 indexed queries (user+accounts in parallel, then events oldest-first) + a batched proof-URL
+  them): 3 indexed reads (user + accounts in parallel, then events oldest-first) + a batched proof-URL
   fetch. Applies the **per-account current-visibility leak filter** and prepends the synthetic **建立正身**
   genesis row (`onboardedAt ?? createdAt`). 6 DB-backed tests (visibility, owner `isPrivate` flag,
   disclosure-history, proof-attach, order, orphan-event skip).
@@ -78,6 +78,10 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
   error** — `tsc` guards copy coverage across all 7 `BindingEventType` values + genesis.
 - `[gotcha]` The DB suite **self-skips when `DATABASE_URL` is unset**; run it with the var explicitly
   (`DATABASE_URL=… npx vitest run`) or a green-but-skipped suite masquerades as verified.
+
+---
+
+## v0.15.0-design — Slice 4 (Timeline tab) design (2026-06-18)
 
 **Review:** not yet
 
