@@ -31,7 +31,7 @@ stripped from the URL.
 |-----|------|------|--------|---------|
 | `/` | `app/(site)/page.tsx` | public | yes | Home / wordmark. Logged in → link to 我的正身; logged out → login CTA. |
 | `/about` | `app/(site)/about/page.tsx` | public | yes | 關於 guasi marketing page. Copy in `content.ts`, styled by `about.module.css`. |
-| `/login` | `app/(site)/login/page.tsx` | public | yes | Google OAuth sign-in → `/post-login`. **Already logged in → redirected to their own 正身** (`ownerHomePath`: `/gua/{slug}` if a slug exists, else `/r/{shortRef}`) — no login button shown to a signed-in user. |
+| `/login` | `app/(site)/login/page.tsx` | public | yes | Google OAuth sign-in → `/post-login`. **Already logged in → redirected to their own 正身** (`ownerHomePath`). The header 登入/免費註冊 buttons now start Google **directly** (skip this page); `/login` remains the fallback for protected-route redirects and the future multi-method (email) picker. |
 | `/onboarding` | `app/(site)/onboarding/page.tsx` | required | yes | Set avatar / display name / bio for the 正身. |
 | `/add` | `app/(site)/add/page.tsx` | required | yes | Platform picker driven off `PLATFORM_CATALOG` (Threads + miin.cc active; IG 施工中). Slug-ineligible platforms (miin.cc) are **hidden entirely** for a slug-less user — their first bind must mint a slug. |
 | `/add/{platform}` | `app/(site)/add/[platform]/page.tsx` | required | yes | Per-platform 分身 binding: produce the verification post template + wizard. Unknown platform → 404. `?recover={accountId}` scopes the flow to **re-verify** an existing flagged 分身 (§C.4) rather than bind a new one. |
