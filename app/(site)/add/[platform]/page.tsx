@@ -1,9 +1,10 @@
 // app/add/[platform]/page.tsx
 import { notFound, redirect } from "next/navigation";
+import type { Platform } from "@prisma/client";
 import { getCurrentUser } from "@/lib/identity/session";
 import { getAdapter } from "@/lib/binding/platforms";
 import { buildVerificationPost, profileUrlFor } from "@/lib/binding/template";
-import { findRequestById, isExpired } from "@/lib/binding/repo";
+import { findLinkedAccount, findRequestById, isExpired } from "@/lib/binding/repo";
 import { createRequestAction } from "./actions";
 import { AddAccountWizard } from "./AddAccountWizard";
 
@@ -24,6 +25,15 @@ export default async function AddAccountPage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
+  // Recovery (§C.4): the flow is scoped to re-verifying ONE existing 分身. Resolve its real
+  // handle (recover carries the platform accountId) so the copy can name the exact account the
+  // proof post must come from — and fall back to the raw value if it's not a real binding.
+  const recoverAccount = recover
+    ? await findLinkedAccount(user.id, platform as Platform, recover)
+    : null;
+  const recoverHandle = recoverAccount?.handle ?? recover ?? null;
+  const heading = recover ? `重新驗證 · ${adapter.label}` : `註冊分身 · ${adapter.label}`;
+
   // No active request yet → show the "produce the template" button (creates + reveals via ?rid=).
   const req = rid ? await findRequestById(rid) : null;
   const haveLiveReq = req && req.userId === user.id && req.platform === platform && req.status === "pending" && !isExpired(req);
@@ -31,12 +41,19 @@ export default async function AddAccountPage({
   if (!haveLiveReq) {
     return (
       <main className="wrap">
-        <h1 className="wordmark sm">註冊分身 · {adapter.label}</h1>
-        <p className="lede">產生一則含驗證碼的貼文範本，發佈後貼回網址即可完成綁定。</p>
+        <h1 className="wordmark sm">{heading}</h1>
+        {recover ? (
+          <p className="lede">
+            你正在恢復 <strong>@{recoverHandle}</strong> 的驗證。請務必用<strong>這個帳號本人</strong>發佈含驗證碼的貼文並貼回網址
+            —— 系統會確認貼文作者就是這個帳號，再更新證明、恢復其信任狀態。
+          </p>
+        ) : (
+          <p className="lede">產生一則含驗證碼的貼文範本，發佈後貼回網址即可完成綁定。</p>
+        )}
         <form action={createRequestAction}>
           <input type="hidden" name="platform" value={platform} />
           {recover ? <input type="hidden" name="recover" value={recover} /> : null}
-          <button type="submit" className="btn-primary">產生驗證貼文</button>
+          <button type="submit" className="btn-primary">{recover ? "產生重新驗證貼文" : "產生驗證貼文"}</button>
         </form>
       </main>
     );
@@ -51,7 +68,13 @@ export default async function AddAccountPage({
 
   return (
     <main className="wrap">
-      <h1 className="wordmark sm">註冊分身 · {adapter.label}</h1>
+      <h1 className="wordmark sm">{heading}</h1>
+      {recover ? (
+        <p className="lede">
+          正在恢復 <strong>@{recoverHandle}</strong>。請用<strong>這個帳號本人</strong>發佈下方貼文範本 ——
+          必須由原帳號發佈，系統才能確認並恢復其信任狀態。
+        </p>
+      ) : null}
       <AddAccountWizard
         platform={platform}
         label={adapter.label}
