@@ -122,7 +122,10 @@ Working list of next steps. For current product/identity decisions see [`CLAUDE.
       main" picker (the tested `provisionExistingAccount` lib fn still exists, no UI), whether a
       dedicated route/layout beats reusing `IdentityCard`, and the empty (zero-account) case. Revisit
       alongside Slice 5 (Manage) + the 編輯個人資料 surface decision.
-  - [ ] **Later platforms** — IG + miin adapters once the Threads slice proves the `PlatformAdapter` seam.
+  - [x] **miin.cc adapter** — ✅ done (v0.16.0): `miinAdapter` reads via the public `api.miin.cc` JSON
+      API; registered in the registry; `/add` picker hides miin during onboarding (slug-ineligible).
+      Icon glyph still deferred (renders via the brand registry fallback).
+  - [ ] **IG adapter** — the remaining MVP platform once a read path (crawler-UA SSR vs oEmbed) is settled.
 
 - [x] **About page (`/about`)** — ✅ done (v0.11.0), **merged + live**: public, mobile-first
   關於 guasi intro page (Traditional Chinese) ending in a Google-login register CTA. guasi-first narrative
