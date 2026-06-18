@@ -1,13 +1,15 @@
 // lib/binding/platforms/index.ts
 import type { PlatformAdapter } from "./types";
 import { threadsAdapter } from "./threads";
+import { miinAdapter } from "./miin";
 
-// Slice 2: Threads only. Adding IG/miin later = add their adapter to this map. (Presentation is
-// separate: also register the platform's glyph + brand color in PlatformIcon — see
-// docs/product-decisions.md "Platform icon brand identity". Icons are intentionally NOT gated on an
-// adapter so 施工中 tiles can still show their brand mark.)
+// Adding a platform = add its adapter to this map. (Presentation is separate: also register the
+// platform's glyph + brand color in PlatformIcon — see docs/product-decisions.md "Platform icon
+// brand identity". Icons are intentionally NOT gated on an adapter so 施工中 tiles can still show
+// their brand mark. miin's glyph is a deferred follow-up — see the spec §6.)
 const ADAPTERS: Partial<Record<string, PlatformAdapter>> = {
   threads: threadsAdapter,
+  miin: miinAdapter,
 };
 
 /** Look up an adapter by route param. Returns undefined for unknown/not-yet-built platforms (→ 404). */

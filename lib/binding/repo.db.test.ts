@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/client";
 import {
   createBindingRequest,
   findActiveRequest,
+  findLiveRequest,
   findLinkedAccount,
   markResolved,
   cancelRequest,
@@ -44,6 +45,27 @@ describe.skipIf(!hasDb)("binding repo (DB)", () => {
     const req = await createBindingRequest({ userId: u.id, platform: "threads", code: "000111" });
     expect(req.status).toBe("pending");
     expect((await findActiveRequest(u.id, "threads"))?.id).toBe(req.id);
+  });
+
+  it("findLiveRequest returns a live owned pending request, and null for every not-live case", async () => {
+    const u = await freshUser("br-live@example.com", "BrLive001");
+    const other = await freshUser("br-live-oth@example.com", "BrLiveOth");
+    const req = await createBindingRequest({ userId: u.id, platform: "threads", code: "444555" });
+
+    // Live: owned + this platform + pending + unexpired.
+    expect((await findLiveRequest(req.id, u.id, "threads"))?.id).toBe(req.id);
+    // Foreign user / wrong platform / non-existent id → null (gate is in the query).
+    expect(await findLiveRequest(req.id, other.id, "threads")).toBeNull();
+    expect(await findLiveRequest(req.id, u.id, "miin")).toBeNull();
+    expect(await findLiveRequest("does-not-exist", u.id, "threads")).toBeNull();
+    // Non-pending (cancelled) → null.
+    await cancelRequest(req.id);
+    expect(await findLiveRequest(req.id, u.id, "threads")).toBeNull();
+
+    // Expired (pending but elapsed) → null.
+    const stale = await createBindingRequest({ userId: u.id, platform: "threads", code: "666777" });
+    await prisma.bindingRequest.update({ where: { id: stale.id }, data: { expiresAt: new Date(Date.now() - 1000) } });
+    expect(await findLiveRequest(stale.id, u.id, "threads")).toBeNull();
   });
 
   it("commitBinding on a still-pending (unresolved) request returns not_resolvable", async () => {

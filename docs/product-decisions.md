@@ -160,7 +160,42 @@ picker, the per-platform add page, the Accounts tab, the Timeline). The rule:
   adapter, **register the platform's glyph in `PATHS` and (if its brand is colorful) its color/gradient
   in `BRAND`.** A monochrome brand needs only the glyph. Until a glyph is registered, `PlatformIcon`
   renders nothing for that platform (graceful — text label still shows). *(miin.cc currently has no
-  registered glyph — TBD.)*
+  registered glyph — its brand is colorful, but the only assets to hand are a wordmark, which is
+  unsuitable for the square slots; needs a square monogram vector or a `PlatformIcon` image mode.)*
+
+## Adding a new platform — the standard contract
+
+When you add a platform, these are the capabilities every platform is expected to support. Most are
+**automatic** — the add/verify/recover flows are generic over `PlatformAdapter`, so a correct adapter
+inherits them with **no per-platform code**. Keep it that way; if a platform can't satisfy one of
+these, that's a design decision to surface, not to special-case silently.
+
+1. **Adapter** (`lib/binding/platforms/<key>.ts`) implementing `PlatformAdapter`: the read mechanic,
+   the `parsePostUrl` security gate (author from platform authority, never user page content), and a
+   **deterministic `accountId`** for a given account (lowercased handle/username). See "Verification
+   & binding."
+2. **Registry** — one line in `ADAPTERS` (`lib/binding/platforms/index.ts`). This flips the `/add`
+   tile 施工中 → active and un-404s `/add/<key>`.
+3. **Icon** — register the glyph per "Platform icon brand identity" above.
+4. **`slugEligible`** — decide whether a handle proven here may mint a slug (a *main* 分身 source).
+   Threads/IG = yes; miin = no. A slug-ineligible platform can only be bound as a **non-main** 分身 by
+   an already-provisioned owner. **Consequence for the picker:** a slug-less user (onboarding their
+   main) is shown **only slug-eligible platforms** in `/add` — slug-ineligible ones are **hidden
+   entirely** (not shown-disabled), so nobody is led toward a bind that can't mint their slug. A user
+   who already has a slug sees all platforms. (Slug-eligibility must be known even for 施工中 platforms
+   that have no adapter yet — keep it as per-platform metadata consistent with each adapter's
+   `slugEligible`.)
+5. **Recovery / re-verification (恢復·重新驗證) is standard and inherited — do not re-implement it.**
+   A flagged (`banned`/`hacked`) 分身 on any platform is recovered through the **same** path
+   (`/add/<key>?recover={accountId}` → the shared wizard → `resolvePost` → the **same-account guard**
+   in `confirm/page.tsx` → `RecoverConfirm` → `reverifyBinding`). It works for a new platform the
+   moment the adapter is registered. The **one thing the adapter must guarantee** is the deterministic
+   `accountId` (item 1) — that's what lets the guard confirm a re-verification is the *same* account
+   (and correctly refuse it if, e.g., the user renamed their account). The **recover-mode wizard copy
+   is also platform-agnostic** (driven by the `recover` flag + `adapter.label` + the target handle —
+   `重新驗證` verb, the "你正在恢復 @handle…" lede, the `產生重新驗證貼文` button), so a new platform
+   gets the differentiated recovery wording for free, exactly like Threads. The only per-platform copy
+   hook is the optional note slot (e.g. IG's non-clickable-caption `igNote`).
 
 ## Timeline visibility & rendering
 

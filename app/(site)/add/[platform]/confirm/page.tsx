@@ -77,7 +77,7 @@ export default async function ConfirmPage({
             這次不會重複綁定。日後若要更新證明（重新驗證），可到你的{" "}
             <strong>分身管理</strong> 操作（即將推出）。
           </p>
-          <a className="btn-primary" href={user.slug ? `/gua/${user.slug}` : `/r/${user.shortRef}`}>
+          <a className="btn-primary" href={user.slug ? `/gua/${user.slug}?view=manage` : `/r/${user.shortRef}`}>
             返回我的正身
           </a>
           <form action={cancelRequestAction}>
@@ -121,7 +121,9 @@ export default async function ConfirmPage({
             cancel={cancelRequestAction}
           />
         ) : (
-          // Not slug-eligible (future miin-only; currently dead — miin 404s) → cancel only.
+          // Slug-less user on a slug-INELIGIBLE platform (e.g. a slug-less user who URL-types
+          // /add/miin — the picker hides miin, but the route is reachable). Their first bind can't
+          // mint a slug, so there's nothing to accept → cancel only. Fails safe: no slug, no bind.
           <SlugConfirm
             platform={platform}
             platformLabel={adapter.label}

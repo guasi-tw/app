@@ -41,6 +41,8 @@ export interface PlatformAdapter {
   readonly hashtag: string | null;
   /** Whether a slug may be minted from a handle proven here (§A.4 — IG/Threads yes, miin no). */
   readonly slugEligible: boolean;
+  /** Example post URL shown as the paste-input placeholder in the wizard (per-platform, not Threads-only). */
+  readonly postUrlPlaceholder: string;
 
   /** Live public profile URL for a stored (bare, no leading @) handle. */
   profileUrl(handle: string): string;

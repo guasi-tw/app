@@ -4,8 +4,9 @@ import type { Platform } from "@prisma/client";
 import { getCurrentUser } from "@/lib/identity/session";
 import { getAdapter } from "@/lib/binding/platforms";
 import { buildVerificationPost, profileUrlFor } from "@/lib/binding/template";
-import { findLinkedAccount, findRequestById, isExpired } from "@/lib/binding/repo";
+import { findLinkedAccount } from "@/lib/binding/repo";
 import { createRequestAction } from "./actions";
+import { loadWizardRequest } from "./wizardRequest";
 import { AddAccountWizard } from "./AddAccountWizard";
 import { PlatformIcon } from "@/app/(site)/gua/[slug]/PlatformIcon";
 
@@ -67,11 +68,11 @@ export default async function AddAccountPage({
     );
   }
 
-  // No active request yet → show the "produce the template" button (creates + reveals via ?rid=).
-  const req = rid ? await findRequestById(rid) : null;
-  const haveLiveReq = req && req.userId === user.id && req.platform === platform && req.status === "pending" && !isExpired(req);
+  // Resolve the wizard request, or strip a stale/foreign/expired/used rid from the URL (shared rule
+  // across every platform — see loadWizardRequest). No rid → null → "produce the template" screen.
+  const req = await loadWizardRequest(platform, user.id, rid ?? "", recover ?? "");
 
-  if (!haveLiveReq) {
+  if (!req) {
     return (
       <main className="wrap">
         <PlatformHeading platform={platform} label={adapter.label} verb={verb} />
@@ -96,7 +97,7 @@ export default async function AddAccountPage({
     hashtag: adapter.hashtag, // null for Threads (no pasteable hashtags)
     serviceTag: adapter.serviceTag,
     profileUrl: profileUrlFor(user),
-    code: req!.code,
+    code: req.code,
   });
 
   return (
@@ -111,8 +112,9 @@ export default async function AddAccountPage({
       <AddAccountWizard
         platform={platform}
         label={adapter.label}
-        rid={req!.id}
+        rid={req.id}
         template={template}
+        postUrlPlaceholder={adapter.postUrlPlaceholder}
         composeIntentUrl={adapter.composeIntentUrl ? adapter.composeIntentUrl(template) : null}
         igNote={platform === "instagram"}
         recover={recover ?? null}

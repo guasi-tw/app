@@ -28,7 +28,11 @@ export async function createRequestAction(formData: FormData): Promise<void> {
   redirect(`/add/${platform}?rid=${req.id}${recover ? `&recover=${encodeURIComponent(recover)}` : ""}`);
 }
 
-export type SubmitState = { error?: string };
+export type SubmitState = {
+  error?: string;
+  /** True when the request expired — the wizard renders a clickable 重新產生貼文範本 regenerate action. */
+  expired?: boolean;
+};
 
 /** Resolve the pasted post URL through platform authority + match the code (§6.3 / §D.2). */
 export async function submitProofUrlAction(
@@ -47,7 +51,7 @@ export async function submitProofUrlAction(
 
   const req = await findRequestById(rid);
   if (!req || req.userId !== user.id || req.platform !== platform) return { error: "找不到驗證請求，請重新開始" };
-  if (req.status !== "pending" || isExpired(req)) return { error: "驗證碼已過期，請重新產生貼文範本" };
+  if (req.status !== "pending" || isExpired(req)) return { error: "驗證碼已過期", expired: true };
 
   // Security gate: validate URL against THIS platform BEFORE any fetch (§D.2). (`platform` arrives via
   // FormData, but it's already cross-checked against the authoritative req.platform DB row above.)
