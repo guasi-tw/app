@@ -58,7 +58,7 @@ not only in a one-off plan/spec.
 
 - [`docs/first_thought.md`](docs/first_thought.md) — the original raw idea (Traditional Chinese).
 - [`docs/product-pitch.md`](docs/product-pitch.md) — non-technical product overview for pitching, organized by actor (Traditional Chinese).
-- [`docs/product-decisions.md`](docs/product-decisions.md) — current **product/identity decisions**: public-URL & slug provisioning, anti-squatting, binding uniqueness, 404 anti-enumeration. The rules + rationale behind CLAUDE.md "Locked decisions."
+- [`docs/product-decisions.md`](docs/product-decisions.md) — the **single source of truth** for **product/identity decisions** (rules + rationale): public-URL & slug provisioning, anti-squatting, binding uniqueness, 404 anti-enumeration, trust & proof model, verification & binding, 正身 profile, account status & lifecycle, platform-icon identity, timeline visibility. CLAUDE.md "Locked decisions" holds the one-liners and points here for detail.
 - [`docs/brand-and-voice.md`](docs/brand-and-voice.md) — **naming, language, voice & marketing-copy** decisions: brand 我是 vs tagline 我是正身 vs concept 正身, domain/handles, 繁中/Taiwan vocab, the actor-clarity rule, and the welcomed pun/wordplay voice. The detail behind the Conventions quick-rules.
 - [`docs/platform-verification.md`](docs/platform-verification.md) — empirical capability matrix for reading the **author** and **code-bearing text** on Threads / IG / miin.cc, across post & bio methods. How-to recipes, the URL-handle spoof proof, Vercel render weights, and an evidence log (verified 2026-06-15). Source of truth for platform read mechanics.
 - [`docs/deployment.md`](docs/deployment.md) — deployment model (one Vercel app + managed Neon/Blob), CI/CD via Vercel's git integration, modular-monolith→Turborepo repo strategy, and repo/naming conventions. The north-star plan for infra; §5 is the scaffold checklist.
@@ -96,78 +96,47 @@ with proof links.
   Adding a platform = register its glyph (+ brand color if colorful). Rule + rationale in
   [`docs/product-decisions.md`](docs/product-decisions.md) "Platform icon brand identity".
 - **Spec depth:** product + architecture (not full technical spec).
-- **Trust model:** centralized DB for MVP, but persist **immutable proof records**
-  (not just a `verified` flag) so Phase 2 publicly-verifiable proofs is additive.
-- **Proof snapshot — deferred to Phase 2 (MVP links to the live post):** the long-term plan
-  is self-contained evidence (content + screenshot) + a third-party archive, because a banned
-  account's post is gone exactly when proof matters. **MVP ships link-to-live-post only** —
-  `ProofRecord` stores the canonical `proofPostUrl`; the snapshot/archive columns exist but are
-  unused until Phase 2 (additive, no migration needed then).
-- **Append-only public ledger:** bindings and unbindings are permanent events, never
-  deletions. **Public = permanent (unbind is a visible event); private stays private.**
-- **Unbinding — deferred (no self-service unbind in MVP):** the model treats unbind as a
-  permanent ledger event with a reason (hacked / unneeded / sold). **MVP ships no unbind UI** —
-  trust-lowering is condition flags (banned/hacked) + 恢復·重新驗證 only (status reserved in the
-  schema).
-- **Binding uniqueness — per-正身, not global:** the DB constraint is
-  `@@unique([userId, platform, accountId])`. The *same* platform account can be legitimately
-  bound by *different* 正身 (shared / transferred ownership) — disambiguated by 驗證時間, not
-  blocked. There is **no** global "one owner per account" lock.
-- **Verification timeline:** surface *when* each account was verified (older = more
-  credible).
+- **Trust & proof model:** centralized DB for MVP, but persist **immutable `ProofRecord`s** (not
+  just a `verified` flag) so Phase-2 public proofs are additive; **proof snapshot/archive deferred —
+  MVP links to the live post**. Detail → [`docs/product-decisions.md`](docs/product-decisions.md)
+  "Trust & proof model".
+- **Account status & lifecycle:** **append-only ledger** (bindings/unbindings are permanent events,
+  never deletions — public = permanent, private stays private); owner self-service **banned/hacked**
+  flags (trust-lowering only); **recovery requires re-verification**; **no self-service unbind in MVP**
+  (`unbound` reserved). Detail → [`docs/product-decisions.md`](docs/product-decisions.md)
+  "Account status & lifecycle".
+- **Binding uniqueness — per-正身, not global** (`@@unique([userId, platform, accountId])`): the same
+  account can be bound by different 正身, disambiguated by 驗證時間 — no global "one owner" lock. Detail →
+  [`docs/product-decisions.md`](docs/product-decisions.md) "Binding uniqueness".
 - **Timeline (§E.2) rendering — shipped Slice 4 (v0.15.0):** the 時間軸 tab renders the
   append-only `BindingEvent` ledger, oldest-first, with a synthetic 建立正身 genesis row.
   **Leak defense = per-account *current*-visibility filter** (a still-private account is fully
   withheld; a disclosed account shows its whole history at once). No cache, no schema change.
   Rule + rationale in [`docs/product-decisions.md`](docs/product-decisions.md) "Timeline
   visibility & rendering".
-- **正身 profile:** each 正身 has an avatar, brief description, and a designated **main 分身**
-  (a `is_main` flag on a bound account — *not* a free-form URL; at most one per user;
-  **the first binding is accepted as the main 分身** — which is what mints the slug — and is
-  changeable later on the 分身管理 page). The public
-  驗明正身 page is a Linktree-like profile for a *verified* identity.
-- **Account status management (§6.8):** owner can mark a 分身 banned/hacked **self-service
-  (login only)** — these only *lower* trust, and a hijacker can't remove a flag they don't
-  control. Marking it **recovered/unbanned requires re-verification** (a trust-restoring
-  claim). All status changes are append-only ledger events shown in the timeline.
-- **Site login:** passwordless — **MVP ships Google OAuth only** (via Auth.js); email
-  magic-link/OTP is planned but **deferred / not yet built**. No passwords. This is *site login*
-  and is unrelated to the "no platform OAuth for identity" rule below (logging in with Google ≠
-  proving you own a Threads/IG account).
-- **Verification model:** public-post proof **only**. No DMs. No platform OAuth for
-  identity (so Meta can't gate who gets verified).
-- **Binding flow (§6.2):** user picks platform (optionally pre-declares the handle, as a
-  confirmation aid only) → we give a copy-paste template containing a 6-digit auth code, a
-  `@gua.si.tw` tag, and the user's 驗明正身 page URL → user posts it → **pastes the URL back
-  (manual paste is the MVP primary path — synchronous & more responsive than a mention
-  webhook; auto-capture deferred to Phase 2)**. **The verification post doubles as the growth
-  engine** (public + links back), the built-in answer to 行銷困難.
-- **Verification security model (§6.2/§6.3/§8):** the **bound 分身 is the proof post's
-  author, resolved from platform authority** (oEmbed/API or strictly-validated canonical URL
-  — never user-supplied page content). The author-match target is the *specific 分身*, never
-  the 正身 identity name or the `@gua.si.tw` tag; **many 分身 per platform** are allowed, each
-  its own binding request. The **auth code is scoped to one binding request, single-use, and
-  expiring** — a leaked/copied code is useless in any other session. 6 digits is fine because
-  security = author-match + scope + expiry, not entropy. (Data model: `binding_requests`
-  table holds the pending state.) IG caption links aren't clickable (Threads' are).
-- **Reading the post:** platform API (oEmbed) *or* public web fetch is acceptable,
-  chosen per-platform; keep web fetch as a fallback so a revoked API token can't take the
-  service down. (This is separate from the "no OAuth for identity" rule.) **Shipped: Threads via
-  tokenless crawler-UA SSR** — see [`docs/platform-verification.md`](docs/platform-verification.md)
-  for the settled per-platform mechanics.
-- **Name:** **正身 (tsiànn-sin)** is the product concept term used in the UI
-  ("create your 正身"). **我是 / `guasi`** is the brand & domain. **Tagline: 我是正身.**
-  Domain **`guasi.tw` is registered** (the website domain). Handle `@gua.si.tw` registered
-  on IG (also secures Threads). `guasi.com` taken / `guasi.id` available — both optional,
-  later. Japanese-pun alt `guatasi`/`guatashi` was set aside for coherence with 正身.
-- **Tech stack (MVP — locked, all on Vercel):** Next.js + TypeScript on **Vercel**;
-  **Neon** (serverless Postgres) via Prisma — pooled connection for queries, direct URL for
-  migrations; **Auth.js** (Google OAuth — Prisma adapter; email magic-link/OTP deferred) with
-  **transactional email via Resend from a `send.guasi.tw` subdomain** (iCloud Custom Email stays
-  on root `guasi.tw` for *receiving* only — separate job, never used to send); images
-  (snapshots + avatars) in **Vercel Blob / R2**; async screenshot + archive via a
-  serverless queue calling an **external screenshot API**. GCP (Cloud Run + Cloud SQL) stays
-  a portable future escape hatch. (Spec §12.)
+- **正身 profile:** avatar + bio + a single designated **main 分身** (`is_main` flag; the **first
+  binding becomes main and mints the slug**; changeable later, the slug stays). The public 驗明正身
+  page is a Linktree-like profile for a *verified* identity. Detail →
+  [`docs/product-decisions.md`](docs/product-decisions.md) "正身 profile & main 分身".
+- **Site login:** passwordless — **MVP ships Google OAuth only** (Auth.js); email magic-link/OTP is
+  **deferred** (design → [`docs/email-login-design.md`](docs/email-login-design.md)). No passwords.
+  Unrelated to the "no platform OAuth for *identity*" rule (Google login ≠ proving you own a Threads/IG
+  account).
+- **Verification model:** public-post proof **only** — no DMs, **no platform OAuth for identity**; the
+  bound 分身 = the post's author resolved from platform authority; auth code scoped/single-use/expiring
+  (6 digits); older = more credible; per-platform read with a web-fetch fallback (Threads shipped via
+  crawler-UA SSR). Detail → [`docs/product-decisions.md`](docs/product-decisions.md) "Verification &
+  binding" (+ [`docs/platform-verification.md`](docs/platform-verification.md) for read mechanics).
+- **Binding flow (§6.2):** pick platform → copy-paste template (6-digit code + `@gua.si.tw` tag +
+  驗明正身 URL) → post → **paste the URL back (manual = MVP primary path)**; the verification post doubles
+  as the growth engine. Detail → [`docs/product-decisions.md`](docs/product-decisions.md) "Verification &
+  binding".
+- **Name / brand:** **正身 (tsiànn-sin)** = the product concept (UI copy); **我是 / `guasi`** = the brand
+  & domain (`guasi.tw` registered); **我是正身** = the tagline. Full naming/domain/handle detail →
+  [`docs/brand-and-voice.md`](docs/brand-and-voice.md). (Quick rules also under Conventions below.)
+- **Tech stack (MVP — all on Vercel):** Next.js + TS · Neon/Prisma · Auth.js (Google) · Resend email
+  (`send.guasi.tw`) · Vercel Blob. Full locked stack → [`docs/deployment.md`](docs/deployment.md)
+  "Locked stack (MVP)".
 
 ## Open questions / TBD
 - Per-platform post-fetch strategy (oEmbed vs web fetch) and its fragility budget (Threads settled — crawler-UA SSR; IG/miin TBD as they ship).

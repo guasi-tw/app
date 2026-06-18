@@ -20,6 +20,18 @@
 
 `[gotcha]` Prisma on serverless: **pooled** Neon connection string for queries, **direct** (non-pooled) URL for migrations. Mixing them up exhausts connections or breaks migrations.
 
+### Locked stack (MVP) — all on Vercel
+
+The full MVP stack (this is the canonical list; CLAUDE.md carries only the one-liner):
+
+- **App:** Next.js + TypeScript on **Vercel**.
+- **DB:** **Neon** (serverless Postgres) via **Prisma** — pooled URL for queries, direct URL for migrations (above).
+- **Auth:** **Auth.js** with the Prisma adapter — **Google OAuth** for MVP; email magic-link/OTP is **deferred** (design in [`email-login-design.md`](email-login-design.md)).
+- **Transactional email:** **Resend**, sending from a **`send.guasi.tw`** subdomain. The root **`guasi.tw`** zone runs **iCloud Custom Email for *receiving* only** — a separate job, never used to send. (Don't touch the iCloud MX/SPF/DKIM/DMARC records when changing web hosting.) Service inventory in [`services.md`](services.md).
+- **Images** (avatars now; proof snapshots in Phase 2): **Vercel Blob** / R2.
+- **Async screenshot + archive** (Phase 2): a serverless queue calling an **external screenshot API**.
+- **Escape hatch:** **GCP** (Cloud Run + Cloud SQL) remains a portable future fallback — not used for MVP.
+
 ---
 
 ## 2. CI/CD **[DECIDED]**

@@ -45,6 +45,67 @@ can be legitimately bound by different 正身 (shared / transferred ownership); 
 驗證時間, never blocked. There is **no** global "one owner per account" lock. (Also in CLAUDE.md
 Locked decisions.)
 
+## Trust & proof model
+
+- **Centralized DB for MVP, but persist *immutable proof records*** — not just a `verified` boolean.
+  `ProofRecord` captures the binding as it was at verification time, so **Phase 2 publicly-verifiable
+  proofs are additive** (no re-architecture, no backfill).
+- **Proof snapshot — deferred to Phase 2; MVP links to the live post.** The long-term plan is
+  self-contained evidence (post **content + screenshot**) plus a **third-party archive**, because a
+  banned account's post is gone exactly when the proof matters most. **MVP ships link-to-live-post
+  only:** `ProofRecord` stores the canonical `proofPostUrl`; the snapshot/archive columns already exist
+  but sit unused until Phase 2 (**additive — no migration needed then**).
+
+## Verification & binding
+
+- **Verification model — public-post proof only.** No DMs. **No platform OAuth for identity** — so Meta
+  (or any platform) can't gate who gets verified. (This is separate from *site login*, which is Google
+  OAuth — logging in with Google ≠ proving you own a Threads/IG account.)
+- **Older = more credible.** The product surfaces *when* each account was verified; an older verification
+  is stronger evidence. This is the principle behind the Timeline's oldest-first ordering (see
+  [Timeline visibility & rendering](#timeline-visibility--rendering)).
+- **Binding flow (§6.2).** User picks a platform (optionally pre-declares the handle — a confirmation aid
+  only) → guasi returns a **copy-paste template** containing a **6-digit auth code**, the **`@gua.si.tw`
+  tag**, and the user's **驗明正身 page URL** → user posts it → **pastes the post URL back**. **Manual
+  paste-back is the MVP primary path** (synchronous + more responsive than a mention webhook;
+  auto-capture deferred to Phase 2). **The verification post doubles as the growth engine** (public +
+  links back) — the built-in answer to 行銷困難.
+- **Verification security model (§6.2/§6.3/§8) — author-match, not entropy.** The **bound 分身 is the
+  proof post's author, resolved from platform authority** (oEmbed/API, or a strictly-validated canonical
+  URL — *never* user-supplied page content). The author-match target is the **specific 分身**, never the
+  正身 identity name and never the `@gua.si.tw` tag. **Many 分身 per platform** are allowed — each is its
+  own binding request. The **auth code is scoped to one binding request, single-use, and expiring**, so a
+  leaked/copied code is useless in any other session; **6 digits is enough** because security =
+  author-match + scope + expiry, not code entropy. (Data model: the `binding_requests` table holds the
+  pending state.) Note: **IG caption links aren't clickable; Threads' are.**
+- **Reading the post — per-platform, with a web-fetch fallback.** Platform API (oEmbed) *or* public web
+  fetch is acceptable, chosen per-platform; keep web fetch as a fallback so a revoked API token can't take
+  the service down. **Shipped: Threads via tokenless crawler-UA SSR.** Settled per-platform mechanics live
+  in [`platform-verification.md`](platform-verification.md).
+
+## 正身 profile & main 分身
+
+- Each 正身 has an **avatar, brief description, and a designated main 分身** — an **`is_main` flag on a
+  bound account**, *not* a free-form URL; **at most one per user**.
+- **The first binding is accepted as the main 分身** — and that designation is **what mints the slug**
+  (see [Public URL & slug](#public-url--slug)). It is **changeable later** on the 分身管理 page; the slug
+  it minted does **not** change (slug ≠ `is_main` — see Public URL & slug).
+- The public **驗明正身** page is a **Linktree-like profile for a *verified* identity**.
+
+## Account status & lifecycle
+
+- **Append-only public ledger.** Bindings and unbindings are **permanent events, never deletions**.
+  **Public = permanent** (an unbind is a *visible* event); **private stays private**. All status changes
+  are ledger events surfaced on the Timeline.
+- **Account status management (§6.8) — owner self-service, trust-lowering only.** The owner can mark a
+  分身 **banned/hacked** while logged in. These flags only *lower* trust, so a hijacker can't usefully
+  set them, and — crucially — **can't remove a flag they don't control**. Marking an account
+  **recovered/unbanned requires re-verification** (`恢復·重新驗證` — a trust-*restoring* claim must be
+  re-proven, not self-asserted).
+- **Unbinding — deferred (no self-service unbind in MVP).** The model treats unbind as a permanent ledger
+  event with a reason (hacked / unneeded / sold), but **MVP ships no unbind UI** — trust-lowering is the
+  condition flags above + `恢復·重新驗證` only (the `unbound` status is reserved in the schema).
+
 ## Anti-squatting
 
 - **Core mechanism — proof-gated claiming (delegate to the platforms).** To claim `/gua/taylorswift`
