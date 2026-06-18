@@ -7,6 +7,7 @@ import { AccountRow } from "./AccountRow";
 import { TimelineList } from "./TimelineList";
 import type { TimelineView } from "./timeline";
 import { ShareLink } from "./ShareLink";
+import { GoogleSignInButton } from "@/app/GoogleSignInButton";
 
 type Props = {
   displayName: string;
@@ -161,7 +162,7 @@ export function IdentityCard({
           (viewerLoggedIn ? (
             <a href={ownerHomeUrl ?? "/"}>前往你的正身 →</a>
           ) : (
-            <a href="/login">建立你的正身 →</a>
+            <GoogleSignInButton label="建立你的正身 →" className="btn-as-link" />
           ))}
       </footer>
     </main>

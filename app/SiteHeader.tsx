@@ -1,7 +1,7 @@
 import { getCurrentUser } from "@/lib/identity/session";
 import { ownerHomePath } from "@/lib/identity/urls";
 import { AccountMenu } from "./AccountMenu";
-import { googleSignInAction } from "./account-actions";
+import { GoogleSignInButton } from "./GoogleSignInButton";
 
 // Global top-bar. Conventional layout: top-left = icon + brand → home; top-right = context action —
 // 登入/免費註冊 logged out, and a logged-in account menu (avatar → 正身頁面 / 切換帳號 / 登出).
@@ -25,12 +25,8 @@ export async function SiteHeader() {
           // Go straight to Google's consent screen (no /login hop). Both create-or-sign-in via the
           // same OAuth flow; /post-login then routes new users to onboarding, returning users home.
           <>
-            <form action={googleSignInAction}>
-              <button type="submit" className="site-link">登入</button>
-            </form>
-            <form action={googleSignInAction}>
-              <button type="submit" className="site-cta">使用 Google 免費註冊</button>
-            </form>
+            <GoogleSignInButton label="登入" className="site-link" />
+            <GoogleSignInButton label="使用 Google 免費註冊" className="site-cta" />
           </>
         )}
       </nav>

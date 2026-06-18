@@ -4,10 +4,6 @@ import { aboutContent } from "./content";
 const blob = JSON.stringify(aboutContent);
 
 describe("aboutContent — accuracy constraints", () => {
-  it("CTA points to the login route", () => {
-    expect(aboutContent.cta.href).toBe("/login");
-  });
-
   it("CTA names Google as the login method", () => {
     expect(aboutContent.cta.buttonLabel).toContain("Google");
   });

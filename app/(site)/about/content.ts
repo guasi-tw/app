@@ -94,7 +94,6 @@ export const aboutContent = {
     title: "趁現在，先驗明你的正身",
     subtitle: "被封後就來不及了。建立正身只要幾分鐘。",
     buttonLabel: "以 Google 登入，建立我的正身 →",
-    href: "/login",
     note: "免費 · 無需密碼",
   },
 

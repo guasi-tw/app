@@ -374,6 +374,7 @@
 }
 .ctaButton {
   display: block;
+  width: 100%;
   background: var(--accent);
   color: #1a1500;
   font-weight: 700;
@@ -381,7 +382,10 @@
   padding: 0.875rem;
   border-radius: 0.625rem;
   font-size: 0.95rem;
+  font-family: inherit;
   text-decoration: none;
+  border: none;
+  cursor: pointer;
 }
 .ctaNote {
   margin-top: 0.9rem;
