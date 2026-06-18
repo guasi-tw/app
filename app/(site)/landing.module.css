@@ -252,10 +252,11 @@
   font-size: 1.05rem;
   font-weight: 800;
 }
-.purl {
-  font-size: 0.75rem;
+.pbio {
+  font-size: 0.9rem;
+  line-height: 1.6;
   color: var(--muted);
-  margin-top: 0.2rem;
+  margin: 0.3rem 0 0;
 }
 .pcount {
   display: inline-block;

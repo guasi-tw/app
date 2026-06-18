@@ -16,7 +16,7 @@ export function ExampleCard({ withLiveLink = false }: { withLiveLink?: boolean }
         <div className={styles.cardHead}>
           <div className={styles.avatar} aria-hidden="true">{p.avatarInitial}</div>
           <div className={styles.pname}>{p.name}</div>
-          <div className={styles.purl}>{p.handleUrl}</div>
+          <p className={styles.pbio}>{p.bio}</p>
           <span className={styles.pcount}>{p.count}</span>
         </div>
         <div className={styles.tabbar}>
