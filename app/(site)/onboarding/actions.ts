@@ -53,7 +53,12 @@ export async function saveProfileAction(
     ...(user.onboardedAt ? {} : { onboardedAt: new Date() }), // stamp once, on first completion (§F)
   });
 
-  // New 正身 (no main yet) → pick a platform to set their main; a provisioned user
-  // re-editing their profile → back to their public page.
-  redirect(user.slug ? `/gua/${user.slug}` : "/add");
+  // Destination depends on context (§F): a provisioned user → their public page;
+  // a returning slug-less owner editing via /settings → their /r card (matches its
+  // back-link); only a genuine first-timer (no slug, not yet onboarded) → the platform
+  // picker to set their main. `user.onboardedAt` is read pre-stamp, so a first completion
+  // still falls through to /add.
+  if (user.slug) redirect(`/gua/${user.slug}`);
+  else if (user.onboardedAt) redirect(`/r/${user.shortRef}`);
+  else redirect("/add");
 }

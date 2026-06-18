@@ -17,7 +17,7 @@ vi.mock("sharp", () => {
 
 const updateUserProfile = vi.fn();
 const redirect = vi.fn();
-let currentUser: { id: string; shortRef: string; slug?: string | null } | null = null;
+let currentUser: { id: string; shortRef: string; slug?: string | null; onboardedAt?: Date | null } | null = null;
 
 vi.mock("@/lib/identity/session", () => ({
   getCurrentUser: () => Promise.resolve(currentUser),
@@ -101,5 +101,15 @@ describe("saveProfileAction — sharp unavailable (linux-x64 deploy)", () => {
 
     expect(result).toBeUndefined();
     expect(redirect).toHaveBeenCalledWith("/gua/alice");
+  });
+
+  it("does NOT re-stamp onboardedAt for an already-onboarded user (stamp once, §F)", async () => {
+    currentUser = { id: "user_123", shortRef: "abc123", onboardedAt: new Date("2026-06-01") };
+    await saveProfileAction({}, formOf({ displayName: "阿明", bio: "" }));
+
+    expect(updateUserProfile).toHaveBeenCalledTimes(1);
+    expect(updateUserProfile.mock.calls[0][1]).not.toHaveProperty("onboardedAt");
+    // Slug-less but already onboarded → back to their /r card (matches /settings back-link), not /add.
+    expect(redirect).toHaveBeenCalledWith("/r/abc123");
   });
 });
