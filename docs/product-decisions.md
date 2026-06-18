@@ -1,7 +1,8 @@
 # Product & Identity Decisions
 
 The maintained home for guasi's **product/identity design decisions** — public-URL routing,
-slug provisioning, anti-squatting, and binding uniqueness. These were originally worked out in
+slug provisioning, anti-squatting, binding uniqueness, platform-icon identity, and timeline
+visibility. These were originally worked out in
 the now-historical `docs/superpowers/specs/*` (routing-and-identity + mvp-wireframes); this doc
 is the **current, authoritative** version and supersedes the specs where they differ.
 
@@ -99,6 +100,35 @@ picker, the per-platform add page, the Accounts tab, the Timeline). The rule:
   in `BRAND`.** A monochrome brand needs only the glyph. Until a glyph is registered, `PlatformIcon`
   renders nothing for that platform (graceful — text label still shows). *(miin.cc currently has no
   registered glyph — TBD.)*
+
+## Timeline visibility & rendering
+
+The `時間軸` tab on the Identity Card renders the **append-only `BindingEvent` ledger** (shipped Slice 4,
+v0.15.0). It is a *read* of the same events the Accounts tab and the audit model already store — no new
+writers, no schema change.
+
+- **Leak defense = per-account *current* visibility — the one rule that must be exactly right.** An event
+  is shown publicly **iff its account is `public` right now**. A still-private account's events are
+  **fully withheld** (showing even a redacted "something happened" row would leak that a private account
+  exists); a later-**disclosed** account surfaces its **whole history at once**, including the `bound`
+  that happened while it was private. The filter reads live `LinkedAccount.visibility`, never a per-event
+  snapshot. This mirrors the Accounts tab and resolves the v0.14.0-design Slice-4 leak gotcha.
+- **Owner vs public projection.** The owner's 管理檢視 sees **everything** (`includePrivate = isOwner`,
+  resolved server-side from the session), with private rows dimmed + tagged `👁 私密`. A non-owner /
+  logged-out viewer **never receives private entries from the server** — the client-side 公開檢視 filter
+  is defense-in-depth, not the primary gate.
+- **All event types surface publicly** (the visibility filter alone is the defense — no per-type gating):
+  `bound`, `disclosed`, `set_main`, `re_verified`, `reported_banned`, `reported_hacked`, `unbound`.
+- **Oldest-first / top-down** — *overrides* the original spec §E.2 "newest-first." Older verifications
+  read as more credible, so the timeline grows downward from a synthetic **建立正身** genesis row dated
+  `onboardedAt ?? createdAt`.
+- **Proof link (`查看貼文 ↗`) on `bound` / `re_verified` only** — the events that carry a `ProofRecord`.
+  Condition flags (`本人回報遭盜用 / 本人回報已被停權`) render with a red danger treatment; they are
+  owner-reported and distinct from the proof-backed `重新驗證`.
+- **No cache, no schema change.** `listTimelineEvents(userId, { includePrivate })` joins
+  `BindingEvent → LinkedAccount → ProofRecord` **in application code** (no Prisma relations exist between
+  them): a handful of indexed rows — 3 reads (user + accounts in parallel, then events oldest-first) plus
+  a batched proof-URL fetch. A materialized column was rejected as premature.
 
 ## Open / deferred
 
