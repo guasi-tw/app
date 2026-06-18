@@ -399,12 +399,23 @@ body {
   background: var(--accent); border-radius: 999px; font-weight: 700;
 }
 
-.id-toggle { display: flex; gap: 0; align-self: center; border: 1px solid #2a2a33; border-radius: 999px; overflow: hidden; }
-.id-toggle button {
-  padding: 0.4rem 1rem; background: transparent; border: none; color: var(--muted);
-  font: inherit; font-size: 0.85rem; cursor: pointer;
+/* Public ⇄ manage as an on/off switch (off = 公開檢視, on = 管理模式) — reads as a toggle, not tabs. */
+.id-switch { display: flex; align-items: center; gap: 0.5rem; align-self: center; }
+.id-switch-label { font-size: 0.85rem; color: var(--muted); }
+.switch {
+  position: relative; width: 42px; height: 24px; flex-shrink: 0; padding: 0;
+  border: 1px solid #2a2a33; border-radius: 999px; background: #15151c;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
 }
-.id-toggle button.active { background: #15151c; color: var(--fg); }
+.switch .knob {
+  position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--muted); transition: transform 0.15s, background 0.15s;
+}
+.switch.on { background: var(--accent); border-color: var(--accent); }
+.switch.on .knob { transform: translateX(18px); background: #1a1500; }
+
+/* Add-a-分身 CTA at the top of the 帳號 list (manage view). */
+.id-add-account { display: block; width: 100%; margin-bottom: 0.6rem; border-style: dashed; }
 
 .tabbar { display: flex; gap: 0; border-bottom: 1px solid #2a2a33; }
 .tabbar .tab {
@@ -479,8 +490,13 @@ a.acct-pill:hover { border-color: var(--accent); }
   border-left: 2px solid var(--danger); padding: 0.35rem 0 0.35rem 0.6rem;
   background: rgba(240, 72, 79, 0.09); border-radius: 0 0.4rem 0.4rem 0;
 }
-/* Private rows (owner 管理檢視 only): dimmed, hollow-ring dot, dashed 私密 tag. */
-.tl-item.priv { opacity: 0.68; }
+/* Private rows (owner 管理檢視 only): a subtle gray wash marks them as owner-only, plus the
+   hollow-ring dot + dashed 👁 私密 tag. */
+.tl-item.priv {
+  padding: 0.35rem 0.6rem;
+  background: rgba(255, 255, 255, 0.045);
+  border-radius: 0.4rem;
+}
 
 .acct-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .chip {

@@ -56,6 +56,7 @@ export function IdentityCard({
   // without a navigation — the component owns the view state client-side.
   function selectMode(next: "public" | "manage") {
     setMode(next);
+    setTab("accounts"); // switching view always lands back on the 帳號 tab
     const url = next === "manage" ? `${pathname}?view=manage` : pathname;
     window.history.replaceState(null, "", url);
   }
@@ -66,25 +67,26 @@ export function IdentityCard({
         {avatarUrl && <img className="id-avatar" src={avatarUrl} alt="" />}
         <h1 className="id-name">{displayName}</h1>
         {bio && <p className="id-bio">{bio}</p>}
+        {manage && (
+          <a className="btn-secondary sm" href="/settings">編輯個人資料</a>
+        )}
         <span className="id-badge">{count} 個分身</span>
         {lockManage && (
           <div className="banner">🔒 你的正身頁尚未公開（只有你看得到）</div>
         )}
         {isOwner && !lockManage && (
-          <div className="id-toggle">
+          // An on/off switch (not a two-tab control): off = 公開檢視, on = 管理模式.
+          <div className="id-switch">
+            <span className="id-switch-label">管理模式</span>
             <button
               type="button"
-              className={mode === "public" ? "active" : ""}
-              onClick={() => selectMode("public")}
+              role="switch"
+              aria-checked={mode === "manage"}
+              aria-label="管理模式"
+              className={mode === "manage" ? "switch on" : "switch"}
+              onClick={() => selectMode(mode === "manage" ? "public" : "manage")}
             >
-              公開檢視
-            </button>
-            <button
-              type="button"
-              className={mode === "manage" ? "active" : ""}
-              onClick={() => selectMode("manage")}
-            >
-              管理檢視
+              <span className="knob" aria-hidden />
             </button>
           </div>
         )}
@@ -121,6 +123,12 @@ export function IdentityCard({
               ⚠ 你的主要帳號已被停用，目前沒有代表帳號。請在下方「恢復·重新驗證」原帳號，或將其他帳號「設為主要」。
             </div>
           )}
+          {manage && (
+            // Add a new 分身 — sits at the top, above the main account.
+            <a className="btn-secondary id-add-account" href="/add">
+              {lockManage ? "＋ 驗證主要帳號" : "＋ 註冊分身"}
+            </a>
+          )}
           <div className="acct-list">
             {accounts.main && <AccountRow account={accounts.main} manage={manage} />}
             {accounts.active.map((a) => (
@@ -137,10 +145,6 @@ export function IdentityCard({
 
           {manage && (
             <div className="id-manage-links">
-              <a className="btn-secondary" href="/add">
-                {lockManage ? "＋ 驗證主要帳號" : "＋ 註冊分身"}
-              </a>
-              <a className="btn-secondary" href="/settings">編輯個人資料</a>
               <form action={signOutAction}>
                 <button type="submit" className="btn-secondary" style={{ width: "100%" }}>登出</button>
               </form>
