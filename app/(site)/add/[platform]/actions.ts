@@ -30,7 +30,11 @@ export async function createRequestAction(formData: FormData): Promise<void> {
 
 export type SubmitState = {
   error?: string;
-  /** True when the request expired — the wizard renders a clickable 重新產生貼文範本 regenerate action. */
+  /**
+   * True when the request is no longer usable — genuinely expired OR already used/cancelled. The
+   * wizard then **replaces the paste form** with a 重新產生貼文範本 button (the message itself is plain
+   * text; the regenerate action is the button).
+   */
   expired?: boolean;
 };
 
@@ -51,7 +55,12 @@ export async function submitProofUrlAction(
 
   const req = await findRequestById(rid);
   if (!req || req.userId !== user.id || req.platform !== platform) return { error: "找不到驗證請求，請重新開始" };
-  if (req.status !== "pending" || isExpired(req)) return { error: "驗證碼已過期", expired: true };
+  // The request is no longer usable → tell the user accurately, and flag `expired` so the wizard
+  // shows a 重新產生貼文範本 button. Distinguish already-used/cancelled from genuinely-expired.
+  if (req.status === "resolved" || req.status === "verified" || req.status === "cancelled") {
+    return { error: "這個驗證請求已失效", expired: true };
+  }
+  if (isExpired(req)) return { error: "驗證碼已過期", expired: true }; // pending past TTL (or `expired` status)
 
   // Security gate: validate URL against THIS platform BEFORE any fetch (§D.2). (`platform` arrives via
   // FormData, but it's already cross-checked against the authoritative req.platform DB row above.)

@@ -68,32 +68,31 @@ export function AddAccountWizard({ platform, label, rid, template, postUrlPlaceh
         <p className="hint">Instagram 需附上一張圖片，且貼文內的連結不可點擊 —— 建議也把網址放到個人簡介。</p>
       ) : null}
 
-      <form action={action} className="form paste-form">
-        <label className="label" htmlFor="url">貼文發佈後，把貼文網址貼回這裡</label>
-        <input type="hidden" name="platform" value={platform} />
-        <input type="hidden" name="rid" value={rid} />
-        {recover ? <input type="hidden" name="recover" value={recover} /> : null}
-        <input id="url" name="url" type="url" required placeholder={postUrlPlaceholder} className="input" />
-        {state.error && !state.expired ? <p className="error">{state.error}</p> : null}
-        <button type="submit" className="btn-primary" disabled={pending}>
-          {pending ? "驗證中…" : "驗證並繼續 →"}
-        </button>
-      </form>
-
       {state.expired ? (
-        // The code expired — offer a one-click regenerate. `createRequestAction` reuses a live
-        // request if one exists, else mints a fresh code (the expired one is skipped), then reveals
-        // the new template via ?rid=.
-        <form action={createRequestAction} className="regen-form">
+        // The request is dead (expired or already used/cancelled): the paste form is useless, so we
+        // replace it with the plain reason + a 重新產生貼文範本 button. `createRequestAction` skips the
+        // dead request and mints a fresh code (+ rid), then reveals the new template via ?rid=.
+        <div className="paste-form">
+          <p className="error">{state.error}</p>
+          <form action={createRequestAction}>
+            <input type="hidden" name="platform" value={platform} />
+            {recover ? <input type="hidden" name="recover" value={recover} /> : null}
+            <button type="submit" className="btn-primary">重新產生貼文範本</button>
+          </form>
+        </div>
+      ) : (
+        <form action={action} className="form paste-form">
+          <label className="label" htmlFor="url">貼文發佈後，把貼文網址貼回這裡</label>
           <input type="hidden" name="platform" value={platform} />
+          <input type="hidden" name="rid" value={rid} />
           {recover ? <input type="hidden" name="recover" value={recover} /> : null}
-          <p className="error">
-            驗證碼已過期，請
-            <button type="submit" className="linklike">重新產生貼文範本</button>
-            。
-          </p>
+          <input id="url" name="url" type="url" required placeholder={postUrlPlaceholder} className="input" />
+          {state.error ? <p className="error">{state.error}</p> : null}
+          <button type="submit" className="btn-primary" disabled={pending}>
+            {pending ? "驗證中…" : "驗證並繼續 →"}
+          </button>
         </form>
-      ) : null}
+      )}
     </div>
   );
 }
