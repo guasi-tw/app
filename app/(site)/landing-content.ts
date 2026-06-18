@@ -7,7 +7,7 @@ export type AboutAccount = {
   main?: boolean;
 };
 
-export const aboutContent = {
+export const landingContent = {
   hook: {
     title: "帳號被封了，你要怎麼說「這真的是我」？",
     body: "2026 年 6 月，Meta 一波大封號，許多人一夕失去經營多年的主帳號。新帳號沒有歷史，舊帳號已無法發聲；冒名者卻搶著喊「本尊回來了」。最該證明自己的那一刻，你反而最沒辦法證明。",

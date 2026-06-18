@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { aboutContent as c } from "./content";
+import { landingContent as c } from "../landing-content";
 import { GoogleSignInButton } from "@/app/GoogleSignInButton";
-import styles from "./about.module.css";
+import styles from "../landing.module.css";
 
 export const metadata: Metadata = {
   title: "關於 guasi · 我是正身",
