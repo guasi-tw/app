@@ -106,6 +106,15 @@ with proof links.
   blocked. There is **no** global "one owner per account" lock.
 - **Verification timeline:** surface *when* each account was verified (older = more
   credible).
+- **Timeline (§E.2) rendering — shipped Slice 4 (v0.15.0):** the 時間軸 tab renders the
+  append-only `BindingEvent` ledger. **Leak defense = per-account *current*-visibility
+  filter** — an event is shown publicly iff its account is `public` right now; a still-private
+  account's events are fully withheld, and a disclosed account surfaces its whole history at
+  once (incl. the while-private `bound`). **All event types are public**; **oldest-first**
+  (overrides §E.2's newest-first), with a synthetic **建立正身** genesis row dated
+  `onboardedAt ?? createdAt`. Proof `查看貼文 ↗` link only on `bound` / `re_verified`. Owner
+  管理檢視 sees everything (`includePrivate = isOwner`), private rows dimmed + tagged 私密.
+  **No cache, no schema change** — `listTimelineEvents` joins a handful of indexed rows in JS.
 - **正身 profile:** each 正身 has an avatar, brief description, and a designated **main 分身**
   (a `is_main` flag on a bound account — *not* a free-form URL; at most one per user;
   **the first binding is accepted as the main 分身** — which is what mints the slug — and is

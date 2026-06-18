@@ -14,6 +14,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.15.0](#v0150--slice-4-timeline-tab-live-2026-06-18) | **Slice 4: Timeline tab live.** The 時間軸 tab now renders the append-only `BindingEvent` ledger on `/gua/{slug}` + `/r/{shortRef}` — replacing the 施工中 placeholder. New read model **`listTimelineEvents`** joins `BindingEvent → LinkedAccount → ProofRecord` **in JS** (no Prisma relations between them) and applies the **per-account *current*-visibility leak filter** — an event is public iff its account is `public` right now; a still-private account is fully withheld, a disclosed account shows its whole history at once (resolves the v0.14.0-design Slice-4 leak gotcha). Owner 管理檢視 gets everything (`includePrivate = isOwner`, private rows dimmed + tagged 👁 私密). **All event types public; oldest-first** (overrides §E.2 newest-first) with a synthetic **建立正身** genesis row (`onboardedAt ?? createdAt`); gold `查看貼文 ↗` proof link on `bound`/`re_verified`; red danger wash + `⚠` on `本人回報遭盜用 / 本人回報已被停權`. **No cache, no schema change, no migration.** Thin `buildTimeline` view-builder (mirrors `buildAccountGroups`) → dumb `TimelineList` (reuses brand `PlatformIcon`). 151 tests (6 new DB-backed + 1 page-prop test). [Spec](superpowers/specs/2026-06-18-timeline-tab-design.md) · [Plan](superpowers/plans/2026-06-18-timeline-tab.md). |
 | [v0.15.0-design](#v0150-design--slice-4-timeline-tab-design-2026-06-18) | **Slice 4 (Timeline tab) design.** Render the append-only `BindingEvent` ledger on `/gua/{slug}` + `/r/{shortRef}`. **Leak defense = per-account current-visibility filter** (a still-private account's events are fully withheld; a disclosed account shows its whole history at once, incl. the while-private `bound`) — resolves the v0.14.0-design Slice-4 gotcha; owner 管理檢視 sees all (`includePrivate = isOwner`). **All event types public**; **oldest-first / top-down** (overrides §E.2 newest-first) with a synthetic **建立正身** genesis row (`onboardedAt ?? createdAt`); proof `查看貼文 ↗` on `bound`/`re_verified`; condition flags read `本人回報遭盜用 / 本人回報已被停權`. **No cache, no schema change** — `listTimelineEvents` joins a handful of indexed rows in JS. Visual design baked in (rail + dots, account-line hero, **red danger** for banned/hacked, dimmed 私密 owner rows) + reference mockup. PlatformIcon brand coloring (decision 6) was split out + shipped as `v0.14.1`. No timeline code yet → next is writing-plans. [Spec](superpowers/specs/2026-06-18-timeline-tab-design.md). |
 | [v0.14.1](#v0141--platform-brand-icons--add-flow-icons-2026-06-18) | **Platform brand icons + add-flow icons.** `PlatformIcon` gains a per-platform `BRAND` registry — **Instagram renders in its brand gradient**, **Threads stays monochrome** (`currentColor`), future platforms register their own — so platforms are distinguishable at a glance. Icons now show on the **`/add` picker tiles** (active + 施工中) and the **`/add/{platform}` headings** (reworded to **`綁定 {icon} {Platform} 帳號`** — binding, not 註冊分身); since the component is shared, the **Accounts tab** is colorized too. New **"Platform icon brand identity"** rule in `product-decisions.md` + CLAUDE.md so future platforms inherit it. `useId()`-derived gradient ids (colons stripped) avoid duplicate-id collisions; `PlatformIcon` is now a client component. 143 tests (unchanged). |
 | [v0.14.0](#v0140--slice-5-manage-tab--profile-edit-2026-06-17) | **Slice 5: Manage tab + profile edit (shipped).** Two-phase release. **Release 1 (schema):** `User.onboardedAt` (backfilled to `createdAt`) + two unused `BindingEventType` values (`disclosed` / `set_main`) — behaviour-inert, shipped ahead so prod's DB is forward-compatible. **Release 2 (features):** un-stubbed the four owner controls on the `/gua/{slug}` 管理 tab via an **inline-expand confirm** `ManageChips` client component — **disclose** (private→public, one-way), **set-as-main** (re-point ★ only; old main stays public; new main forced public), **two condition flags** (回報遭盜用→`hacked` / 回報已被停權→`banned`), and a **scoped 恢復·重新驗證** that threads `?recover={accountId}` through the Add flow with a **same-account guard**. New repo fns `discloseBinding` / `setMainBinding` / `reportCondition` / `reverifyBinding` (DB-tested); `commitBinding` now writes `set_main`; removed dead `provisionExistingAccount` / `listProvisionCandidates`. **Profile edit surface:** new `/settings` (name + multi-line bio) and `/settings/avatar` (cache-busted), a shared `ProfileForm` with **live counters + disabled-save**. **Bio → 200 chars / 8 lines** (`pre-line` render). **`onboardedAt` routing** so a slug-less-but-onboarded returning user lands on `/r/{shortRef}`, not the wizard. 143 tests. |
@@ -41,7 +42,42 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 ---
 
-## v0.15.0-design — Slice 4 (Timeline tab) design (2026-06-18)
+## v0.15.0 — Slice 4: Timeline tab live (2026-06-18)
+**Review:** not yet
+
+**Design docs:**
+- Timeline tab (時間軸): [Spec](superpowers/specs/2026-06-18-timeline-tab-design.md) [Plan](superpowers/plans/2026-06-18-timeline-tab.md)
+
+**What was built:**
+- **`listTimelineEvents(userId, { includePrivate })`** read model (`lib/identity/timeline.ts`) — joins
+  `BindingEvent → LinkedAccount → ProofRecord` **in application code** (no Prisma relations exist between
+  them): 2 indexed queries (user+accounts in parallel, then events oldest-first) + a batched proof-URL
+  fetch. Applies the **per-account current-visibility leak filter** and prepends the synthetic **建立正身**
+  genesis row (`onboardedAt ?? createdAt`). 6 DB-backed tests (visibility, owner `isPrivate` flag,
+  disclosure-history, proof-attach, order, orphan-event skip).
+- **`buildTimeline(userId, isOwner)`** view-builder (`app/(site)/gua/[slug]/timeline.ts`) — mirrors
+  `buildAccountGroups`: maps entries → plain serialisable `TimelineView[]` (pre-formatted `YYYY-MM-DD`
+  date + `adapter.label`), proof link only on `bound`/`re_verified`.
+- **`TimelineList`** dumb presentational component — vertical rail + dots, per-kind `KIND_LABEL` (繁中),
+  reuses the brand `PlatformIcon` (v0.14.1). Client-side mode filter (公開檢視 hides private; 管理檢視
+  shows all, private dimmed + 👁 私密 tag).
+- Wired both card pages (`/gua/{slug}`, `/r/{shortRef}`) to build + pass `timeline` via `Promise.all`;
+  `IdentityCard` gains a `timeline` prop and renders `<TimelineList>` in place of the 施工中 placeholder.
+- CSS: new `--danger` token + `.timeline` / `.tl-*` / `.dot` block (gold genesis/proof, red flag wash,
+  hollow-ring dimmed private rows).
+
+**Key technical learnings:**
+- `[insight]` **Leak defense is *current*-visibility, not point-in-time.** An event surfaces publicly iff
+  its account is `public` right now — so a disclosed account reveals its entire history (incl. the
+  while-private `bound`) at once, and a still-private account is fully withheld. This resolves the
+  v0.14.0-design Slice-4 gotcha (a naive per-event flag would leak that a private account exists).
+- `[note]` **No Prisma relation between `BindingEvent` and `LinkedAccount`/`ProofRecord`** — the join is a
+  JS `Map` keyed `platform:accountId` plus a batched `findMany({ id: { in } })` for proof URLs. A handful
+  of indexed rows; no cache needed (`@@index([userId, createdAt])` already exists).
+- `[note]` `KIND_LABEL: Record<TimelineView["kind"], string>` makes a missing event-type label a **compile
+  error** — `tsc` guards copy coverage across all 7 `BindingEventType` values + genesis.
+- `[gotcha]` The DB suite **self-skips when `DATABASE_URL` is unset**; run it with the var explicitly
+  (`DATABASE_URL=… npx vitest run`) or a green-but-skipped suite masquerades as verified.
 
 **Review:** not yet
 
