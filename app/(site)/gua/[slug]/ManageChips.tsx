@@ -100,7 +100,7 @@ export function ManageChips({ account }: { account: AccountView }) {
       {panel === "hacked" && (
         <ConfirmPanel
           tone="danger"
-          message="將公開標記此帳號遭盜用，降低其信任。僅能透過重新驗證恢復。"
+          message="將公開註明此帳號遭盜用，降低其信任。僅能透過重新驗證恢復。"
           confirmLabel="回報遭盜用"
           action={reportConditionAction}
           accountId={account.id}
@@ -111,7 +111,7 @@ export function ManageChips({ account }: { account: AccountView }) {
       {panel === "banned" && (
         <ConfirmPanel
           tone="danger"
-          message="將公開標記此帳號已被停權，降低其信任。僅能透過重新驗證恢復。"
+          message="將公開註明此帳號已被停權，降低其信任。僅能透過重新驗證恢復。"
           confirmLabel="回報已被停權"
           action={reportConditionAction}
           accountId={account.id}

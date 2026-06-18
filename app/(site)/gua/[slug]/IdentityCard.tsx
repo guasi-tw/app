@@ -113,7 +113,7 @@ export function IdentityCard({
           )}
           {manage && mainFlagged && (
             <div className="banner warn">
-              ⚠ 你的主要帳號已被標記，目前沒有代表帳號。請在下方「恢復·重新驗證」原帳號，或將其他帳號「設為主要」。
+              ⚠ 你的主要帳號已被停用，目前沒有代表帳號。請在下方「恢復·重新驗證」原帳號，或將其他帳號「設為主要」。
             </div>
           )}
           <div className="acct-list">
