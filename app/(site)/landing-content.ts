@@ -7,7 +7,7 @@ export type AboutAccount = {
   main?: boolean;
 };
 
-export const aboutContent = {
+export const landingContent = {
   hook: {
     title: "帳號被封了，你要怎麼說「這真的是我」？",
     body: "2026 年 6 月，Meta 一波大封號，許多人一夕失去經營多年的主帳號。新帳號沒有歷史，舊帳號已無法發聲；冒名者卻搶著喊「本尊回來了」。最該證明自己的那一刻，你反而最沒辦法證明。",
@@ -65,15 +65,16 @@ export const aboutContent = {
     badge: "範例",
     avatarInitial: "美",
     name: "小美",
-    handleUrl: "guasi.tw/gua/meimei",
+    bio: "我是小美的簡介",
     count: "3 個分身",
     tabs: { accounts: "帳號", timeline: "時間軸" },
     guarantee: "✓ 以下帳號皆經 guasi 確認屬於同一人，由本人公開貼文驗證。",
     accounts: [
       { platform: "Threads", handle: "@meimei", verified: "驗證於 2026/05", main: true },
       { platform: "Instagram", handle: "@meimei.ig", verified: "驗證於 2026/05" },
-      { platform: "Threads", handle: "@meimei.new", verified: "驗證於 2026/06" },
+      { platform: "miin.cc", handle: "@meimei.miin", verified: "驗證於 2026/06" },
     ] satisfies AboutAccount[],
+    liveLink: { label: "看我是小編的正身 →", href: "/gua/gua.si.tw" },
   },
 
   trust: {

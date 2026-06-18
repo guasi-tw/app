@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { aboutContent as c } from "./content";
+import { landingContent as c } from "../landing-content";
 import { GoogleSignInButton } from "@/app/GoogleSignInButton";
-import styles from "./about.module.css";
+import { HowItWorks } from "../HowItWorks";
+import { ExampleCard } from "../ExampleCard";
+import styles from "../landing.module.css";
 
 export const metadata: Metadata = {
   title: "關於 guasi · 我是正身",
@@ -29,20 +31,7 @@ export default function AboutPage() {
 
         {/* 3 how it works + example post */}
         <section className={styles.section}>
-          <h2 className={styles.h2}>{c.how.title}</h2>
-          <p className={styles.body}>{c.how.body}</p>
-          <p className={styles.gloss}>{c.how.gloss}</p>
-
-          <div className={styles.steps}>
-            {c.how.steps.map((s) => (
-              <div className={styles.step} key={s.n}>
-                <div className={styles.stepNum}>{s.n}</div>
-                <div className={styles.stepText}>
-                  <strong className={styles.strong}>{s.title}</strong>　{s.body}
-                </div>
-              </div>
-            ))}
-          </div>
+          <HowItWorks />
 
           <div className={styles.post}>
             <span className={styles.badge}>{c.examplePost.badge}</span>
@@ -93,40 +82,7 @@ export default function AboutPage() {
 
         {/* 4 example profile card */}
         <section className={styles.section}>
-          <h2 className={styles.h2}>{c.exampleProfile.sectionTitle}</h2>
-          <p className={styles.sectionDesc}>{c.exampleProfile.sectionDesc}</p>
-
-          <div className={styles.card}>
-            <span className={styles.badge}>{c.exampleProfile.badge}</span>
-            <div className={styles.cardHead}>
-              <div className={styles.avatar} aria-hidden="true">{c.exampleProfile.avatarInitial}</div>
-              <div className={styles.pname}>{c.exampleProfile.name}</div>
-              <div className={styles.purl}>{c.exampleProfile.handleUrl}</div>
-              <span className={styles.pcount}>{c.exampleProfile.count}</span>
-            </div>
-            <div className={styles.tabbar}>
-              <span className={styles.tabActive}>{c.exampleProfile.tabs.accounts}</span>
-              <span className={styles.tab}>{c.exampleProfile.tabs.timeline}</span>
-            </div>
-            <div className={styles.accounts}>
-              <p className={styles.guarantee}>{c.exampleProfile.guarantee}</p>
-              {c.exampleProfile.accounts.map((a) => (
-                <div className={styles.account} key={a.handle}>
-                  <div className={styles.acctId}>
-                    <span className={styles.acctNameLine}>
-                      <span className={styles.acctHandle}>{a.handle}</span>
-                      {a.main && <span className={styles.acctMain}>★ 主要</span>}
-                    </span>
-                    <span className={styles.acctMeta}>
-                      {a.platform} · {a.verified}
-                    </span>
-                  </div>
-                  <span className={styles.acctOut} aria-hidden="true">↗</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <p className={styles.cardCaption}>{c.exampleProfile.shareCaption}</p>
+          <ExampleCard />
         </section>
 
         {/* 5 why trustworthy */}

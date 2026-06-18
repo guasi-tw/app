@@ -187,6 +187,16 @@
   color: #c8c8d0;
 }
 
+/* Full-width gold CTA under the demo card (homepage); pair with the global .btn-primary. */
+.liveLink {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 1.5rem;
+  text-align: center;
+  text-decoration: none;
+}
+
 /* platforms */
 .plabel {
   font-size: 0.7rem;
@@ -252,10 +262,11 @@
   font-size: 1.05rem;
   font-weight: 800;
 }
-.purl {
-  font-size: 0.75rem;
+.pbio {
+  font-size: 0.9rem;
+  line-height: 1.6;
   color: var(--muted);
-  margin-top: 0.2rem;
+  margin: 0.3rem 0 0;
 }
 .pcount {
   display: inline-block;
