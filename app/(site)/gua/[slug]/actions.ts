@@ -2,22 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { signOut } from "@/lib/auth";
 import { getCurrentUser } from "@/lib/identity/session";
 import { discloseBinding, setMainBinding, reportCondition } from "@/lib/binding/repo";
-
-/** 登出 → back to Home, logged out. */
-export async function signOutAction() {
-  await signOut({ redirectTo: "/" });
-}
-
-/**
- * 切換帳號 → sign out then land on /login, where Google's chooser (forced by
- * prompt=select_account) lets the user pick a different account.
- */
-export async function switchAccountAction() {
-  await signOut({ redirectTo: "/login" });
-}
 
 /** Clear the client Router Cache so the just-mutated row re-renders in its new bucket (§L). */
 function revalidateOwner(user: { slug: string | null; shortRef: string }) {

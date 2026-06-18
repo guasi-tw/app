@@ -7,7 +7,6 @@ import { AccountRow } from "./AccountRow";
 import { TimelineList } from "./TimelineList";
 import type { TimelineView } from "./timeline";
 import { ShareLink } from "./ShareLink";
-import { signOutAction, switchAccountAction } from "./actions";
 
 type Props = {
   displayName: string;
@@ -153,17 +152,6 @@ export function IdentityCard({
               <AccountRow key={a.id} account={a} manage={manage} />
             ))}
           </div>
-
-          {manage && (
-            <div className="id-manage-links">
-              <form action={signOutAction}>
-                <button type="submit" className="btn-secondary" style={{ width: "100%" }}>登出</button>
-              </form>
-              <form action={switchAccountAction}>
-                <button type="submit" className="btn-secondary" style={{ width: "100%" }}>切換帳號</button>
-              </form>
-            </div>
-          )}
         </>
       )}
 
