@@ -2,6 +2,7 @@
 import type { PlatformAdapter } from "./types";
 import { threadsAdapter } from "./threads";
 import { miinAdapter } from "./miin";
+import { instagramAdapter } from "./instagram";
 
 // Adding a platform = add its adapter to this map. (Presentation is separate: also register the
 // platform's glyph + brand color in PlatformIcon — see docs/product-decisions.md "Platform icon
@@ -10,6 +11,7 @@ import { miinAdapter } from "./miin";
 const ADAPTERS: Partial<Record<string, PlatformAdapter>> = {
   threads: threadsAdapter,
   miin: miinAdapter,
+  instagram: instagramAdapter,
 };
 
 /** Look up an adapter by route param. Returns undefined for unknown/not-yet-built platforms (→ 404). */
