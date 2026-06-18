@@ -65,7 +65,7 @@ export function AddAccountWizard({ platform, label, rid, template, postUrlPlaceh
       {copyFailed ? <p className="hint warn">無法自動複製，已為你選取文字，請手動複製（⌘/Ctrl + C）。</p> : null}
 
       {igNote ? (
-        <p className="hint">Instagram 需附上一張圖片，且貼文內的連結不可點擊 —— 建議也把網址放到個人簡介。</p>
+        <p className="hint">Instagram 需先附上一張圖片（任何圖片皆可），再把貼文內容貼到「新增說明文字……」欄位。</p>
       ) : null}
 
       {state.expired ? (
