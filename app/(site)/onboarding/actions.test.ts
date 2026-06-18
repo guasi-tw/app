@@ -17,7 +17,7 @@ vi.mock("sharp", () => {
 
 const updateUserProfile = vi.fn();
 const redirect = vi.fn();
-let currentUser: { id: string; shortRef: string; slug?: string | null } | null = null;
+let currentUser: { id: string; shortRef: string; slug?: string | null; onboardedAt?: Date | null } | null = null;
 
 vi.mock("@/lib/identity/session", () => ({
   getCurrentUser: () => Promise.resolve(currentUser),
@@ -53,10 +53,10 @@ describe("saveProfileAction — sharp unavailable (linux-x64 deploy)", () => {
 
     // No errors surfaced, profile persisted, redirected to the 驗明正身 page.
     expect(result).toBeUndefined();
-    expect(updateUserProfile).toHaveBeenCalledWith("user_123", {
-      displayName: "阿明",
-      bio: "嗨，我是阿明",
-    });
+    expect(updateUserProfile).toHaveBeenCalledWith(
+      "user_123",
+      expect.objectContaining({ displayName: "阿明", bio: "嗨，我是阿明", onboardedAt: expect.any(Date) }),
+    );
     expect(redirect).toHaveBeenCalledWith("/add");
   });
 
@@ -71,10 +71,10 @@ describe("saveProfileAction — sharp unavailable (linux-x64 deploy)", () => {
     );
 
     expect(result).toBeUndefined();
-    expect(updateUserProfile).toHaveBeenCalledWith("user_123", {
-      displayName: "阿明",
-      bio: null,
-    });
+    expect(updateUserProfile).toHaveBeenCalledWith(
+      "user_123",
+      expect.objectContaining({ displayName: "阿明", bio: null, onboardedAt: expect.any(Date) }),
+    );
     expect(redirect).toHaveBeenCalledWith("/add");
   });
 
@@ -95,11 +95,21 @@ describe("saveProfileAction — sharp unavailable (linux-x64 deploy)", () => {
     expect(redirect).not.toHaveBeenCalled();
   });
 
-  it("redirects a provisioned user (with slug) back to their /gua page", async () => {
+  it("redirects a provisioned user (with slug) back to their 管理檢視", async () => {
     currentUser = { id: "user_123", shortRef: "abc123", slug: "alice" };
     const result = await saveProfileAction({}, formOf({ displayName: "阿明", bio: "" }));
 
     expect(result).toBeUndefined();
-    expect(redirect).toHaveBeenCalledWith("/gua/alice");
+    expect(redirect).toHaveBeenCalledWith("/gua/alice?view=manage");
+  });
+
+  it("does NOT re-stamp onboardedAt for an already-onboarded user (stamp once, §F)", async () => {
+    currentUser = { id: "user_123", shortRef: "abc123", onboardedAt: new Date("2026-06-01") };
+    await saveProfileAction({}, formOf({ displayName: "阿明", bio: "" }));
+
+    expect(updateUserProfile).toHaveBeenCalledTimes(1);
+    expect(updateUserProfile.mock.calls[0][1]).not.toHaveProperty("onboardedAt");
+    // Slug-less but already onboarded → back to their /r card (matches /settings back-link), not /add.
+    expect(redirect).toHaveBeenCalledWith("/r/abc123");
   });
 });

@@ -88,6 +88,9 @@ describe.skipIf(!hasDb)("listIdentityAccounts (DB)", () => {
 
     expect(res.main).toBeNull();
     expect(res.flagged.map((a) => a.handle)).toEqual(["bannedmain"]);
+    // The ex-main keeps its latent isMain flag — this is what `buildAccountGroups.mainFlagged`
+    // keys off to nudge the owner (recovery silently restores it as main; §C.2/§C.4).
+    expect(res.flagged[0].isMain).toBe(true);
     expect(res.active.map((a) => a.handle)).toEqual(["good"]);
     expect(res.count).toBe(1); // only "good"
   });

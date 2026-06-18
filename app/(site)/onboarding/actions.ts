@@ -29,7 +29,7 @@ export async function saveProfileAction(
     try {
       const buf = Buffer.from(await file.arrayBuffer());
       const processed = await processAvatar(buf, file.type);
-      avatarUrl = await storeAvatar(user.id, processed.data, processed.contentType);
+      avatarUrl = `${await storeAvatar(user.id, processed.data, processed.contentType)}?v=${Date.now()}`;
     } catch (e) {
       if (e instanceof AvatarError) {
         errors.avatar = e.message;
@@ -50,9 +50,15 @@ export async function saveProfileAction(
     displayName: nameRes.ok ? nameRes.value : "",
     bio: bioRes.ok ? bioRes.value : null,
     ...(avatarUrl ? { avatarUrl } : {}),
+    ...(user.onboardedAt ? {} : { onboardedAt: new Date() }), // stamp once, on first completion (§F)
   });
 
-  // New 正身 (no main yet) → pick a platform to set their main; a provisioned user
-  // re-editing their profile → back to their public page.
-  redirect(user.slug ? `/gua/${user.slug}` : "/add");
+  // Destination depends on context (§F): a provisioned user → their own page's 管理檢視
+  // (where they edit from); a returning slug-less owner editing via /settings → their /r
+  // card (already locked to manage); only a genuine first-timer (no slug, not yet onboarded)
+  // → the platform picker to set their main. `user.onboardedAt` is read pre-stamp, so a
+  // first completion still falls through to /add.
+  if (user.slug) redirect(`/gua/${user.slug}?view=manage`);
+  else if (user.onboardedAt) redirect(`/r/${user.shortRef}`);
+  else redirect("/add");
 }

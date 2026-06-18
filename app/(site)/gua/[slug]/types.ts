@@ -3,6 +3,8 @@ export type AccountVariant = "main" | "active" | "flagged" | "private";
 /** Plain, serialisable row the server hands to the client card. */
 export type AccountView = {
   id: string;
+  /** Platform-authoritative account id (lowercased handle for Threads) — scopes re-verify. */
+  accountId: string;
   handle: string;
   /** Platform key (e.g. "threads") — drives the icon. */
   platform: string;
@@ -14,6 +16,8 @@ export type AccountView = {
   profileUrl: string | null;
   variant: AccountVariant;
   flagged: boolean;
+  /** Trust state — drives the flagged-row warning wording (盜用 vs 停權). */
+  condition: "active" | "banned" | "hacked";
 };
 
 /** The four render buckets for the card. */

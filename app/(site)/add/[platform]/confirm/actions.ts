@@ -2,9 +2,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import type { Visibility } from "@prisma/client";
+import { revalidatePath } from "next/cache";
+import type { Platform, Visibility } from "@prisma/client";
 import { getCurrentUser } from "@/lib/identity/session";
-import { cancelRequest, commitBinding, findRequestById } from "@/lib/binding/repo";
+import { cancelRequest, commitBinding, findLinkedAccount, findRequestById, reverifyBinding } from "@/lib/binding/repo";
 
 async function ownedResolvedRequest(rid: string, platform: string) {
   const user = await getCurrentUser();
@@ -50,5 +51,28 @@ export async function cancelRequestAction(formData: FormData): Promise<void> {
   const rid = String(formData.get("rid") ?? "");
   const { user, req } = await ownedResolvedRequest(rid, platform);
   await cancelRequest(req.id);
+  redirect(user.slug ? `/gua/${user.slug}` : `/r/${user.shortRef}`);
+}
+
+/** §C.4 confirm recovery: re-verify the SAME account (guarded), then return to the 正身 page. */
+export async function recoverAction(formData: FormData): Promise<void> {
+  const platform = String(formData.get("platform") ?? "");
+  const rid = String(formData.get("rid") ?? "");
+  const recover = String(formData.get("recover") ?? "");
+  const { user, req } = await ownedResolvedRequest(rid, platform);
+
+  // Defense in depth: the page already guards this, but never trust the round-trip.
+  if (req.resolvedAccountId !== recover) {
+    redirect(`/add/${platform}/confirm?rid=${rid}&recover=${encodeURIComponent(recover)}`);
+  }
+  const linked = await findLinkedAccount(user.id, platform as Platform, recover);
+  if (!linked) {
+    redirect(user.slug ? `/gua/${user.slug}` : `/r/${user.shortRef}`);
+  }
+  const res = await reverifyBinding({ requestId: req.id, linkedAccountId: linked!.id });
+  if (!res.ok) {
+    redirect(`/add/${platform}/confirm?rid=${rid}&recover=${encodeURIComponent(recover)}&err=${res.error}`);
+  }
+  if (user.slug) revalidatePath(`/gua/${user.slug}`);
   redirect(user.slug ? `/gua/${user.slug}` : `/r/${user.shortRef}`);
 }

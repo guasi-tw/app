@@ -1,5 +1,5 @@
 // lib/binding/repo.ts
-import type { Platform, Visibility } from "@prisma/client";
+import type { AccountCondition, Platform, Visibility } from "@prisma/client";
 import { prisma } from "@/lib/db/client";
 import { BINDING_CODE_TTL_MINUTES } from "./constants";
 import { deriveSlug } from "./slug";
@@ -136,6 +136,17 @@ export async function commitBinding(params: {
           proofRecordId: proof.id,
         },
       });
+      if (params.asMain) {
+        // The original main designation belongs in the timeline too (§C.2).
+        await tx.bindingEvent.create({
+          data: {
+            userId: req.userId,
+            platform: req.platform,
+            accountId: req.resolvedAccountId!,
+            eventType: "set_main",
+          },
+        });
+      }
       let slug: string | null = null;
       if (params.mintSlug) {
         slug = deriveSlug(req.resolvedHandle!);
@@ -159,44 +170,111 @@ export async function commitBinding(params: {
   }
 }
 
-export type ProvisionResult =
-  | { ok: true; slug: string }
-  | { ok: false; error: "slug_taken" | "not_found" };
+export type ManageResult = { ok: true } | { ok: false; error: "not_found" | "not_active" };
 
-/**
- * §D.5 setup picker: designate an ALREADY-verified account as 主要帳號 — set isMain + force public +
- * mint the slug from its handle. No new request/proof (the binding already exists).
- */
-export async function provisionExistingAccount(
-  userId: string,
-  linkedAccountId: string,
-): Promise<ProvisionResult> {
+/** §C.1 disclose — private → public (one-way). Idempotent: a public row writes no event. */
+export async function discloseBinding(userId: string, linkedAccountId: string): Promise<ManageResult> {
   const acct = await prisma.linkedAccount.findUnique({ where: { id: linkedAccountId } });
   if (!acct || acct.userId !== userId) return { ok: false, error: "not_found" };
-  const slug = deriveSlug(acct.handle);
-  try {
-    await prisma.$transaction(async (tx) => {
-      await tx.linkedAccount.updateMany({
-        where: { userId, isMain: true },
-        data: { isMain: false },
-      });
-      await tx.linkedAccount.update({
-        where: { id: linkedAccountId },
-        data: { isMain: true, visibility: "public" },
-      });
-      await tx.user.update({ where: { id: userId }, data: { slug } });
+  if (acct.visibility === "public") return { ok: true };
+  await prisma.$transaction(async (tx) => {
+    await tx.linkedAccount.update({ where: { id: acct.id }, data: { visibility: "public" } });
+    await tx.bindingEvent.create({
+      data: { userId, platform: acct.platform, accountId: acct.accountId, eventType: "disclosed" },
     });
-    return { ok: true, slug };
-  } catch (e) {
-    if ((e as { code?: string }).code === "P2002") return { ok: false, error: "slug_taken" };
-    throw e;
-  }
+  });
+  return { ok: true };
 }
 
-/** Eligible existing main-account candidates for the §D.5 picker (verified, slug-eligible platforms). */
-export function listProvisionCandidates(userId: string) {
-  return prisma.linkedAccount.findMany({
-    where: { userId, status: "verified", platform: "threads" }, // Slice 2: only Threads is slug-eligible
-    orderBy: { verifiedAt: "asc" },
+/**
+ * §C.2 set-as-main — re-point the ★ (never mints a slug; a main always already has one).
+ * Clears the previous main (it stays public — permanence — but loses the ★), forces the new
+ * main public (writing a `disclosed` event first if it was private), and writes `set_main`.
+ */
+export async function setMainBinding(userId: string, linkedAccountId: string): Promise<ManageResult> {
+  const acct = await prisma.linkedAccount.findUnique({ where: { id: linkedAccountId } });
+  if (!acct || acct.userId !== userId) return { ok: false, error: "not_found" };
+  if (acct.condition !== "active") return { ok: false, error: "not_active" };
+  const wasPrivate = acct.visibility === "private";
+  await prisma.$transaction(async (tx) => {
+    await tx.linkedAccount.updateMany({ where: { userId, isMain: true }, data: { isMain: false } });
+    await tx.linkedAccount.update({ where: { id: acct.id }, data: { isMain: true, visibility: "public" } });
+    if (wasPrivate) {
+      await tx.bindingEvent.create({
+        data: { userId, platform: acct.platform, accountId: acct.accountId, eventType: "disclosed" },
+      });
+    }
+    await tx.bindingEvent.create({
+      data: { userId, platform: acct.platform, accountId: acct.accountId, eventType: "set_main" },
+    });
   });
+  return { ok: true };
 }
+
+/** §C.3 condition flags — these only LOWER trust; recovery is re-verify only (§C.4). */
+export async function reportCondition(
+  userId: string,
+  linkedAccountId: string,
+  condition: "banned" | "hacked",
+): Promise<ManageResult> {
+  const acct = await prisma.linkedAccount.findUnique({ where: { id: linkedAccountId } });
+  if (!acct || acct.userId !== userId) return { ok: false, error: "not_found" };
+  const eventType = condition === "hacked" ? "reported_hacked" : "reported_banned";
+  await prisma.$transaction(async (tx) => {
+    await tx.linkedAccount.update({ where: { id: acct.id }, data: { condition: condition as AccountCondition } });
+    await tx.bindingEvent.create({
+      data: { userId, platform: acct.platform, accountId: acct.accountId, eventType },
+    });
+  });
+  return { ok: true };
+}
+
+export type ReverifyResult =
+  | { ok: true }
+  | { ok: false; error: "not_resolvable" | "account_mismatch" | "not_found" };
+
+/**
+ * §C.4 trust-restoring re-proof. The resolved author MUST be the SAME account as the bound row
+ * (you can't swap a different account onto an existing row). Append-only refresh of ONE row:
+ * new ProofRecord + re_verified event + condition→active + verify the request. Never a new row.
+ */
+export async function reverifyBinding(params: {
+  requestId: string;
+  linkedAccountId: string;
+}): Promise<ReverifyResult> {
+  const req = await findRequestById(params.requestId);
+  if (!req || req.status !== "resolved" || !req.resolvedAccountId || !req.resolvedHandle || !req.proofPostUrl) {
+    return { ok: false, error: "not_resolvable" };
+  }
+  const acct = await prisma.linkedAccount.findUnique({ where: { id: params.linkedAccountId } });
+  if (!acct || acct.userId !== req.userId || acct.platform !== req.platform) {
+    return { ok: false, error: "not_found" };
+  }
+  if (acct.accountId !== req.resolvedAccountId) {
+    return { ok: false, error: "account_mismatch" };
+  }
+  await prisma.$transaction(async (tx) => {
+    const proof = await tx.proofRecord.create({
+      data: {
+        linkedAccountId: acct.id,
+        proofPostUrl: req.proofPostUrl!,
+        authCode: req.code,
+        authorHandle: req.resolvedHandle!,
+        authorDisplayName: req.resolvedDisplayName,
+      },
+    });
+    await tx.bindingEvent.create({
+      data: {
+        userId: req.userId,
+        platform: req.platform,
+        accountId: req.resolvedAccountId!,
+        eventType: "re_verified",
+        proofRecordId: proof.id,
+      },
+    });
+    await tx.linkedAccount.update({ where: { id: acct.id }, data: { condition: "active" } }); // updatedAt bumps automatically
+    await tx.bindingRequest.update({ where: { id: req.id }, data: { status: "verified", consumedAt: new Date() } });
+  });
+  return { ok: true };
+}
+

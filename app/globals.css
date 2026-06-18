@@ -209,6 +209,8 @@ body {
   color: var(--muted);
 }
 
+.hint.counter { text-align: right; font-variant-numeric: tabular-nums; }
+
 .hint.permanence {
   padding: 0.75rem 0.85rem;
   background: #1a160b;
@@ -254,6 +256,13 @@ body {
   border-radius: 0.6rem;
   font-size: 0.9rem;
   color: var(--muted);
+}
+.banner.warn {
+  margin-bottom: 0.75rem;
+  background: #1a0d0d;
+  border-color: #5a1f1f;
+  color: var(--fg);
+  line-height: 1.6;
 }
 
 .slot {
@@ -378,7 +387,7 @@ body {
 .id-header { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; text-align: center; }
 .id-avatar { width: 5rem; height: 5rem; border-radius: 50%; object-fit: cover; background: #15151c; border: 1px solid #2a2a33; }
 .id-name { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: 0.03em; }
-.id-bio { margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--muted); max-width: 22rem; }
+.id-bio { margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--muted); max-width: 22rem; white-space: pre-line; }
 .id-badge {
   display: inline-block; padding: 0.25rem 0.7rem;
   font-size: 0.8rem; letter-spacing: 0.08em; color: #1a1500;
@@ -437,6 +446,19 @@ a.acct-pill:hover { border-color: var(--accent); }
   font: inherit; cursor: pointer;
 }
 .chip:hover { border-color: var(--accent); }
+.chip.is-static { cursor: default; opacity: 0.7; }
+.chip.is-static:hover { border-color: #34343f; }
+a.chip.recover { text-decoration: none; }
+
+.confirm-panel {
+  width: 100%; margin-top: 0.4rem; padding: 0.65rem 0.8rem;
+  border-radius: 0.55rem; border: 1px solid #34343f; background: #15151c;
+}
+.confirm-panel.warn { border-color: #5a4a12; background: #1a160b; }
+.confirm-panel.danger { border-color: #5a1f1f; background: #1a0d0d; }
+.confirm-msg { margin: 0 0 0.55rem; font-size: 0.8rem; line-height: 1.55; color: var(--fg); }
+.confirm-row { display: flex; gap: 0.5rem; align-items: center; }
+.btn-primary.sm, .btn-secondary.sm { padding: 0.32rem 0.8rem; font-size: 0.78rem; }
 
 .id-manage-links { display: flex; flex-direction: column; gap: 0.6rem; padding-top: 0.5rem; }
 .id-foot { display: flex; flex-direction: column; gap: 0.75rem; align-items: center; padding-top: 1rem; text-align: center; }

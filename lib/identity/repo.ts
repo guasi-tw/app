@@ -16,9 +16,13 @@ export function findUserBySlug(slug: string) {
 
 export function updateUserProfile(
   id: string,
-  data: { displayName: string; bio: string | null; avatarUrl?: string },
+  data: { displayName: string; bio: string | null; avatarUrl?: string; onboardedAt?: Date },
 ) {
   return prisma.user.update({ where: { id }, data });
+}
+
+export function updateUserAvatar(id: string, avatarUrl: string) {
+  return prisma.user.update({ where: { id }, data: { avatarUrl } });
 }
 
 export type IdentityAccounts = {

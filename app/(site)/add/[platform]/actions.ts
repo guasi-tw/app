@@ -22,9 +22,10 @@ export async function createRequestAction(formData: FormData): Promise<void> {
   const adapter = getAdapter(platform);
   if (!adapter) redirect("/");
 
+  const recover = String(formData.get("recover") ?? "");
   const existing = await findActiveRequest(user.id, platform as Platform);
   const req = existing ?? (await createBindingRequest({ userId: user.id, platform: platform as Platform, code: generateCode() }));
-  redirect(`/add/${platform}?rid=${req.id}`);
+  redirect(`/add/${platform}?rid=${req.id}${recover ? `&recover=${encodeURIComponent(recover)}` : ""}`);
 }
 
 export type SubmitState = { error?: string };
@@ -39,6 +40,7 @@ export async function submitProofUrlAction(
   const platform = String(formData.get("platform") ?? "");
   const rid = String(formData.get("rid") ?? "");
   const url = String(formData.get("url") ?? "").trim();
+  const recover = String(formData.get("recover") ?? "");
 
   const adapter = getAdapter(platform);
   if (!adapter) return { error: "不支援的平台" };
@@ -69,5 +71,5 @@ export async function submitProofUrlAction(
     resolvedDisplayName: resolved.displayName,
     proofPostUrl: resolved.canonicalUrl, // query-free canonical, not the pasted ?xmt=… URL
   });
-  redirect(`/add/${platform}/confirm?rid=${req.id}`);
+  redirect(`/add/${platform}/confirm?rid=${req.id}${recover ? `&recover=${encodeURIComponent(recover)}` : ""}`);
 }

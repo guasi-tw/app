@@ -5,11 +5,12 @@ import { getAdapter } from "@/lib/binding/platforms";
 import { findLinkedAccount, findRequestById } from "@/lib/binding/repo";
 import { deriveSlug, isSlugAvailable } from "@/lib/binding/slug";
 import { SITE_ORIGIN } from "@/lib/binding/constants";
-import { OrdinaryConfirm, SlugConfirm } from "./ConfirmForms";
+import { OrdinaryConfirm, SlugConfirm, RecoverConfirm } from "./ConfirmForms";
 import {
   cancelRequestAction,
   confirmAsSlugAction,
   confirmOrdinaryAction,
+  recoverAction,
 } from "./actions";
 
 export default async function ConfirmPage({
@@ -17,10 +18,10 @@ export default async function ConfirmPage({
   searchParams,
 }: {
   params: Promise<{ platform: string }>;
-  searchParams: Promise<{ rid?: string; err?: string }>;
+  searchParams: Promise<{ rid?: string; err?: string; recover?: string }>;
 }) {
   const { platform } = await params;
-  const { rid, err } = await searchParams;
+  const { rid, err, recover } = await searchParams;
 
   const adapter = getAdapter(platform);
   if (!adapter) notFound();
@@ -43,7 +44,32 @@ export default async function ConfirmPage({
     <main className="wrap">
       <h1 className="wordmark sm">確認綁定 · {adapter.label}</h1>
 
-      {alreadyBound ? (
+      {recover ? (
+        req!.resolvedAccountId !== recover ? (
+          <div className="confirm-card">
+            <p className="error">這則貼文不是這個帳號發的。</p>
+            <p className="hint">重新驗證必須由原本的帳號（你要恢復的那一個）發佈證明貼文。</p>
+            <a className="btn-secondary" href={`/add/${platform}?recover=${encodeURIComponent(recover)}`}>重試</a>
+            <form action={cancelRequestAction}>
+              <input type="hidden" name="platform" value={platform} />
+              <input type="hidden" name="rid" value={req!.id} />
+              <button type="submit" className="btn-secondary">取消</button>
+            </form>
+          </div>
+        ) : (
+          <div className="confirm-card">
+            <RecoverConfirm
+              platform={platform}
+              platformLabel={adapter.label}
+              rid={req!.id}
+              recover={recover}
+              handle={req!.resolvedHandle!}
+              confirmRecover={recoverAction}
+              cancel={cancelRequestAction}
+            />
+          </div>
+        )
+      ) : alreadyBound ? (
         // Already-bound notify (on-screen; no email in MVP). Discard the redundant request.
         <div className="confirm-card">
           <p>✓ @{req!.resolvedHandle} 已經是你綁定過的帳號了。</p>

@@ -1,5 +1,6 @@
 import type { AccountView } from "./types";
 import { PlatformIcon } from "./PlatformIcon";
+import { ManageChips } from "./ManageChips";
 
 const VARIANT_CLASS: Record<AccountView["variant"], string> = {
   main: "acct-pill main",
@@ -7,25 +8,6 @@ const VARIANT_CLASS: Record<AccountView["variant"], string> = {
   flagged: "acct-pill flag",
   private: "acct-pill priv",
 };
-
-/** Stubbed (no-op) management chips — look final; Slice 5 wires them. */
-function ManageChips({ account }: { account: AccountView }) {
-  return (
-    <div className="acct-actions">
-      <button type="button" className="chip" disabled>
-        {account.variant === "private" ? "🔒 設為公開（永久）" : "🔒 已公開（永久）"}
-      </button>
-      {!account.flagged && account.variant !== "main" && (
-        <button type="button" className="chip" disabled>★ 設為主要</button>
-      )}
-      {account.flagged ? (
-        <button type="button" className="chip" disabled>恢復 · 重新驗證 →</button>
-      ) : (
-        <button type="button" className="chip" disabled>回報遭盜用 / 停權</button>
-      )}
-    </div>
-  );
-}
 
 export function AccountRow({
   account,
@@ -56,7 +38,11 @@ export function AccountRow({
         {account.profileUrl && !manage && <span className="acct-out" aria-hidden>↗</span>}
       </div>
       {account.flagged && (
-        <p className="acct-warn">⚠ 已回報遭盜用 · 此帳號已非本人</p>
+        <p className="acct-warn">
+          {account.condition === "banned"
+            ? "⚠ 已回報遭停權"
+            : "⚠ 已回報遭盜用 · 此帳號已非本人"}
+        </p>
       )}
       {manage && <ManageChips account={account} />}
     </>

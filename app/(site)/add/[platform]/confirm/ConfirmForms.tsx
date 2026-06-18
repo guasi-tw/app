@@ -104,3 +104,41 @@ export function SlugConfirm({
     </div>
   );
 }
+
+/** §C.4 recovery confirm — author already matched the target account; re-verify refreshes the proof. */
+export function RecoverConfirm({
+  platform,
+  platformLabel,
+  rid,
+  recover,
+  handle,
+  confirmRecover,
+  cancel,
+}: {
+  platform: string;
+  platformLabel: string;
+  rid: string;
+  recover: string;
+  handle: string;
+  confirmRecover: (fd: FormData) => void;
+  cancel: (fd: FormData) => void;
+}) {
+  return (
+    <div className="confirm-actions">
+      <p>✓ @{handle} · 作者由平台確認</p>
+      <p className="hint">重新驗證會以這則貼文更新證明，並恢復這個帳號的信任狀態。</p>
+      <form action={confirmRecover} className="confirm-actions">
+        <input type="hidden" name="platform" value={platform} />
+        <input type="hidden" name="rid" value={rid} />
+        <input type="hidden" name="recover" value={recover} />
+        <button type="submit" className="btn-primary">確認重新驗證</button>
+      </form>
+      <form action={cancel}>
+        <input type="hidden" name="platform" value={platform} />
+        <input type="hidden" name="rid" value={rid} />
+        <button type="submit" className="btn-secondary">取消</button>
+      </form>
+      <CancelHint platformLabel={platformLabel} />
+    </div>
+  );
+}

@@ -4,6 +4,7 @@ import {
   sanitizeBio,
   DISPLAY_NAME_MAX,
   BIO_MAX,
+  BIO_MAX_LINES,
 } from "./profile";
 
 describe("sanitizeDisplayName", () => {
@@ -42,5 +43,16 @@ describe("sanitizeBio", () => {
   });
   it("rejects an over-length bio", () => {
     expect(sanitizeBio("a".repeat(BIO_MAX + 1)).ok).toBe(false);
+  });
+  it("accepts a bio up to the new 200-char max", () => {
+    expect(sanitizeBio("a".repeat(200)).ok).toBe(true);
+    expect(sanitizeBio("a".repeat(201)).ok).toBe(false);
+  });
+  it("collapses 3+ consecutive newlines down to a single blank-line separator", () => {
+    expect(sanitizeBio("a\n\n\n\nb")).toEqual({ ok: true, value: "a\n\nb" });
+  });
+  it("allows up to 8 lines and rejects a 9th", () => {
+    expect(sanitizeBio(Array.from({ length: 8 }, (_, i) => `l${i}`).join("\n")).ok).toBe(true);
+    expect(sanitizeBio(Array.from({ length: 9 }, (_, i) => `l${i}`).join("\n")).ok).toBe(false);
   });
 });
