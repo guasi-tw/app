@@ -27,7 +27,7 @@ function toView(a: LinkedAccount, variant: AccountVariant): AccountView {
 export async function buildAccountGroups(
   userId: string,
   isOwner: boolean,
-): Promise<{ accounts: AccountGroups; count: number }> {
+): Promise<{ accounts: AccountGroups; count: number; mainFlagged: boolean }> {
   const data = await listIdentityAccounts(userId, { includePrivate: isOwner });
   return {
     accounts: {
@@ -37,5 +37,8 @@ export async function buildAccountGroups(
       private: data.privateAccounts.map((a) => toView(a, "private")),
     },
     count: data.count,
+    // The designated main retains its latent isMain flag when flagged, so `main` is null
+    // but the ex-main sits in the flagged bucket — used to nudge the owner to recover/re-pick.
+    mainFlagged: data.flagged.some((a) => a.isMain),
   };
 }

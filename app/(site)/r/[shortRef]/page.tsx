@@ -30,7 +30,7 @@ export default async function ShortRefPage({
 
   // Owner without a slug: render the management tab inline, locked (can't switch to a
   // public view that doesn't exist yet). The add button mints the slug via the main binding.
-  const { accounts, count } = await buildAccountGroups(owner.id, true);
+  const { accounts, count, mainFlagged } = await buildAccountGroups(owner.id, true);
 
   return (
     <IdentityCard
@@ -43,6 +43,7 @@ export default async function ShortRefPage({
       viewerLoggedIn
       ownerHomeUrl={null}
       accounts={accounts}
+      mainFlagged={mainFlagged}
       lockManage
     />
   );

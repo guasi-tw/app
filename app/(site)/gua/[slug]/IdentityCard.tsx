@@ -18,6 +18,8 @@ type Props = {
   viewerLoggedIn: boolean;
   ownerHomeUrl: string | null;
   accounts: AccountGroups;
+  /** The designated main 分身 is currently flagged (banned/hacked) → no featured main; nudge the owner. */
+  mainFlagged?: boolean;
   /** Start in 管理檢視 instead of 公開檢視 (owner only). */
   initialManage?: boolean;
   /** Lock to 管理檢視 and hide the public/manage toggle (slug-less owner — no public page exists). */
@@ -34,6 +36,7 @@ export function IdentityCard({
   viewerLoggedIn,
   ownerHomeUrl,
   accounts,
+  mainFlagged = false,
   initialManage = false,
   lockManage = false,
 }: Props) {
@@ -107,6 +110,11 @@ export function IdentityCard({
             <p className="id-hint">
               ✓ 以下帳號皆經 guasi 確認屬於同一人，由本人公開貼文驗證。
             </p>
+          )}
+          {manage && mainFlagged && (
+            <div className="banner warn">
+              ⚠ 你的主要帳號已被標記，目前沒有代表帳號。請在下方「恢復·重新驗證」原帳號，或將其他帳號「設為主要」。
+            </div>
           )}
           <div className="acct-list">
             {accounts.main && <AccountRow account={accounts.main} manage={manage} />}

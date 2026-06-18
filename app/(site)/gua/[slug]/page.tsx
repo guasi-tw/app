@@ -26,7 +26,7 @@ export default async function IdentityCardPage({
   // page, so strip ?view=manage and send them to the clean public URL.
   if (view === "manage" && !isOwner) redirect(`/gua/${slug}`);
 
-  const { accounts, count } = await buildAccountGroups(user.id, isOwner);
+  const { accounts, count, mainFlagged } = await buildAccountGroups(user.id, isOwner);
 
   // Growth footer destination for a logged-in viewer → their own page.
   const ownerHomeUrl = viewer
@@ -46,6 +46,7 @@ export default async function IdentityCardPage({
       viewerLoggedIn={!!viewer}
       ownerHomeUrl={ownerHomeUrl}
       accounts={accounts}
+      mainFlagged={mainFlagged}
       initialManage={isOwner && view === "manage"}
     />
   );
