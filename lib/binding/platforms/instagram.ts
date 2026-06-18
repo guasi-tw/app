@@ -141,6 +141,6 @@ export const instagramAdapter: PlatformAdapter = {
   postUrlPlaceholder: "https://www.instagram.com/p/…",
   profileUrl: (handle: string) => `https://www.instagram.com/${handle}/`,
   parsePostUrl,
-  resolvePost, // defined in Task 2
+  resolvePost,
   // composeIntentUrl intentionally OMITTED — IG has no web compose intent (wizard guards on presence).
 };
