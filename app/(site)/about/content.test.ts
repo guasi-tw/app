@@ -52,9 +52,23 @@ describe("aboutContent — accuracy constraints", () => {
     expect(aboutContent.trust.items).toHaveLength(3);
   });
 
+  it("states platform independence — neutral, no API/authorization needed", () => {
+    expect(aboutContent.independence.title).toContain("不綁");
+    expect(aboutContent.independence.body).toContain("公開貼文");
+    expect(aboutContent.independence.body).toContain("授權");
+  });
+
   it("example card states the same-owner guarantee, verified by public post", () => {
     expect(aboutContent.exampleProfile.guarantee).toContain("同一人");
     expect(aboutContent.exampleProfile.guarantee).toContain("公開貼文");
+  });
+
+  it("frames the public page as a shareable cross-platform profile link", () => {
+    // The /gua/{slug} link is the user's shareable public profile, posted on
+    // other platforms so followers can confirm cross-platform ownership.
+    expect(aboutContent.exampleProfile.sectionDesc).toContain("guasi.tw/gua/");
+    expect(aboutContent.exampleProfile.sectionDesc).toContain("連結");
+    expect(aboutContent.exampleProfile.shareCaption).toContain("各平台");
   });
 });
 

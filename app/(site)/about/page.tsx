@@ -83,6 +83,13 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* platform independence */}
+        <section className={`${styles.section} ${styles.gold}`}>
+          <div className={styles.kicker}>{c.independence.kicker}</div>
+          <h2 className={styles.h2}>{c.independence.title}</h2>
+          <p className={styles.body}>{c.independence.body}</p>
+        </section>
+
         {/* 4 example profile card */}
         <section className={styles.section}>
           <h2 className={styles.h2}>{c.exampleProfile.sectionTitle}</h2>
@@ -118,6 +125,7 @@ export default function AboutPage() {
               ))}
             </div>
           </div>
+          <p className={styles.cardCaption}>{c.exampleProfile.shareCaption}</p>
         </section>
 
         {/* 5 why trustworthy */}

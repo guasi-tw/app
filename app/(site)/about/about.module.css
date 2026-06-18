@@ -179,6 +179,14 @@
   color: var(--muted);
 }
 
+/* caption under the example profile card (share-the-link note) */
+.cardCaption {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: #c8c8d0;
+}
+
 /* platforms */
 .plabel {
   font-size: 0.7rem;
