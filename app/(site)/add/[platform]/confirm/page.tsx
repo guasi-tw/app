@@ -121,7 +121,9 @@ export default async function ConfirmPage({
             cancel={cancelRequestAction}
           />
         ) : (
-          // Not slug-eligible (future miin-only; currently dead — miin 404s) → cancel only.
+          // Slug-less user on a slug-INELIGIBLE platform (e.g. a slug-less user who URL-types
+          // /add/miin — the picker hides miin, but the route is reachable). Their first bind can't
+          // mint a slug, so there's nothing to accept → cancel only. Fails safe: no slug, no bind.
           <SlugConfirm
             platform={platform}
             platformLabel={adapter.label}
