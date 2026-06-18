@@ -83,19 +83,22 @@ Working list of next steps. For current product/identity decisions see [`CLAUDE.
     chips + functional 登出/切換帳號); `listIdentityAccounts` read model; adapter `profileUrl`; Google
     `select_account`; 複製連結 share; 時間軸 placeholder.
   - [ ] **Slice 4 — Timeline tab** — render the append-only `binding_events` ledger (+ `created_at`).
-  - [ ] **Slice 5 — Manage tab** — disclose (one-way), set-as-main (forces public), condition flags
-    (banned/hacked), 恢復·重新驗證. **Designed (v0.14.0-design, approved):**
-    [`slice5-manage-tab-design.md`](docs/superpowers/specs/2026-06-17-slice5-manage-tab-design.md) —
-    next step is **superpowers:writing-plans** against that spec. The two "needs deeper design" items
-    below are resolved there (編輯個人資料 → dedicated edit page + `onboardedAt`; slug-less `/r` →
-    zero-account-only state; disclose/set-main now emit `disclosed`/`set_main` ledger events).
-    - [ ] **Re-verify of an already-bound account** (deferred from Slice 2, decided 2026-06-16): the
+  - [x] **Slice 5 — Manage tab** — ✅ done (v0.14.0), **PR open**: disclose (one-way), set-as-main
+    (forces public), condition flags (banned/hacked), 恢復·重新驗證, profile-edit surface
+    (`/settings` + `/settings/avatar`), multi-line bio, `onboardedAt` routing. Two-phase release
+    (Release 1 schema merged; Release 2 features in PR). Built from the approved
+    [`slice5-manage-tab-design.md`](docs/superpowers/specs/2026-06-17-slice5-manage-tab-design.md) +
+    [plan](docs/superpowers/plans/2026-06-17-slice5-manage-tab.md).
+    - [x] **Re-verify of an already-bound account** (deferred from Slice 2, decided 2026-06-16): the
       append-only refresh — add a new immutable `proof_record` + a `re_verified` `binding_event`, bump
       `updated_at`, and (if `banned`/`hacked`) restore `condition → active`; for an already-`active`
       account it's simply "verified again" (fresh proof, no condition change). **Single row — never a
-      duplicate** (`(userId, platform, accountId)` unique). This is the same commit path the Manage
-      恢復·重新驗證 button uses. Slice 2 only *notifies* "已綁定" and writes nothing.
-    - [ ] **Give 編輯個人資料 a real edit surface** (avatar/name/bio). Slice 1 shortcut: the `/r/{shortRef}`
+      duplicate** (`(userId, platform, accountId)` unique). ✅ Shipped as `reverifyBinding` (v0.14.0) —
+      the same commit path the Manage 恢復·重新驗證 button uses.
+    - [x] **Give 編輯個人資料 a real edit surface** (avatar/name/bio). ✅ Shipped (v0.14.0): dedicated
+      `/settings` edit page (edit-framed copy `儲存`) + `/settings/avatar`, shared `ProfileForm`,
+      `onboardedAt` flag separating brand-new from returning-unprovisioned. *(Original note below.)*
+      Slice 1 shortcut: the `/r/{shortRef}`
       "編輯個人資料" link points at **`/onboarding`**, which doubles as the editor (the form pre-fills from
       the current `User` row and `saveProfileAction` is already an `UPDATE`). What's wrong is only the
       *framing*: onboarding copy reads as first-time setup (title `建立你的正身`, button `下一步：設定主要帳號 →`,
