@@ -213,5 +213,5 @@ model BindingEvent {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, createdAt]) // timeline read path (Slice 4), newest-first
+  @@index([userId, createdAt]) // timeline read path (Slice 4), ordered by createdAt (shipped oldest-first)
 }

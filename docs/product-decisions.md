@@ -1,7 +1,8 @@
 # Product & Identity Decisions
 
 The maintained home for guasi's **product/identity design decisions** — public-URL routing,
-slug provisioning, anti-squatting, and binding uniqueness. These were originally worked out in
+slug provisioning, anti-squatting, binding uniqueness, platform-icon identity, and timeline
+visibility. These were originally worked out in
 the now-historical `docs/superpowers/specs/*` (routing-and-identity + mvp-wireframes); this doc
 is the **current, authoritative** version and supersedes the specs where they differ.
 
@@ -43,6 +44,67 @@ Per-**正身**, **not** global — `@@unique([userId, platform, accountId])`. Th
 can be legitimately bound by different 正身 (shared / transferred ownership); they're disambiguated by
 驗證時間, never blocked. There is **no** global "one owner per account" lock. (Also in CLAUDE.md
 Locked decisions.)
+
+## Trust & proof model
+
+- **Centralized DB for MVP, but persist *immutable proof records*** — not just a `verified` boolean.
+  `ProofRecord` captures the binding as it was at verification time, so **Phase 2 publicly-verifiable
+  proofs are additive** (no re-architecture, no backfill).
+- **Proof snapshot — deferred to Phase 2; MVP links to the live post.** The long-term plan is
+  self-contained evidence (post **content + screenshot**) plus a **third-party archive**, because a
+  banned account's post is gone exactly when the proof matters most. **MVP ships link-to-live-post
+  only:** `ProofRecord` stores the canonical `proofPostUrl`; the snapshot/archive columns already exist
+  but sit unused until Phase 2 (**additive — no migration needed then**).
+
+## Verification & binding
+
+- **Verification model — public-post proof only.** No DMs. **No platform OAuth for identity** — so Meta
+  (or any platform) can't gate who gets verified. (This is separate from *site login*, which is Google
+  OAuth — logging in with Google ≠ proving you own a Threads/IG account.)
+- **Older = more credible.** The product surfaces *when* each account was verified; an older verification
+  is stronger evidence. This is the principle behind the Timeline's oldest-first ordering (see
+  [Timeline visibility & rendering](#timeline-visibility--rendering)).
+- **Binding flow (§6.2).** User picks a platform (optionally pre-declares the handle — a confirmation aid
+  only) → guasi returns a **copy-paste template** containing a **6-digit auth code**, the **`@gua.si.tw`
+  tag**, and the user's **驗明正身 page URL** → user posts it → **pastes the post URL back**. **Manual
+  paste-back is the MVP primary path** (synchronous + more responsive than a mention webhook;
+  auto-capture deferred to Phase 2). **The verification post doubles as the growth engine** (public +
+  links back) — the built-in answer to 行銷困難.
+- **Verification security model (§6.2/§6.3/§8) — author-match, not entropy.** The **bound 分身 is the
+  proof post's author, resolved from platform authority** (oEmbed/API, or a strictly-validated canonical
+  URL — *never* user-supplied page content). The author-match target is the **specific 分身**, never the
+  正身 identity name and never the `@gua.si.tw` tag. **Many 分身 per platform** are allowed — each is its
+  own binding request. The **auth code is scoped to one binding request, single-use, and expiring**, so a
+  leaked/copied code is useless in any other session; **6 digits is enough** because security =
+  author-match + scope + expiry, not code entropy. (Data model: the `binding_requests` table holds the
+  pending state.) Note: **IG caption links aren't clickable; Threads' are.**
+- **Reading the post — per-platform, with a web-fetch fallback.** Platform API (oEmbed) *or* public web
+  fetch is acceptable, chosen per-platform; keep web fetch as a fallback so a revoked API token can't take
+  the service down. **Shipped: Threads via tokenless crawler-UA SSR.** Settled per-platform mechanics live
+  in [`platform-verification.md`](platform-verification.md).
+
+## 正身 profile & main 分身
+
+- Each 正身 has an **avatar, brief description, and a designated main 分身** — an **`is_main` flag on a
+  bound account**, *not* a free-form URL; **at most one per user**.
+- **The first binding is accepted as the main 分身** — and that designation is **what mints the slug**
+  (see [Public URL & slug](#public-url--slug)). It is **changeable later** on the 分身管理 page; the slug
+  it minted does **not** change (slug ≠ `is_main` — see Public URL & slug).
+- The public **驗明正身** page is a **Linktree-like profile for a *verified* identity**.
+
+## Account status & lifecycle
+
+- **Append-only public ledger.** Bindings and unbindings are **permanent events, never deletions**.
+  **Public = permanent** (an unbind is a *visible* event); **private stays private**. All status changes
+  are ledger events surfaced on the Timeline.
+- **Account status management (§6.8) — owner self-service, trust-lowering only.** The owner can mark a
+  分身 **banned/hacked** while logged in. These flags only *lower* trust, so a hijacker can't usefully
+  set them, and — crucially — **can't remove a flag they don't control**. Marking an account
+  **recovered/unbanned requires re-verification** (`恢復·重新驗證` — a trust-*restoring* claim must be
+  re-proven, not self-asserted).
+- **Unbinding — deferred (no self-service unbind in MVP).** The model treats unbind as a permanent ledger
+  event with a reason (hacked / unneeded / sold), but **MVP ships no unbind UI** — trust-lowering is the
+  condition flags above + `恢復·重新驗證` only (the `unbound` status is reserved in the schema).
 
 ## Anti-squatting
 
@@ -99,6 +161,35 @@ picker, the per-platform add page, the Accounts tab, the Timeline). The rule:
   in `BRAND`.** A monochrome brand needs only the glyph. Until a glyph is registered, `PlatformIcon`
   renders nothing for that platform (graceful — text label still shows). *(miin.cc currently has no
   registered glyph — TBD.)*
+
+## Timeline visibility & rendering
+
+The `時間軸` tab on the Identity Card renders the **append-only `BindingEvent` ledger** (shipped Slice 4,
+v0.15.0). It is a *read* of the same events the Accounts tab and the audit model already store — no new
+writers, no schema change.
+
+- **Leak defense = per-account *current* visibility — the one rule that must be exactly right.** An event
+  is shown publicly **iff its account is `public` right now**. A still-private account's events are
+  **fully withheld** (showing even a redacted "something happened" row would leak that a private account
+  exists); a later-**disclosed** account surfaces its **whole history at once**, including the `bound`
+  that happened while it was private. The filter reads live `LinkedAccount.visibility`, never a per-event
+  snapshot. This mirrors the Accounts tab and resolves the v0.14.0-design Slice-4 leak gotcha.
+- **Owner vs public projection.** The owner's 管理檢視 sees **everything** (`includePrivate = isOwner`,
+  resolved server-side from the session), with private rows dimmed + tagged `👁 私密`. A non-owner /
+  logged-out viewer **never receives private entries from the server** — the client-side 公開檢視 filter
+  is defense-in-depth, not the primary gate.
+- **All event types surface publicly** (the visibility filter alone is the defense — no per-type gating):
+  `bound`, `disclosed`, `set_main`, `re_verified`, `reported_banned`, `reported_hacked`, `unbound`.
+- **Oldest-first / top-down** — *overrides* the original spec §E.2 "newest-first." Older verifications
+  read as more credible, so the timeline grows downward from a synthetic **建立正身** genesis row dated
+  `onboardedAt ?? createdAt`.
+- **Proof link (`查看貼文 ↗`) on `bound` / `re_verified` only** — the events that carry a `ProofRecord`.
+  Condition flags (`本人回報遭盜用 / 本人回報已被停權`) render with a red danger treatment; they are
+  owner-reported and distinct from the proof-backed `重新驗證`.
+- **No cache, no schema change.** `listTimelineEvents(userId, { includePrivate })` joins
+  `BindingEvent → LinkedAccount → ProofRecord` **in application code** (no Prisma relations exist between
+  them): a handful of indexed rows — 3 reads (user + accounts in parallel, then events oldest-first) plus
+  a batched proof-URL fetch. A materialized column was rejected as premature.
 
 ## Open / deferred
 

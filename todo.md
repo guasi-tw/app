@@ -82,7 +82,8 @@ Working list of next steps. For current product/identity decisions see [`CLAUDE.
     main + active/flagged rows → live profile click-out); owner-only 公開/管理 toggle (private rows + stubbed
     chips + functional 登出/切換帳號); `listIdentityAccounts` read model; adapter `profileUrl`; Google
     `select_account`; 複製連結 share; 時間軸 placeholder.
-  - [ ] **Slice 4 — Timeline tab** — render the append-only `binding_events` ledger (+ `created_at`).
+  - [x] **Slice 4 — Timeline tab** — ✅ done (v0.15.0): renders the append-only `BindingEvent` ledger
+    (oldest-first + synthetic 建立正身 genesis), per-account current-visibility leak filter, no schema change.
   - [x] **Slice 5 — Manage tab** — ✅ done (v0.14.0), **merged + tagged** (2026-06-18): disclose (one-way),
     set-as-main (forces public), condition flags (banned/hacked), 恢復·重新驗證, profile-edit surface
     (`/settings` + `/settings/avatar`), multi-line bio, `onboardedAt` routing. Two-phase release

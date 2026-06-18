@@ -42,6 +42,9 @@ const buildAccountGroups = vi.fn((..._args: unknown[]) =>
 vi.mock("@/app/(site)/gua/[slug]/accounts", () => ({
   buildAccountGroups: (...args: unknown[]) => buildAccountGroups(...args),
 }));
+vi.mock("@/app/(site)/gua/[slug]/timeline", () => ({
+  buildTimeline: () => Promise.resolve([{ id: "genesis", kind: "genesis" }]),
+}));
 
 // Mock the (client) card so the test stays in node env and we can inspect props.
 vi.mock("@/app/(site)/gua/[slug]/IdentityCard", () => ({
