@@ -29,7 +29,7 @@ stripped from the URL.
 
 | URL | File | Auth | Chrome | Purpose |
 |-----|------|------|--------|---------|
-| `/` | `app/(site)/page.tsx` | public | yes | Home / landing page. Curated from the shared landing content (hero + how-it-works + live demo card → `/gua/gua.si.tw` + CTA), built from the shared `HowItWorks`/`ExampleCard`/`LandingCta` components. CTA branches on auth: logged in → 前往我的正身頁; logged out → Google sign-in. |
+| `/` | `app/(site)/page.tsx` | public | yes | Home / landing page. Curated from the shared landing content (hero + how-it-works + live demo card → `/gua/gua.si.tw` + CTA), built from the shared `HowItWorks`/`ExampleCard`/`LandingCta` components. CTA branches on auth: logged in → 前往我的正身頁; logged out → Google sign-in. The global header's sign-in button is **hidden on `/`** (`HeaderSignIn` client wrapper) so a logged-out visitor isn't shown three stacked Google buttons. |
 | `/about` | `app/(site)/about/page.tsx` | public | yes | 關於 guasi — the deeper read (full landing content incl. example-post anatomy, 平台中立, 為什麼可信, 為什麼是現在, contact). Copy in shared `landing-content.ts` (used by `/` too), styled by shared `landing.module.css`. |
 | `/login` | `app/(site)/login/page.tsx` | public | yes | Google OAuth sign-in → `/post-login`. **Already logged in → redirected to their own 正身** (`ownerHomePath`). The header 登入/免費註冊 buttons now start Google **directly** (skip this page); `/login` remains the fallback for protected-route redirects and the future multi-method (email) picker. |
 | `/onboarding` | `app/(site)/onboarding/page.tsx` | required | yes | Set avatar / display name / bio for the 正身. |

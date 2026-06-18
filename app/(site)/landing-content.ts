@@ -74,7 +74,7 @@ export const landingContent = {
       { platform: "Instagram", handle: "@meimei.ig", verified: "驗證於 2026/05" },
       { platform: "miin.cc", handle: "@meimei", verified: "驗證於 2026/06" },
     ] satisfies AboutAccount[],
-    liveLink: { label: "看一個真實的正身 →", href: "/gua/gua.si.tw" },
+    liveLink: { label: "看我是小編的正身 →", href: "/gua/gua.si.tw" },
   },
 
   trust: {
