@@ -59,6 +59,8 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 - **`/add` picker** now driven off the catalog: a slug-less (onboarding) user sees only slug-eligible platforms — **miin is hidden entirely** (not shown-disabled), because their first bind becomes the main 分身 and must mint a slug. Provisioned users see all.
 - Verified the generic wizard/confirm wiring covers miin with **zero miin-specific code** (compose button guards on `composeIntentUrl`, which miin omits; confirm routes the slug-ineligible-without-slug branch to cancel-only). Fixed a stale comment that the activation made inaccurate.
 - Hardened `slug.db.test.ts`: added a `beforeAll` that clears the fixed fixture (by email/slug/shortRef) so a row leaked by an interrupted prior run can't wedge later runs on the `email` unique constraint.
+- **Wizard polish (all platforms):** the paste-input placeholder is now **per-platform** via a new `PlatformAdapter.postUrlPlaceholder` field (miin shows `https://miin.cc/story/…`, Threads `https://www.threads.com/@你的帳號/post/…`) — previously hardcoded to a Threads URL on every platform's page.
+- **Return-to-manage (all platforms):** after a bind **confirm / cancel / recover**, owners now land on their **management tab** (`/gua/{slug}?view=manage`) instead of the public card — extracted a `manageHref` helper in the confirm actions; slug-less owners keep landing on `/r/{shortRef}` (which already renders the manage view inline).
 - 175 tests (29 new across `miin.test.ts` + `catalog.test.ts`); `tsc --noEmit` clean.
 
 **Key technical learnings:**
