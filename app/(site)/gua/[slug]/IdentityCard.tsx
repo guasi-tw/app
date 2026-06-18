@@ -93,6 +93,16 @@ export function IdentityCard({
         )}
       </header>
 
+      {publicUrl && (
+        // Share CTA — the guasi.tw/gua/{slug} link is the user's cross-platform 正身 profile, meant to
+        // be pasted into other platforms' bios. Pinned up here (under the profile, above the tabs) so
+        // it's actually reachable. Shown to everyone viewing a public 正身, not just the owner.
+        <section className="id-share">
+          <p className="id-share-cap">分享你的正身簡介，讓大家能驗明正身。</p>
+          <ShareLink url={publicUrl} />
+        </section>
+      )}
+
       <nav className="tabbar">
         <button
           type="button"
@@ -158,7 +168,6 @@ export function IdentityCard({
       )}
 
       <footer className="id-foot">
-        {publicUrl && <ShareLink url={publicUrl} />}
         {/* The owner is already on their own 正身 — no self-referential link. */}
         {!isOwner &&
           (viewerLoggedIn ? (

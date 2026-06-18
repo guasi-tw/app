@@ -417,6 +417,15 @@ body {
 /* Add-a-分身 CTA at the top of the 帳號 list (manage view). */
 .id-add-account { display: block; width: 100%; margin-bottom: 0.6rem; border-style: dashed; }
 
+/* Share CTA — under the profile, above the tabs. Caption + 複製連結, in a soft card. */
+.id-share {
+  display: flex; flex-direction: column; align-items: center; gap: 0.55rem;
+  padding: 0.85rem 1rem; text-align: center;
+  background: #15151c; border: 1px solid #2a2a33;
+  border-left: 3px solid var(--accent); border-radius: 0.6rem;
+}
+.id-share-cap { margin: 0; font-size: 0.85rem; line-height: 1.55; color: var(--fg); }
+
 .tabbar { display: flex; gap: 0; border-bottom: 1px solid #2a2a33; }
 .tabbar .tab {
   flex: 1; padding: 0.7rem 0; background: transparent; border: none;
