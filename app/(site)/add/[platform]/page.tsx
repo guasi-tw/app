@@ -34,15 +34,18 @@ export default async function AddAccountPage({
   const recoverHandle = recoverAccount?.handle ?? null;
   const heading = recover ? `重新驗證 · ${adapter.label}` : `註冊分身 · ${adapter.label}`;
 
-  // A recover target that isn't one of the caller's own bindings (URL tampering / stale link) is
-  // never recoverable — the commit-time guards would reject it anyway, so refuse it up front
-  // rather than walk the user through posting toward a dead end.
-  if (recover && !recoverAccount) {
+  // Refuse a recover target that's either (a) not one of the caller's own bindings (URL tampering /
+  // stale link), or (b) currently active — recovery only restores a flagged 分身, so an already-active
+  // account has nothing to recover. Either way, walk them back rather than toward a dead end.
+  if (recover && (!recoverAccount || recoverAccount.condition === "active")) {
     const backHref = user.slug ? `/gua/${user.slug}?view=manage` : `/r/${user.shortRef}`;
+    const message = !recoverAccount
+      ? "找不到要恢復的帳號。請回到你的正身頁，從要恢復的分身點「恢復·重新驗證」。"
+      : `@${recoverAccount.handle} 目前狀態正常，不需要恢復。`;
     return (
       <main className="wrap">
         <h1 className="wordmark sm">{heading}</h1>
-        <p className="lede">找不到要恢復的帳號。請回到你的正身頁，從要恢復的分身點「恢復·重新驗證」。</p>
+        <p className="lede">{message}</p>
         <p className="id-foot"><a href={backHref}>← 返回我的正身</a></p>
       </main>
     );
