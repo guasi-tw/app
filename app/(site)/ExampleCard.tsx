@@ -43,7 +43,7 @@ export function ExampleCard({ withLiveLink = false }: { withLiveLink?: boolean }
       </div>
 
       {withLiveLink ? (
-        <a className="btn-secondary" href={p.liveLink.href}>
+        <a className={`${styles.liveLink} btn-primary`} href={p.liveLink.href}>
           {p.liveLink.label}
         </a>
       ) : (
