@@ -95,12 +95,12 @@ describe("saveProfileAction — sharp unavailable (linux-x64 deploy)", () => {
     expect(redirect).not.toHaveBeenCalled();
   });
 
-  it("redirects a provisioned user (with slug) back to their /gua page", async () => {
+  it("redirects a provisioned user (with slug) back to their 管理檢視", async () => {
     currentUser = { id: "user_123", shortRef: "abc123", slug: "alice" };
     const result = await saveProfileAction({}, formOf({ displayName: "阿明", bio: "" }));
 
     expect(result).toBeUndefined();
-    expect(redirect).toHaveBeenCalledWith("/gua/alice");
+    expect(redirect).toHaveBeenCalledWith("/gua/alice?view=manage");
   });
 
   it("does NOT re-stamp onboardedAt for an already-onboarded user (stamp once, §F)", async () => {

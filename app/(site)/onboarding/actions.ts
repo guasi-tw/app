@@ -53,12 +53,12 @@ export async function saveProfileAction(
     ...(user.onboardedAt ? {} : { onboardedAt: new Date() }), // stamp once, on first completion (§F)
   });
 
-  // Destination depends on context (§F): a provisioned user → their public page;
-  // a returning slug-less owner editing via /settings → their /r card (matches its
-  // back-link); only a genuine first-timer (no slug, not yet onboarded) → the platform
-  // picker to set their main. `user.onboardedAt` is read pre-stamp, so a first completion
-  // still falls through to /add.
-  if (user.slug) redirect(`/gua/${user.slug}`);
+  // Destination depends on context (§F): a provisioned user → their own page's 管理檢視
+  // (where they edit from); a returning slug-less owner editing via /settings → their /r
+  // card (already locked to manage); only a genuine first-timer (no slug, not yet onboarded)
+  // → the platform picker to set their main. `user.onboardedAt` is read pre-stamp, so a
+  // first completion still falls through to /add.
+  if (user.slug) redirect(`/gua/${user.slug}?view=manage`);
   else if (user.onboardedAt) redirect(`/r/${user.shortRef}`);
   else redirect("/add");
 }
