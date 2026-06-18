@@ -107,6 +107,26 @@ match beyond the optional pre-declared handle (a confirmation aid only) — the 
 `author.username` *is* the 分身 being bound and is what gets recorded. Security = author-from-authority
 + scoped/single-use/expiring code + per-owner uniqueness, exactly as Threads.
 
+### 3.4 Recovery / re-verification (恢復·重新驗證) — covered automatically
+
+A miin 分身 that the owner has flagged `banned`/`hacked` is recovered the same way as any other
+platform, with **no miin-specific code**: the recovery flow is platform-agnostic and reuses this
+adapter unchanged.
+
+- Entry: `/add/miin?recover={accountId}` → the same `AddAccountWizard` (carries `recover` as a
+  hidden field) → the same `resolvePost`.
+- Guard + commit: `confirm/page.tsx` applies the **same-account guard**
+  (`req.resolvedAccountId !== recover` → "wrong account, retry"), then `RecoverConfirm` →
+  `recoverAction` → **`reverifyBinding`** (append a new `proof_record` + `re_verified` event, restore
+  `condition → active`; single row, never a duplicate). All generic over `platform`.
+
+The **only** adapter requirement for recovery to work is the one §3.2 already pins: a **deterministic
+`accountId`** (`author.username.toLowerCase()`), so a re-verification of the same miin account
+resolves to the same `accountId` and clears the guard. Edge (intended, matching Threads): if the
+miin user *changed* their username, the resolved `accountId` differs and the guard correctly refuses
+— it is no longer the same identity. The add page also already refuses a `recover` target that
+isn't the caller's own binding or is currently `active`.
+
 ## 4. Error handling & logging
 
 miin's API is **unofficial** (public + unauthenticated today, versioned `v2`/`v3`, could add auth,
@@ -147,8 +167,10 @@ noise, a single retry is a one-line follow-up.
   stops 404-ing and the `/add` picker tile flips **施工中 → active**.
 - **Confirm path — no new UI.** For the in-scope user (provisioned, `user.slug` set),
   `app/(site)/add/[platform]/confirm/page.tsx` already routes to the **`OrdinaryConfirm`** branch
-  (non-primary 分身 bind) — identical to adding a second Threads account. The slug-ineligible
-  dead branch is only reached by slug-less users, who stay blocked (§1).
+  (non-primary 分身 bind) — identical to adding a second Threads account. A `?recover=` request
+  routes instead to the **`RecoverConfirm` → `reverifyBinding`** branch (§3.4) — also already
+  generic. The slug-ineligible dead branch is only reached by slug-less users, who stay blocked
+  (§1).
 - **Wizard affordance — verify one guard.** Threads renders a compose button from
   `composeIntentUrl`; miin omits it. The `/add/miin` wizard must render cleanly **without** a
   compose button (copy-paste the template only). `composeIntentUrl` is optional in the interface;
@@ -190,9 +212,14 @@ Mirror `lib/binding/platforms/threads.test.ts` — fixture-driven, no network:
   (asserted via a spy); assert the **auth code never appears** in the logged payload.
 - **`profileUrl`:** `"gua_si_tw"` → `https://miin.cc/user/gua_si_tw`.
 - **Registry:** `getAdapter("miin")` returns the adapter; `listSlugEligible()` **excludes** miin.
+- **Deterministic `accountId` (recovery guard):** the same story fixture resolves to the **same**
+  `accountId` across calls, and a casing/whitespace variant of the username normalizes to it — this
+  is what the §3.4 same-account recovery guard relies on. (The guard + `reverifyBinding` themselves
+  are already covered platform-agnostically by the Threads/commit suites — not re-tested here.)
 
-No DB tests — the binding/commit path is already covered by the Threads suite and is
-platform-agnostic (miin reuses the same `OrdinaryConfirm` commit).
+No DB tests — the bind and recovery commit paths (`OrdinaryConfirm`/`commitBinding`,
+`RecoverConfirm`/`reverifyBinding`) are already covered by the Threads suite and are
+platform-agnostic.
 
 ## 8. Done criteria
 
@@ -200,6 +227,9 @@ platform-agnostic (miin reuses the same `OrdinaryConfirm` commit).
   miin → paste the story URL → resolve → confirm → the miin account appears as a verified non-main
   分身 on their `/gua/{slug}` (Accounts + Timeline).
 - Wrong-host / spoofed / malformed paste URLs are rejected before any fetch.
+- A miin 分身 flagged `banned`/`hacked` can be recovered via 恢復·重新驗證 (§3.4) — re-verify
+  resolves to the same `accountId`, clears the same-account guard, and restores `condition → active`
+  — with no miin-specific code.
 - A miin API failure logs a classified, code-free line to Vercel logs and shows the retryable
   wizard error — no partial commit.
 - Adapter fully unit-tested in isolation; `npx tsc --noEmit` and `npx vitest run` green.
