@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/identity/session";
 import { getAdapter } from "@/lib/binding/platforms";
+import { PlatformIcon } from "@/app/(site)/gua/[slug]/PlatformIcon";
 
 // Display list of the MVP platforms. A platform is "active" iff the registry has an adapter
 // (Slice 2: threads only); the rest render disabled with a 施工中 badge. Generic picker — no
@@ -25,12 +26,18 @@ export default async function PlatformPickerPage() {
           const active = !!getAdapter(p.key);
           return active ? (
             <a key={p.key} className="platform-tile" href={`/add/${p.key}`}>
-              <span>{p.label}</span>
+              <span className="platform-name">
+                <PlatformIcon platform={p.key} size={20} />
+                {p.label}
+              </span>
               <span aria-hidden="true">→</span>
             </a>
           ) : (
             <div key={p.key} className="platform-tile disabled" aria-disabled="true">
-              <span>{p.label}</span>
+              <span className="platform-name">
+                <PlatformIcon platform={p.key} size={20} />
+                {p.label}
+              </span>
               <span className="tag-wip">施工中</span>
             </div>
           );

@@ -2,7 +2,10 @@
 import type { PlatformAdapter } from "./types";
 import { threadsAdapter } from "./threads";
 
-// Slice 2: Threads only. Adding IG/miin later = add their adapter to this map; nothing else changes.
+// Slice 2: Threads only. Adding IG/miin later = add their adapter to this map. (Presentation is
+// separate: also register the platform's glyph + brand color in PlatformIcon — see
+// docs/product-decisions.md "Platform icon brand identity". Icons are intentionally NOT gated on an
+// adapter so 施工中 tiles can still show their brand mark.)
 const ADAPTERS: Partial<Record<string, PlatformAdapter>> = {
   threads: threadsAdapter,
 };

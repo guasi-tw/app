@@ -80,6 +80,26 @@ A 正身 whose only verified 分身 is on **miin** (or who hasn't designated a m
 pre-provisioned** — no public `/gua/{slug}` — until they verify an **IG or Threads** account to mint
 the slug. Binding still works and the account persists; only the public URL waits.
 
+## Platform icon brand identity
+
+Platforms must be **distinguishable at a glance** wherever an account's platform is shown (the add
+picker, the per-platform add page, the Accounts tab, the Timeline). The rule:
+
+- **Each platform renders in its own brand identity.** A platform with a **colorful brand mark** shows
+  in its brand color/gradient (e.g. **Instagram → its diagonal gradient**); a platform whose brand is
+  **monochrome** (e.g. **Threads**) renders in `currentColor` (white on the dark theme). This is what
+  makes IG instantly tellable apart from Threads, rather than two same-colored glyphs.
+- **Single source of truth = `PlatformIcon`** (`app/(site)/gua/[slug]/PlatformIcon.tsx`). Its glyph
+  registry (`PATHS`) and brand-treatment registry (`BRAND`) are **independent of the read-`PlatformAdapter`**
+  — icons must render for platforms that are listed but **not yet implemented** (the 施工中 tiles), which
+  have no adapter. Glyphs come from Simple Icons (CC0 path data); using a brand's own colors for
+  nominative identification is fine (same basis as the glyphs).
+- **Principle for adding a new platform** — when you add platform support, in addition to the enum +
+  adapter, **register the platform's glyph in `PATHS` and (if its brand is colorful) its color/gradient
+  in `BRAND`.** A monochrome brand needs only the glyph. Until a glyph is registered, `PlatformIcon`
+  renders nothing for that platform (graceful — text label still shows). *(miin.cc currently has no
+  registered glyph — TBD.)*
+
 ## Open / deferred
 
 - **Slug challenge / reassign mechanism** — only becomes necessary if a low-authority platform (miin)

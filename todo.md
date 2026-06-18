@@ -132,6 +132,14 @@ Working list of next steps. For current product/identity decisions see [`CLAUDE.
   - [ ] **Swap the static 範例 公開頁 card for a real screenshot/link** — Slice 3 (Identity Card) has
     shipped (v0.12.0), so this is now actionable.
 
+- [ ] **Terminology review: 註冊分身 vs 綁定 ("register" vs "bind")** — the per-platform add **heading** now
+  reads `綁定 {Platform} 帳號` (v0.14.1) because at that step the user is literally *binding* an account.
+  But `註冊分身` is still the term for the **add-account CTA** (`IdentityCard` manage tab `＋ 註冊分身`) and the
+  **/about** step-2 label (has a copy test), and it's defined in `product-pitch.md` as "綁定社群帳號". **Left
+  as-is for now** — decide later whether to keep `註冊分身` as the friendly CTA term or unify on `綁定`
+  everywhere; needs a copy register/consistency pass across these surfaces (+ CLAUDE.md / brand-and-voice if
+  the product term changes). Raised 2026-06-18 (PR #24).
+
 ## Deferred to Phase 2
 
 - [ ] **Auto-capture validation posts via `@gua.si.tw`** — detect the tagged verification
