@@ -28,6 +28,20 @@ export function findRequestById(id: string) {
   return prisma.bindingRequest.findUnique({ where: { id } });
 }
 
+/**
+ * The caller's LIVE request for a specific `rid`: owned by `userId`, on `platform`, still `pending`,
+ * and unexpired — the whole (ownership + platform + status + expiry) gate lives in the DB query, so
+ * callers just null-check. Returns null identically for a non-existent / foreign / wrong-platform /
+ * expired / non-pending `rid`, revealing nothing about which. (`status: "pending"` already excludes
+ * an `expired`-status row, and `expiresAt > now` excludes a pending-but-elapsed one — together exactly
+ * `status === "pending" && !isExpired(req)`.)
+ */
+export function findLiveRequest(id: string, userId: string, platform: Platform) {
+  return prisma.bindingRequest.findFirst({
+    where: { id, userId, platform, status: "pending", expiresAt: { gt: new Date() } },
+  });
+}
+
 /** The current binding for (正身, platform, account), if any — used to detect a re-validate (§A.6). */
 export function findLinkedAccount(userId: string, platform: Platform, accountId: string) {
   return prisma.linkedAccount.findUnique({

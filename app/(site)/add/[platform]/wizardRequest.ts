@@ -1,6 +1,7 @@
 // app/add/[platform]/wizardRequest.ts
 import { redirect } from "next/navigation";
-import { findRequestById, isExpired } from "@/lib/binding/repo";
+import type { Platform } from "@prisma/client";
+import { findLiveRequest } from "@/lib/binding/repo";
 
 /**
  * Resolve the wizard's binding request for ANY platform on the shared `/add/[platform]` route
@@ -22,10 +23,10 @@ export async function loadWizardRequest(
   recover: string,
 ) {
   if (!rid) return null;
-  const req = await findRequestById(rid);
-  const live =
-    req && req.userId === userId && req.platform === platform && req.status === "pending" && !isExpired(req);
-  if (!live) {
+  // The (ownership + platform + pending + unexpired) gate is enforced in the DB query, so a stale,
+  // foreign, expired, or used rid all come back null — strip it from the URL (preserving recover).
+  const req = await findLiveRequest(rid, userId, platform as Platform);
+  if (!req) {
     redirect(`/add/${platform}${recover ? `?recover=${encodeURIComponent(recover)}` : ""}`);
   }
   return req;
