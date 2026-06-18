@@ -1,6 +1,7 @@
 // lib/binding/platforms/miin.test.ts
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { miinAdapter } from "./miin";
+import { getAdapter, listSlugEligible } from "./index";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -205,5 +206,31 @@ describe("miinAdapter.resolvePost (failure taxonomy + logging)", () => {
     const logged = JSON.stringify(spy.mock.calls);
     expect(logged).not.toContain("424242");
     spy.mockRestore();
+  });
+});
+
+describe("registry wiring", () => {
+  it("getAdapter('miin') returns the miin adapter", () => {
+    expect(getAdapter("miin")).toBe(miinAdapter);
+  });
+
+  it("listSlugEligible() excludes miin (it cannot mint a slug) but includes threads", () => {
+    const keys = listSlugEligible().map((a) => a.key);
+    expect(keys).toContain("threads");
+    expect(keys).not.toContain("miin");
+  });
+});
+
+describe("deterministic accountId (recovery guard, §3.4)", () => {
+  it("resolves the same accountId across calls and normalizes casing/whitespace", async () => {
+    vi.stubGlobal("fetch", mockJson(storyJson({ username: "Gua_Si_Tw", title: ["hi"] })));
+    const a = await miinAdapter.resolvePost(PARSED, "012345");
+    const b = await miinAdapter.resolvePost(PARSED, "012345");
+    expect(a.accountId).toBe("gua_si_tw");
+    expect(b.accountId).toBe(a.accountId);
+
+    vi.stubGlobal("fetch", mockJson(storyJson({ username: "  GUA_SI_TW  ", title: ["hi"] })));
+    const c = await miinAdapter.resolvePost(PARSED, "012345");
+    expect(c.accountId).toBe("gua_si_tw"); // same identity → same accountId → clears the same-account guard
   });
 });
