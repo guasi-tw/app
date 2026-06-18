@@ -59,11 +59,16 @@ Legend: ✅ readable tokenless · ⚠️ tokenless but flaky (retry) · 🔴 nee
 - `[gotcha]` **(2026-06-16) Editing a post CHANGES its URL — the old shortcode dies.** Threads mints a **new shortcode** on edit; the previous URL then **302-redirects to `https://www.threads.com/?error=invalid_post`** (a login/home page, `og:title="Threads • Log in"`). An earlier capture (`DZqu0RjGmZr`) failed for exactly this reason after the post was edited, while an un-edited post (`@live.defrag`) returned 200 throughout — so this is **post-URL mutation, NOT throttling/eventual-consistency** (an earlier note here speculated rate-limiting; that was wrong). **Implications:** (1) the reader must **fail closed** when `og:title` is the login page (don't bind) — the bare/named author regexes already do; (2) the user must paste the **current** URL (re-copy after any edit); (3) the stored proof URL can later go stale if the post is edited/deleted — accepted MVP trade-off (dead proof link OK, no snapshots); (4) **don't depend on a live post in automated tests — mock a saved response**; keep live fetches to a human-run smoke.
 
 ### 3.2 Instagram
-- **Read mechanism:** same crawler-UA fetch.
-- **Post author:** `og:url` canonicalizes to `instagram.com/<author>/p/<shortcode>/` → author from the path (derived from the shortcode, authoritative).
-- **Post text:** `og:description` = `"<likes> likes, <comments> comments - <author> on <date>: \"<caption>\"."` → the quoted caption carries the code.
-- `[gotcha]` **Flaky/throttled:** an isolated fetch can return *without* OG tags (observed once). **Retry once** on missing `og:description` (measured 12/12 after retry).
-- `[gotcha]` **Bio is NOT readable tokenless** — the IG profile `og:description` is a fixed template (`"N Followers, M Following, K Posts - See Instagram photos…"`), verified on a populated account (`@sanswordtw`, 1.6k posts). Bio-verification on IG would need the IG Graph API (token) or headless. **Don't use bio on IG.**
+**Status: SHIPPED (v0.18.0, post method) — re-verified 2026-06-18.** `instagramAdapter` reads via crawler-UA SSR; scope `/p/<shortcode>/` only (`/reel/` rejected).
+- **Read mechanism:** same crawler-UA fetch (post method, **alive** re-verified 2026-06-18).
+- **Post author = authority:** `og:url` canonicalizes to `instagram.com/<author>/p/<shortcode>/` → the author comes from the **`og:url` canonical path**, now **spoof-proven on IG** (was Threads-only): a spoofed `/<other-handle>/p/<sc>/` still yields the **true** author in `og:url`. The adapter's `OG_URL_HANDLE` regex also pins the host, so an off-platform `og:url` fails closed.
+- **Post text:** the full caption (carrying the code) is **SSR'd into the body untruncated** → scan the **decoded body** (mirrors Threads), not the truncatable `og:description`.
+- `[gotcha]` **Body/OG is hex-entity-encoded** incl. the CJK code label — `我是分身驗證碼：` arrives as `&#x6211;…&#xff1a;`, so `decodeEntities` must run **before** `textHasCode` (a literal match never fires otherwise).
+- `[note]` **`og:title` has the bare `@handle` form** (no display name) for accounts without one — like Threads; `"<Name> on Instagram: …"` when a display name exists. Only `displayName` parses from it; the author is from `og:url`.
+- `[note]` **`?igsh=…` is a share token** — kept for the fetch, but the stored canonical is the clean query-free `og:url`.
+- `[gotcha]` **Flaky/throttled:** an isolated fetch can return *without* OG tags (observed once). **Retry once** on missing `og:url` (measured 12/12 after retry).
+- `[gotcha]` **Deleted posts mislook like "IG changed."** A deleted post returns the app-shell + a consent/login wall (no author OG) — a year-old test post will fail this way; **verify against a live post**, fail closed otherwise.
+- `[gotcha]` **Bio is NOT readable tokenless** — the IG profile `og:description` is a fixed template (`"N Followers, M Following, K Posts - See Instagram photos…"`), verified on a populated account (`@sanswordtw`, 1.6k posts). Bio-verification on IG would need the IG Graph API (token) or headless. **Don't use bio on IG → post method only.**
 - `[note]` IG captions are **not clickable** (plain text) — keep the linked-back URL short/typeable.
 
 ### 3.3 miin.cc
@@ -142,6 +147,9 @@ Meta serves the post under *any* path handle but canonicalizes `og:title`/`og:ur
 | Threads bio in OG | `threads.com/@zuck` | bio present in `og:description` ✅ |
 | IG post, crawler UA | `instagram.com/p/DZmqdCog-Vm/` | author `@gua.si.tw` + full caption in `og:description` ✅ (12/12 retries) |
 | IG bio NOT in OG | `instagram.com/sanswordtw/` (1.6k posts) | `og:description` = follower template, no bio 🔴 |
+| **IG full parse (live)** (2026-06-18) | `instagram.com/p/DZveut0kiPi/` | end-to-end resolvePost → author `gua.si.dev` from `og:url`, code `634057` found in decoded body, clean canonical ✅ |
+| **IG spoof→true author** (2026-06-18) | spoofed `/<other>/p/<sc>/` path | `og:url` still yields the **true** author (spoof-proven on IG, was Threads-only) ✅ |
+| **IG hex-entity body** (2026-06-18) | same post body | code label `我是分身驗證碼：` arrives as `&#x6211;…&#xff1a;` → must `decodeEntities` before scan ✅ |
 | miin SSR (no author) | `miin.cc/story/7649215` (crawler UA) | generic author-less OG card 🔴 |
 | miin headless render | `miin.cc/story/7649215`, `user/gua_si_tw` | author, post text, and bio all extracted ✅ |
 | **miin public API — story** | `api.miin.cc/web/story/v3/story?storyId=7651906` | no auth → `author.username="gua_si_tw"`, title `"#Gua: SansWA"` (short post, `content` empty) ✅ |
