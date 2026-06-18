@@ -25,7 +25,7 @@ export default async function Home() {
         </div>
       ) : (
         <div className="status">
-          <GoogleSignInButton label="以 Google 建立正身" className="btn-cta" />
+          <GoogleSignInButton block />
         </div>
       )}
     </main>

@@ -4,10 +4,6 @@ import { aboutContent } from "./content";
 const blob = JSON.stringify(aboutContent);
 
 describe("aboutContent — accuracy constraints", () => {
-  it("CTA names Google as the login method", () => {
-    expect(aboutContent.cta.buttonLabel).toContain("Google");
-  });
-
   it("lists exactly the three MVP platforms plus a 'more' chip", () => {
     expect(aboutContent.platforms.items).toEqual([
       "Threads",

@@ -22,12 +22,9 @@ export async function SiteHeader() {
             avatarUrl={user.avatarUrl ?? null}
           />
         ) : (
-          // Go straight to Google's consent screen (no /login hop). Both create-or-sign-in via the
-          // same OAuth flow; /post-login then routes new users to onboarding, returning users home.
-          <>
-            <GoogleSignInButton label="登入" className="site-link" />
-            <GoogleSignInButton label="以 Google 建立正身" className="site-cta" />
-          </>
+          // Go straight to Google's consent screen (no /login hop) — one button covers sign-in and
+          // first-time sign-up; /post-login then routes new users to onboarding, returning users home.
+          <GoogleSignInButton />
         )}
       </nav>
     </header>
