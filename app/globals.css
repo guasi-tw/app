@@ -374,6 +374,7 @@ body {
 .platform-name { display: inline-flex; align-items: center; gap: 0.55rem; min-width: 0; }
 .platform-tile.disabled .acct-platicon { opacity: 0.5; } /* dim the brand glyph on 施工中 tiles */
 .hdr-plat { display: inline-flex; align-items: center; gap: 0.5rem; } /* platform icon beside the page heading */
+.hdr-plat .acct-platicon { width: 1em; height: 1em; } /* scale the heading icon with the (responsive) wordmark font */
 
 /* ── Identity Card (/gua/{slug}) ───────────────────────────────────── */
 .idcard {

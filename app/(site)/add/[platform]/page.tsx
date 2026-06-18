@@ -9,6 +9,19 @@ import { createRequestAction } from "./actions";
 import { AddAccountWizard } from "./AddAccountWizard";
 import { PlatformIcon } from "@/app/(site)/gua/[slug]/PlatformIcon";
 
+/** Page heading: "{verb} {platform icon} {Platform} 帳號" — same shape across every branch. */
+function PlatformHeading({ platform, label, verb }: { platform: string; label: string; verb: string }) {
+  return (
+    <h1 className="wordmark sm">
+      <span className="hdr-plat">
+        <span>{verb}</span>
+        <PlatformIcon platform={platform} size={24} />
+        <span>{label} 帳號</span>
+      </span>
+    </h1>
+  );
+}
+
 export default async function AddAccountPage({
   params,
   searchParams,
@@ -33,7 +46,9 @@ export default async function AddAccountPage({
     ? await findLinkedAccount(user.id, platform as Platform, recover)
     : null;
   const recoverHandle = recoverAccount?.handle ?? null;
-  const heading = recover ? `重新驗證 · ${adapter.label}` : `註冊分身 · ${adapter.label}`;
+  // The user is *binding* a platform account here (not "registering a 分身"), so the heading reads
+  // "綁定 {icon} {Platform} 帳號" — recovery keeps the 重新驗證 verb.
+  const verb = recover ? "重新驗證" : "綁定";
 
   // Refuse a recover target that's either (a) not one of the caller's own bindings (URL tampering /
   // stale link), or (b) currently active — recovery only restores a flagged 分身, so an already-active
@@ -45,12 +60,7 @@ export default async function AddAccountPage({
       : `@${recoverAccount.handle} 目前狀態正常，不需要恢復。`;
     return (
       <main className="wrap">
-        <h1 className="wordmark sm">
-          <span className="hdr-plat">
-            <PlatformIcon platform={platform} size={24} />
-            {heading}
-          </span>
-        </h1>
+        <PlatformHeading platform={platform} label={adapter.label} verb={verb} />
         <p className="lede">{message}</p>
         <p className="id-foot"><a href={backHref}>← 返回我的正身</a></p>
       </main>
@@ -64,12 +74,7 @@ export default async function AddAccountPage({
   if (!haveLiveReq) {
     return (
       <main className="wrap">
-        <h1 className="wordmark sm">
-          <span className="hdr-plat">
-            <PlatformIcon platform={platform} size={24} />
-            {heading}
-          </span>
-        </h1>
+        <PlatformHeading platform={platform} label={adapter.label} verb={verb} />
         {recover ? (
           <p className="lede">
             你正在恢復 <strong>@{recoverHandle}</strong> 的驗證。請務必用<strong>這個帳號本人</strong>發佈含驗證碼的貼文並貼回網址
@@ -96,7 +101,7 @@ export default async function AddAccountPage({
 
   return (
     <main className="wrap">
-      <h1 className="wordmark sm">{heading}</h1>
+      <PlatformHeading platform={platform} label={adapter.label} verb={verb} />
       {recover ? (
         <p className="lede">
           正在恢復 <strong>@{recoverHandle}</strong>。請用<strong>這個帳號本人</strong>發佈下方貼文範本 ——
