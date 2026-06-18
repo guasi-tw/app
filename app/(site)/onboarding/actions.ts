@@ -29,7 +29,7 @@ export async function saveProfileAction(
     try {
       const buf = Buffer.from(await file.arrayBuffer());
       const processed = await processAvatar(buf, file.type);
-      avatarUrl = await storeAvatar(user.id, processed.data, processed.contentType);
+      avatarUrl = `${await storeAvatar(user.id, processed.data, processed.contentType)}?v=${Date.now()}`;
     } catch (e) {
       if (e instanceof AvatarError) {
         errors.avatar = e.message;

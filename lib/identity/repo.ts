@@ -21,6 +21,10 @@ export function updateUserProfile(
   return prisma.user.update({ where: { id }, data });
 }
 
+export function updateUserAvatar(id: string, avatarUrl: string) {
+  return prisma.user.update({ where: { id }, data: { avatarUrl } });
+}
+
 export type IdentityAccounts = {
   /** The active main 分身, featured on top (null if none / main is flagged). */
   main: LinkedAccount | null;
