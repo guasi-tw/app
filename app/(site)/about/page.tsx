@@ -125,6 +125,7 @@ export default function AboutPage() {
               ))}
             </div>
           </div>
+          <p className={styles.cardCaption}>{c.exampleProfile.shareCaption}</p>
         </section>
 
         {/* 5 why trustworthy */}

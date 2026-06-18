@@ -62,6 +62,14 @@ describe("aboutContent — accuracy constraints", () => {
     expect(aboutContent.exampleProfile.guarantee).toContain("同一人");
     expect(aboutContent.exampleProfile.guarantee).toContain("公開貼文");
   });
+
+  it("frames the public page as a shareable cross-platform profile link", () => {
+    // The /gua/{slug} link is the user's shareable public profile, posted on
+    // other platforms so followers can confirm cross-platform ownership.
+    expect(aboutContent.exampleProfile.sectionDesc).toContain("guasi.tw/gua/");
+    expect(aboutContent.exampleProfile.sectionDesc).toContain("連結");
+    expect(aboutContent.exampleProfile.shareCaption).toContain("各平台");
+  });
 });
 
 describe("aboutContent — key anchor copy", () => {

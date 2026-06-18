@@ -60,7 +60,8 @@ export const aboutContent = {
 
   exampleProfile: {
     sectionTitle: "驗明正身的公開頁",
-    sectionDesc: "任何人輸入帳號，就能看到這個人公開承認的其他帳號與驗證證據。",
+    sectionDesc: "每個正身都有專屬的公開連結（例如 guasi.tw/gua/meimei）——這就是你對外的公開檔案。任何人點開，都能看到你公開承認的帳號與驗證證據。",
+    shareCaption: "↑ 把這個連結放進各平台的個人簡介或貼文，粉絲一點就能確認：這些散落在不同平台的帳號，真的都是你本人。",
     badge: "範例",
     avatarInitial: "美",
     name: "小美",
