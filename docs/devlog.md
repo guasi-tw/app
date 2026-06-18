@@ -79,6 +79,12 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 - `[gotcha]` The DB suite **self-skips when `DATABASE_URL` is unset**; run it with the var explicitly
   (`DATABASE_URL=… npx vitest run`) or a green-but-skipped suite masquerades as verified.
 
+**Process learnings:**
+- `[note]` **Docs single-source-of-truth pass (same PR).** Consolidated the product/identity decisions out
+  of CLAUDE.md "Locked decisions" into their canonical homes (most into `product-decisions.md` new sections;
+  full stack into `deployment.md` "Locked stack (MVP)"; Name/brand already in `brand-and-voice.md`), leaving
+  crisp one-liner pointers + a governance note ("honor these during development; update the canonical doc
+  first to avoid drift"). Principle: each decision lives in **one** place; CLAUDE.md points, never restates.
 ---
 
 ## v0.15.0-design — Slice 4 (Timeline tab) design (2026-06-18)
