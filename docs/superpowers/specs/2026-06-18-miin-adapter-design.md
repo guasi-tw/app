@@ -204,12 +204,12 @@ Notes for whoever picks it up:
   fixed `viewBox="0 0 24 24"`. Giving miin a proper mark needs **either** (a) a clean **square
   monogram vector**, **or** (b) a small `PlatformIcon` **image-mode** enhancement (render a PNG for
   brands whose logo isn't a single path). Pick when the asset/decision is ready.
-- **Source asset available:** `public/miin-app-icon.png` (1024², the full iOS app icon — rainbow
-  "Miin" wordmark on a baked-in dark-navy rounded square). It's a **reference/source for deriving a
-  square monogram**, **not** something to wire in as-is (a wordmark with its own background is
-  illegible at 13px and inconsistent with the borderless Threads/IG glyphs). Note it isn't a
-  transparent monogram, and committing a third-party brand asset under `public/` serves it publicly —
-  decide whether it belongs in the deploy when the icon work actually happens.
+- **Source asset committed:** `docs/superpowers/specs/2026-06-18-miin-app-icon.png` (1024², the full
+  iOS app icon — rainbow "Miin" wordmark on a baked-in dark-navy rounded square). Kept beside the
+  spec as a **design source/reference** (same convention as the timeline mockup), **deliberately not
+  under `public/`** so it isn't publicly served — it's a third-party brand asset we don't use yet.
+  It's the source for deriving a square monogram, **not** something to wire in as-is (a wordmark with
+  its own background is illegible at 13px and inconsistent with the borderless Threads/IG glyphs).
 
 ## 7. Testing
 
