@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { landingContent as c } from "../landing-content";
 import { GoogleSignInButton } from "@/app/GoogleSignInButton";
+import { HowItWorks } from "../HowItWorks";
 import styles from "../landing.module.css";
 
 export const metadata: Metadata = {
@@ -29,20 +30,7 @@ export default function AboutPage() {
 
         {/* 3 how it works + example post */}
         <section className={styles.section}>
-          <h2 className={styles.h2}>{c.how.title}</h2>
-          <p className={styles.body}>{c.how.body}</p>
-          <p className={styles.gloss}>{c.how.gloss}</p>
-
-          <div className={styles.steps}>
-            {c.how.steps.map((s) => (
-              <div className={styles.step} key={s.n}>
-                <div className={styles.stepNum}>{s.n}</div>
-                <div className={styles.stepText}>
-                  <strong className={styles.strong}>{s.title}</strong>　{s.body}
-                </div>
-              </div>
-            ))}
-          </div>
+          <HowItWorks />
 
           <div className={styles.post}>
             <span className={styles.badge}>{c.examplePost.badge}</span>
