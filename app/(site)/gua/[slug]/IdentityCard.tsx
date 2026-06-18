@@ -4,6 +4,8 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import type { AccountGroups } from "./types";
 import { AccountRow } from "./AccountRow";
+import { TimelineList } from "./TimelineList";
+import type { TimelineView } from "./timeline";
 import { ShareLink } from "./ShareLink";
 import { signOutAction, switchAccountAction } from "./actions";
 
@@ -18,6 +20,8 @@ type Props = {
   viewerLoggedIn: boolean;
   ownerHomeUrl: string | null;
   accounts: AccountGroups;
+  /** Append-only ledger rows, oldest-first (genesis at index 0). */
+  timeline: TimelineView[];
   /** The designated main 分身 is currently flagged (banned/hacked) → no featured main; nudge the owner. */
   mainFlagged?: boolean;
   /** Start in 管理檢視 instead of 公開檢視 (owner only). */
@@ -36,6 +40,7 @@ export function IdentityCard({
   viewerLoggedIn,
   ownerHomeUrl,
   accounts,
+  timeline,
   mainFlagged = false,
   initialManage = false,
   lockManage = false,
@@ -103,7 +108,7 @@ export function IdentityCard({
       </nav>
 
       {tab === "timeline" ? (
-        <p className="id-bio" style={{ textAlign: "center" }}>時間軸施工中（Slice 4）。</p>
+        <TimelineList entries={timeline} manage={manage} />
       ) : (
         <>
           {!manage && (
