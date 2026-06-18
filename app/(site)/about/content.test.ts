@@ -52,6 +52,12 @@ describe("aboutContent — accuracy constraints", () => {
     expect(aboutContent.trust.items).toHaveLength(3);
   });
 
+  it("states platform independence — neutral, no API/authorization needed", () => {
+    expect(aboutContent.independence.title).toContain("不綁");
+    expect(aboutContent.independence.body).toContain("公開貼文");
+    expect(aboutContent.independence.body).toContain("授權");
+  });
+
   it("example card states the same-owner guarantee, verified by public post", () => {
     expect(aboutContent.exampleProfile.guarantee).toContain("同一人");
     expect(aboutContent.exampleProfile.guarantee).toContain("公開貼文");
