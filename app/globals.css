@@ -4,6 +4,7 @@
   --fg: #f5f5f7;
   --muted: #8a8a94;
   --accent: #e8b500;
+  --danger: #f0484f;
 }
 
 * {
@@ -442,6 +443,44 @@ a.acct-pill:hover { border-color: var(--accent); }
 .acct-platicon { flex-shrink: 0; vertical-align: -1px; }
 .acct-out { color: var(--accent); font-size: 1rem; flex-shrink: 0; }
 .acct-warn { font-size: 0.78rem; color: var(--accent); }
+
+/* --- Timeline tab (Slice 4) — vertical rail + dots, oldest-first. --- */
+.timeline {
+  list-style: none; margin: 0; padding: 0 0 0 1rem;
+  display: flex; flex-direction: column; gap: 1.1rem;
+  border-left: 1px solid #2a2a33;
+}
+.tl-empty { font-size: 0.85rem; color: var(--muted); text-align: center; }
+.tl-item { position: relative; }
+.tl-item .dot {
+  position: absolute; left: calc(-1rem - 5px); top: 0.2rem;
+  width: 9px; height: 9px; border-radius: 999px; background: var(--muted);
+}
+.tl-item.genesis .dot, .tl-item.proof .dot { background: var(--accent); }
+.tl-item.flag .dot { background: var(--danger); }
+.tl-item.priv .dot { background: transparent; border: 1px solid var(--muted); }
+.tl-body { display: flex; flex-direction: column; gap: 0.18rem; min-width: 0; }
+.tl-date { font-size: 0.72rem; color: var(--muted); }
+.tl-action { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+.tl-item.genesis .tl-action { font-size: 1rem; color: var(--accent); }
+.tl-item.flag .tl-action { color: var(--danger); font-weight: 800; }
+.tl-acct { display: flex; align-items: center; gap: 0.4rem; font-size: 1.05rem; min-width: 0; }
+.tl-acct .hd { font-weight: 800; color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-acct .pl { font-size: 0.92rem; color: var(--muted); }
+.tl-item.flag .tl-acct .hd { color: #f7a3a7; }
+.tl-proof { font-size: 0.82rem; color: var(--accent); text-decoration: none; }
+.tl-proof:hover { text-decoration: underline; }
+.tl-priv-tag {
+  font-size: 0.7rem; color: var(--muted);
+  border: 1px dashed #34343f; border-radius: 999px; padding: 0.05rem 0.45rem;
+}
+/* Flag rows: alarming red wash + left border. Must read as "compromised account". */
+.tl-item.flag {
+  border-left: 2px solid var(--danger); padding: 0.35rem 0 0.35rem 0.6rem;
+  background: rgba(240, 72, 79, 0.09); border-radius: 0 0.4rem 0.4rem 0;
+}
+/* Private rows (owner 管理檢視 only): dimmed, hollow-ring dot, dashed 私密 tag. */
+.tl-item.priv { opacity: 0.68; }
 
 .acct-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .chip {
