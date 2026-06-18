@@ -174,6 +174,10 @@ push pre-emptive verification.
   sessions use `vX.Y.0-design` with no tag.
 - **Git/PRs:** private GitHub remote **`guasi-tw/app`**. Branch off `main` for work, open a PR,
   **squash-merge**. Commit/push when the user asks. `main` = production (Vercel deploys it).
+- **Staging: explicit paths only — never `git add -A` / `git add .`.** Blanket staging silently sweeps
+  unrelated untracked files into a commit (it once pulled WIP article drafts into a feature PR). `git add`
+  the exact files you changed, and before opening/merging a PR confirm the scope with
+  `git diff --name-only main...HEAD`.
 - **Repo structure:** flat **modular monolith** (`app/` + `lib/*` + `prisma/` at root) — *not* a
   monorepo yet; see [`docs/deployment.md`](docs/deployment.md) §3.
 - **Code comments describe the *current* state only** — never leave historical breadcrumbs like
