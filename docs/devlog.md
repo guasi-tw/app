@@ -61,6 +61,8 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 - Hardened `slug.db.test.ts`: added a `beforeAll` that clears the fixed fixture (by email/slug/shortRef) so a row leaked by an interrupted prior run can't wedge later runs on the `email` unique constraint.
 - **Wizard polish (all platforms):** the paste-input placeholder is now **per-platform** via a new `PlatformAdapter.postUrlPlaceholder` field (miin shows `https://miin.cc/story/…`, Threads `https://www.threads.com/@你的帳號/post/…`) — previously hardcoded to a Threads URL on every platform's page.
 - **Return-to-manage (all platforms):** after a bind **confirm / cancel / recover**, owners now land on their **management tab** (`/gua/{slug}?view=manage`) instead of the public card — extracted a `manageHref` helper in the confirm actions; slug-less owners keep landing on `/r/{shortRef}` (which already renders the manage view inline).
+- **Expired-code UX:** when a code expires, the wizard renders **重新產生貼文範本 as a clickable regenerate action** (a form posting to `createRequestAction`, which skips the expired request and mints a fresh code) instead of dead instructional text — `SubmitState` gains an `expired` flag to drive it.
+- **Code TTL 5 → 30 min** (`BINDING_CODE_TTL_MINUTES`): a binding's security is author-match + scope + single-use, not a tight expiry, so the window only needs to outlast a realistic (possibly interrupted) compose→post→paste-back session. 5 min was too tight in practice.
 - 175 tests (29 new across `miin.test.ts` + `catalog.test.ts`); `tsc --noEmit` clean.
 
 **Key technical learnings:**
