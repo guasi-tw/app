@@ -20,9 +20,11 @@ export async function signOutAction() {
 }
 
 /**
- * 切換帳號 → sign out then land on /login, where Google's chooser (forced by
- * prompt=select_account) lets the user pick a different account.
+ * 切換帳號 → drop the current session (no redirect), then go straight to Google's
+ * account chooser — forced by the provider's prompt=select_account — so the user picks a
+ * different account in one click, skipping the /login hop. Lands on /post-login after.
  */
 export async function switchAccountAction() {
-  await signOut({ redirectTo: "/login" });
+  await signOut({ redirect: false });
+  await signIn("google", { redirectTo: "/post-login" });
 }
