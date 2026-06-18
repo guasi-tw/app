@@ -10,6 +10,16 @@ import type { ParsedPostUrl, PlatformAdapter, ResolvedPost } from "./types";
 // Canonical story path: /story/<numeric id>. The id is the trailing number of miin.cc/story/<id>.
 const STORY_PATH = /^\/story\/(\d+)\/?$/;
 
+// Concatenate the `.text` of every title + content segment. Both are arrays (§3.3): short posts
+// carry text in `title` with `content` empty; longer posts fill `content`. The API returns the
+// FULL untruncated text, so the Threads/IG "place the code early" truncation gotcha does NOT apply.
+function segmentsText(segs: unknown): string {
+  if (!Array.isArray(segs)) return "";
+  return segs
+    .map((s) => (s && typeof (s as { text?: unknown }).text === "string" ? (s as { text: string }).text : ""))
+    .join("\n");
+}
+
 function parsePostUrl(raw: string): ParsedPostUrl | null {
   let u: URL;
   try {
@@ -28,8 +38,32 @@ function parsePostUrl(raw: string): ParsedPostUrl | null {
   return { postId: storyId, fetchUrl: `https://api.miin.cc/web/story/v3/story?storyId=${storyId}` };
 }
 
-async function resolvePost(_parsed: ParsedPostUrl, _code: string): Promise<ResolvedPost> {
-  throw new Error("miin.resolvePost not implemented");
+async function resolvePost(parsed: ParsedPostUrl, code: string): Promise<ResolvedPost> {
+  const storyId = parsed.postId;
+  const resp = await fetch(parsed.fetchUrl, { headers: { Accept: "application/json" } });
+  const body: unknown = await resp.json();
+
+  // Authoritative author — miin's own data keyed by the storyId we validated (§6.3), never parsed
+  // from user page content. Nested shape per platform-verification §3.3.
+  const data = (body as { story?: { data?: Record<string, unknown> } })?.story?.data;
+  const authorData = (data?.author as { data?: Record<string, unknown> } | undefined)?.data;
+  const username = authorData?.username;
+  if (!data || typeof username !== "string" || !username.trim()) {
+    throw new Error("miin.resolvePost failed: shape_mismatch");
+  }
+
+  const handle = username; // as returned (§3.2)
+  const accountId = handle.trim().toLowerCase(); // deterministic per-owner key (§3.4 recovery guard)
+  // Display name = the author's `nickname` (the only name field miin returns). miin defaults
+  // nickname to the username, so treat nickname == username as "no distinct display name" (null) —
+  // matching Threads' bare-handle semantics.
+  const nickname = typeof authorData!.nickname === "string" ? authorData!.nickname.trim() : "";
+  const displayName = nickname && nickname.toLowerCase() !== accountId ? nickname : null;
+  const text = `${segmentsText(data.title)}\n${segmentsText(data.content)}`;
+  const codePresent = textHasCode(text, code);
+  const canonicalUrl = `https://miin.cc/story/${storyId}`; // clean, query-free (stored as proof_post_url)
+
+  return { accountId, handle, displayName, codePresent, canonicalUrl };
 }
 
 export const miinAdapter: PlatformAdapter = {

@@ -42,3 +42,110 @@ describe("miinAdapter.profileUrl + fields", () => {
     expect(miinAdapter.composeIntentUrl).toBeUndefined(); // miin has no prefilled compose intent
   });
 });
+
+// A nested miin story API response (the REAL shape, captured 2026-06-18 from
+// api.miin.cc/web/story/v3/story?storyId=7651906): author at story.data.author.data.username,
+// display name at .nickname; text = concat of .text across title[]+content[] segments.
+function storyJson(opts: {
+  username: string;
+  nickname?: string;
+  title?: string[]; // each becomes a { text } segment
+  content?: string[];
+}) {
+  const seg = (t: string) => ({ text: t });
+  const authorData: Record<string, unknown> = { username: opts.username };
+  if (opts.nickname !== undefined) authorData.nickname = opts.nickname;
+  return {
+    story: {
+      data: {
+        author: { data: authorData },
+        title: (opts.title ?? []).map(seg),
+        content: (opts.content ?? []).map(seg),
+      },
+    },
+  };
+}
+
+function mockJson(body: unknown, { ok = true, status = 200 } = {}) {
+  return vi.fn().mockResolvedValue({ ok, status, json: async () => body });
+}
+
+const PARSED = { postId: "12345", fetchUrl: "https://api.miin.cc/web/story/v3/story?storyId=12345" };
+
+describe("miinAdapter.resolvePost (happy path)", () => {
+  it("resolves the authoritative author, distinct display name, and query-free canonical URL", async () => {
+    vi.stubGlobal("fetch", mockJson(storyJson({
+      username: "gua_si_tw",
+      nickname: "我是正身", // distinct from username → surfaced as displayName
+      title: ["#Gua: SansWA"],
+      content: ["我是分身驗證碼：012345"],
+    })));
+    const res = await miinAdapter.resolvePost(PARSED, "012345");
+    expect(res.handle).toBe("gua_si_tw");
+    expect(res.accountId).toBe("gua_si_tw"); // handle.trim().toLowerCase()
+    expect(res.displayName).toBe("我是正身");
+    expect(res.codePresent).toBe(true);
+    expect(res.canonicalUrl).toBe("https://miin.cc/story/12345"); // clean, query-free
+  });
+
+  it("parses the REAL captured story 7651906 response (nickname == username → displayName null)", async () => {
+    // Verbatim shape from api.miin.cc/web/story/v3/story?storyId=7651906 (2026-06-18). This real
+    // post carries no verification code, so codePresent is false.
+    const real = {
+      story: {
+        storyId: 7651906,
+        state: "normal",
+        data: {
+          title: [
+            { state: "normal", type: "hashtag", text: "#Gua", data: { query: "#Gua" } },
+            { state: "normal", type: "plain", text: ": SansWA", data: {} },
+          ],
+          content: [],
+          author: {
+            userId: 55619,
+            state: "normal",
+            data: { username: "gua_si_tw", nickname: "gua_si_tw", relation: "none" },
+          },
+        },
+      },
+    };
+    vi.stubGlobal("fetch", mockJson(real));
+    const res = await miinAdapter.resolvePost(
+      { postId: "7651906", fetchUrl: "https://api.miin.cc/web/story/v3/story?storyId=7651906" },
+      "012345",
+    );
+    expect(res.handle).toBe("gua_si_tw");
+    expect(res.accountId).toBe("gua_si_tw");
+    expect(res.displayName).toBeNull(); // nickname === username → no distinct display name
+    expect(res.codePresent).toBe(false);
+    expect(res.canonicalUrl).toBe("https://miin.cc/story/7651906");
+  });
+
+  it("finds the code when it lives in the title (short post, content empty)", async () => {
+    vi.stubGlobal("fetch", mockJson(storyJson({
+      username: "gua_si_tw",
+      title: ["我是分身驗證碼：424242"],
+      content: [],
+    })));
+    const res = await miinAdapter.resolvePost(PARSED, "424242");
+    expect(res.codePresent).toBe(true);
+  });
+
+  it("reports codePresent=false when the code is absent or wrong, author still resolved", async () => {
+    vi.stubGlobal("fetch", mockJson(storyJson({
+      username: "gua_si_tw",
+      content: ["我是分身驗證碼：000000"],
+    })));
+    const res = await miinAdapter.resolvePost(PARSED, "999999");
+    expect(res.codePresent).toBe(false);
+    expect(res.handle).toBe("gua_si_tw");
+  });
+
+  it("returns displayName=null when nickname is absent or equals the username", async () => {
+    vi.stubGlobal("fetch", mockJson(storyJson({ username: "gua_si_tw", title: ["hi"] })));
+    expect((await miinAdapter.resolvePost(PARSED, "012345")).displayName).toBeNull();
+
+    vi.stubGlobal("fetch", mockJson(storyJson({ username: "gua_si_tw", nickname: "gua_si_tw", title: ["hi"] })));
+    expect((await miinAdapter.resolvePost(PARSED, "012345")).displayName).toBeNull();
+  });
+});
