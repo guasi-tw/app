@@ -2,7 +2,7 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { submitProofUrlAction, type SubmitState } from "./actions";
+import { createRequestAction, submitProofUrlAction, type SubmitState } from "./actions";
 
 type Props = {
   platform: string;
@@ -74,11 +74,26 @@ export function AddAccountWizard({ platform, label, rid, template, postUrlPlaceh
         <input type="hidden" name="rid" value={rid} />
         {recover ? <input type="hidden" name="recover" value={recover} /> : null}
         <input id="url" name="url" type="url" required placeholder={postUrlPlaceholder} className="input" />
-        {state.error ? <p className="error">{state.error}</p> : null}
+        {state.error && !state.expired ? <p className="error">{state.error}</p> : null}
         <button type="submit" className="btn-primary" disabled={pending}>
           {pending ? "驗證中…" : "驗證並繼續 →"}
         </button>
       </form>
+
+      {state.expired ? (
+        // The code expired — offer a one-click regenerate. `createRequestAction` reuses a live
+        // request if one exists, else mints a fresh code (the expired one is skipped), then reveals
+        // the new template via ?rid=.
+        <form action={createRequestAction} className="regen-form">
+          <input type="hidden" name="platform" value={platform} />
+          {recover ? <input type="hidden" name="recover" value={recover} /> : null}
+          <p className="error">
+            驗證碼已過期，請
+            <button type="submit" className="linklike">重新產生貼文範本</button>
+            。
+          </p>
+        </form>
+      ) : null}
     </div>
   );
 }

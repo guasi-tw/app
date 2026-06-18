@@ -3,11 +3,13 @@
 // and the platform adapters can import them.
 
 /**
- * Auth-code TTL (§H.1 `expired`). 5 min — the whole compose→post→paste-back flow is seconds,
- * so a short live-code window is plenty (decided 2026-06-16). Failed attempts don't consume the
- * code, and the user can regenerate a fresh request anytime, so a tight window costs little.
+ * Auth-code TTL (§H.1 `expired`). 30 min — the security of a binding comes from the author-match +
+ * scope + single-use, NOT from a tight expiry window, so the TTL only needs to outlast a realistic
+ * compose→post→paste-back session (incl. the user getting distracted, switching apps, or composing
+ * on a phone). 5 min (the original) was too tight in practice; 30 min comfortably covers an
+ * interrupted flow. Failed attempts don't consume the code, and the user can regenerate anytime.
  */
-export const BINDING_CODE_TTL_MINUTES = 5;
+export const BINDING_CODE_TTL_MINUTES = 30;
 
 /** Public origin used to build the profile URL embedded in the verification post (§D.2.1). */
 export const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://guasi.tw";
