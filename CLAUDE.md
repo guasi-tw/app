@@ -81,6 +81,11 @@ with proof links.
 - **Platforms (MVP):** Threads + IG + miin.cc, behind a pluggable `PlatformAdapter`
   (Threads/IG read via crawler-UA SSR of canonical URLs; miin.cc via its public JSON API
   `api.miin.cc`). See [`docs/platform-verification.md`](docs/platform-verification.md).
+- **Platform icons are brand-identified** (distinguishable at a glance): each platform renders in its
+  own brand color/gradient — IG = its gradient, Threads = monochrome — via the `PlatformIcon` glyph +
+  `BRAND` registries (separate from the read-`PlatformAdapter`, so 施工中 platforms still show a mark).
+  Adding a platform = register its glyph (+ brand color if colorful). Rule + rationale in
+  [`docs/product-decisions.md`](docs/product-decisions.md) "Platform icon brand identity".
 - **Spec depth:** product + architecture (not full technical spec).
 - **Trust model:** centralized DB for MVP, but persist **immutable proof records**
   (not just a `verified` flag) so Phase 2 publicly-verifiable proofs is additive.

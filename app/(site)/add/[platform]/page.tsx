@@ -7,6 +7,7 @@ import { buildVerificationPost, profileUrlFor } from "@/lib/binding/template";
 import { findLinkedAccount, findRequestById, isExpired } from "@/lib/binding/repo";
 import { createRequestAction } from "./actions";
 import { AddAccountWizard } from "./AddAccountWizard";
+import { PlatformIcon } from "@/app/(site)/gua/[slug]/PlatformIcon";
 
 export default async function AddAccountPage({
   params,
@@ -44,7 +45,12 @@ export default async function AddAccountPage({
       : `@${recoverAccount.handle} 目前狀態正常，不需要恢復。`;
     return (
       <main className="wrap">
-        <h1 className="wordmark sm">{heading}</h1>
+        <h1 className="wordmark sm">
+          <span className="hdr-plat">
+            <PlatformIcon platform={platform} size={24} />
+            {heading}
+          </span>
+        </h1>
         <p className="lede">{message}</p>
         <p className="id-foot"><a href={backHref}>← 返回我的正身</a></p>
       </main>
@@ -58,7 +64,12 @@ export default async function AddAccountPage({
   if (!haveLiveReq) {
     return (
       <main className="wrap">
-        <h1 className="wordmark sm">{heading}</h1>
+        <h1 className="wordmark sm">
+          <span className="hdr-plat">
+            <PlatformIcon platform={platform} size={24} />
+            {heading}
+          </span>
+        </h1>
         {recover ? (
           <p className="lede">
             你正在恢復 <strong>@{recoverHandle}</strong> 的驗證。請務必用<strong>這個帳號本人</strong>發佈含驗證碼的貼文並貼回網址
