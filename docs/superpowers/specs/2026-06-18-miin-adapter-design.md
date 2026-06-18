@@ -165,6 +165,15 @@ noise, a single retry is a one-line follow-up.
 - **Registry (the activation switch):** add `miin: miinAdapter` to the `ADAPTERS` map in
   `lib/binding/platforms/index.ts`. This single line flips everything registry-driven: `/add/miin`
   stops 404-ing and the `/add` picker tile flips **施工中 → active**.
+- **Picker must hide slug-ineligible platforms during onboarding (required by this slice).**
+  Activating miin makes its tile *active*, so without this a slug-less user could pick miin and walk
+  into the cancel-only dead end (§1). Rule: in `/add` (`app/(site)/add/page.tsx`), when the user has
+  **no slug**, show **only slug-eligible platforms** — slug-ineligible ones (miin, and any future
+  one) are **hidden entirely**, not shown-disabled. A slug-less user's every bind would be the main,
+  which must be slug-eligible. When the user **has a slug** (adding a secondary), show all platforms
+  as today. The recover flow bypasses the picker, so it's unaffected. *Implementation note:*
+  slug-eligibility must be known **even for 施工中 platforms** (no adapter), so surface it as
+  per-platform metadata the picker reads, kept consistent with each adapter's `slugEligible`.
 - **Confirm path — no new UI.** For the in-scope user (provisioned, `user.slug` set),
   `app/(site)/add/[platform]/confirm/page.tsx` already routes to the **`OrdinaryConfirm`** branch
   (non-primary 分身 bind) — identical to adding a second Threads account. A `?recover=` request
@@ -195,6 +204,12 @@ Notes for whoever picks it up:
   fixed `viewBox="0 0 24 24"`. Giving miin a proper mark needs **either** (a) a clean **square
   monogram vector**, **or** (b) a small `PlatformIcon` **image-mode** enhancement (render a PNG for
   brands whose logo isn't a single path). Pick when the asset/decision is ready.
+- **Source asset available:** `public/miin-app-icon.png` (1024², the full iOS app icon — rainbow
+  "Miin" wordmark on a baked-in dark-navy rounded square). It's a **reference/source for deriving a
+  square monogram**, **not** something to wire in as-is (a wordmark with its own background is
+  illegible at 13px and inconsistent with the borderless Threads/IG glyphs). Note it isn't a
+  transparent monogram, and committing a third-party brand asset under `public/` serves it publicly —
+  decide whether it belongs in the deploy when the icon work actually happens.
 
 ## 7. Testing
 
@@ -212,6 +227,8 @@ Mirror `lib/binding/platforms/threads.test.ts` — fixture-driven, no network:
   (asserted via a spy); assert the **auth code never appears** in the logged payload.
 - **`profileUrl`:** `"gua_si_tw"` → `https://miin.cc/user/gua_si_tw`.
 - **Registry:** `getAdapter("miin")` returns the adapter; `listSlugEligible()` **excludes** miin.
+- **Picker filtering:** the `/add` platform list, given a slug-less user, **omits** slug-ineligible
+  platforms (miin) and **keeps** slug-eligible ones; given a user with a slug, includes all.
 - **Deterministic `accountId` (recovery guard):** the same story fixture resolves to the **same**
   `accountId` across calls, and a casing/whitespace variant of the username normalizes to it — this
   is what the §3.4 same-account recovery guard relies on. (The guard + `reverifyBinding` themselves
@@ -226,6 +243,8 @@ platform-agnostic.
 - A provisioned user can go `/add` → miin tile (active) → `/add/miin` → copy template → post on
   miin → paste the story URL → resolve → confirm → the miin account appears as a verified non-main
   分身 on their `/gua/{slug}` (Accounts + Timeline).
+- A **slug-less** (onboarding) user does **not** see miin in the `/add` picker at all (only
+  slug-eligible platforms appear); a provisioned user sees all platforms.
 - Wrong-host / spoofed / malformed paste URLs are rejected before any fetch.
 - A miin 分身 flagged `banned`/`hacked` can be recovered via 恢復·重新驗證 (§3.4) — re-verify
   resolves to the same `accountId`, clears the same-account guard, and restores `condition → active`

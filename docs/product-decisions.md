@@ -179,7 +179,12 @@ these, that's a design decision to surface, not to special-case silently.
 3. **Icon** — register the glyph per "Platform icon brand identity" above.
 4. **`slugEligible`** — decide whether a handle proven here may mint a slug (a *main* 分身 source).
    Threads/IG = yes; miin = no. A slug-ineligible platform can only be bound as a **non-main** 分身 by
-   an already-provisioned owner.
+   an already-provisioned owner. **Consequence for the picker:** a slug-less user (onboarding their
+   main) is shown **only slug-eligible platforms** in `/add` — slug-ineligible ones are **hidden
+   entirely** (not shown-disabled), so nobody is led toward a bind that can't mint their slug. A user
+   who already has a slug sees all platforms. (Slug-eligibility must be known even for 施工中 platforms
+   that have no adapter yet — keep it as per-platform metadata consistent with each adapter's
+   `slugEligible`.)
 5. **Recovery / re-verification (恢復·重新驗證) is standard and inherited — do not re-implement it.**
    A flagged (`banned`/`hacked`) 分身 on any platform is recovered through the **same** path
    (`/add/<key>?recover={accountId}` → the shared wizard → `resolvePost` → the **same-account guard**
