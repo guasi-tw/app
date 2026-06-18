@@ -176,6 +176,10 @@ push pre-emptive verification.
   **squash-merge**. Commit/push when the user asks. `main` = production (Vercel deploys it).
 - **Repo structure:** flat **modular monolith** (`app/` + `lib/*` + `prisma/` at root) — *not* a
   monorepo yet; see [`docs/deployment.md`](docs/deployment.md) §3.
+- **Code comments describe the *current* state only** — never leave historical breadcrumbs like
+  `// moved to X`, `// used to be at the bottom`, or `// formerly handled here`. History lives in git,
+  not in source. After moving or removing code, delete any pointer to the old location; if a note about
+  *why* the present design exists is genuinely useful, phrase it about the present.
 - **Build milestones** are planned with **superpowers:brainstorm → writing-plans**; the resulting
   spec/plan artifacts land under `docs/superpowers/` as *historical* records (see the Docs two-tier
   note — they're allowed to go stale). **Visual brainstorming is welcome** — the user has opted into

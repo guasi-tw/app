@@ -26,7 +26,7 @@ export const aboutContent = {
     gloss: "（你的身分中樞，我們叫它「正身」(tsiànn-sin)；各平台帳號則是「分身」。）",
     steps: [
       { n: 1, title: "建立正身", body: "註冊一個帳號，當你所有分身的中樞。" },
-      { n: 2, title: "註冊分身", body: "複製一段含驗證碼的文字，從該帳號發一篇公開貼文，貼回網址即完成。" },
+      { n: 2, title: "綁定分身", body: "複製一段含驗證碼的文字，從該帳號發一篇公開貼文，貼回網址即完成。" },
       { n: 3, title: "驗明正身", body: "任何人免登入就能查：這個帳號，跟哪些帳號是同一個人。" },
     ] satisfies AboutStep[],
   },
@@ -93,8 +93,6 @@ export const aboutContent = {
   cta: {
     title: "趁現在，先驗明你的正身",
     subtitle: "被封後就來不及了。建立正身只要幾分鐘。",
-    buttonLabel: "以 Google 登入，建立我的正身 →",
-    href: "/login",
     note: "免費 · 無需密碼",
   },
 

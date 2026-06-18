@@ -1,9 +1,10 @@
 import { getCurrentUser } from "@/lib/identity/session";
 import { ownerHomePath } from "@/lib/identity/urls";
+import { AccountMenu } from "./AccountMenu";
+import { GoogleSignInButton } from "./GoogleSignInButton";
 
-// Global top-bar for the app/funnel pages (NOT the public Identity Card, which has
-// its own profile chrome). Conventional layout: top-left = icon + brand → home;
-// top-right = a single context action (登入/免費註冊 logged out, 我的正身 logged in).
+// Global top-bar. Conventional layout: top-left = icon + brand → home; top-right = context action —
+// 登入/免費註冊 logged out, and a logged-in account menu (avatar → 正身頁面 / 切換帳號 / 登出).
 export async function SiteHeader() {
   const user = await getCurrentUser();
   return (
@@ -15,18 +16,15 @@ export async function SiteHeader() {
       </a>
       <nav className="site-actions">
         {user ? (
-          <a className="site-cta-ghost" href={ownerHomePath(user)}>
-            我的正身
-          </a>
+          <AccountMenu
+            homeHref={ownerHomePath(user)}
+            displayName={user.displayName ?? "我"}
+            avatarUrl={user.avatarUrl ?? null}
+          />
         ) : (
-          <>
-            <a className="site-link" href="/login">
-              登入
-            </a>
-            <a className="site-cta" href="/login">
-              免費註冊
-            </a>
-          </>
+          // Go straight to Google's consent screen (no /login hop) — one button covers sign-in and
+          // first-time sign-up; /post-login then routes new users to onboarding, returning users home.
+          <GoogleSignInButton />
         )}
       </nav>
     </header>

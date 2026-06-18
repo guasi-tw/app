@@ -121,39 +121,58 @@ body {
   align-items: center;
   gap: 0.85rem;
 }
-.site-link {
-  color: var(--fg);
-  text-decoration: none;
-  font-size: 0.9rem;
+/* Official "Sign in with Google" button (light theme), per Google's branding guidelines: standard
+   multicolor G logo on a white button, approved text 使用 Google 帳戶登入, Roboto Medium 14px. The
+   letter-spacing/text-transform resets keep it clean inside styled wrappers (e.g. .status). Used for
+   every sign-in CTA (header inline + page CTAs via `block`). */
+.gsi-form.block { width: 100%; }
+.gsi-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  height: 40px; padding: 0 12px;
+  background: #ffffff; border: 1px solid #747775; border-radius: 8px;
+  color: #1f1f1f; font-family: "Roboto", system-ui, Arial, sans-serif;
+  font-size: 14px; font-weight: 500; line-height: 1;
+  letter-spacing: normal; text-transform: none; white-space: nowrap; cursor: pointer;
 }
-.site-link:hover {
-  color: var(--accent);
+.gsi-button:hover { background: #f7f8f8; }
+.gsi-button:active { background: #f1f3f4; }
+.gsi-button.block { display: flex; width: 100%; }
+.gsi-logo { flex-shrink: 0; }
+
+/* Account menu (logged-in top-right): avatar trigger + dropdown (正身頁面 / 切換帳號 / 登出). */
+.acct-menu { position: relative; }
+.acct-menu-trigger {
+  display: flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.35rem 0.2rem 0.2rem;
+  background: transparent; border: 1px solid #2a2a33; border-radius: 999px;
+  color: var(--fg); font: inherit; cursor: pointer;
 }
-.site-cta {
-  background: var(--accent);
-  color: #1a1500;
-  font-weight: 700;
-  font-size: 0.9rem;
-  padding: 0.4rem 0.95rem;
-  border-radius: 999px;
-  text-decoration: none;
-  white-space: nowrap;
+.acct-menu-trigger:hover { border-color: var(--accent); }
+.acct-menu-avatar {
+  width: 28px; height: 28px; border-radius: 50%; object-fit: cover;
+  background: #15151c; border: 1px solid #2a2a33; display: block;
 }
-.site-cta:hover {
-  filter: brightness(1.06);
+.acct-menu-avatar.placeholder {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 700; color: var(--accent);
 }
-.site-cta-ghost {
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  font-size: 0.9rem;
-  padding: 0.4rem 0.95rem;
-  border-radius: 999px;
-  text-decoration: none;
-  white-space: nowrap;
+.acct-menu-caret {
+  font-size: 0.95rem; line-height: 1; color: var(--fg);
+  transition: transform 0.15s;
 }
-.site-cta-ghost:hover {
-  background: #1a160b;
+.acct-menu-trigger[aria-expanded="true"] .acct-menu-caret { transform: rotate(180deg); }
+.acct-menu-pop {
+  position: absolute; top: calc(100% + 0.4rem); right: 0; min-width: 9rem;
+  display: flex; flex-direction: column; padding: 0.3rem;
+  background: #15151c; border: 1px solid #2a2a33; border-radius: 0.6rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
+.acct-menu-item {
+  display: block; width: 100%; text-align: left; padding: 0.5rem 0.65rem;
+  background: transparent; border: none; border-radius: 0.4rem;
+  color: var(--fg); font: inherit; font-size: 0.9rem; text-decoration: none; cursor: pointer;
+}
+.acct-menu-item:hover { background: #1f1f28; }
+.acct-menu-item.danger { color: #f7a3a7; }
 
 /* --- Slice 1: onboarding + pre-provisioned --- */
 .wordmark.sm {
@@ -399,12 +418,32 @@ body {
   background: var(--accent); border-radius: 999px; font-weight: 700;
 }
 
-.id-toggle { display: flex; gap: 0; align-self: center; border: 1px solid #2a2a33; border-radius: 999px; overflow: hidden; }
-.id-toggle button {
-  padding: 0.4rem 1rem; background: transparent; border: none; color: var(--muted);
-  font: inherit; font-size: 0.85rem; cursor: pointer;
+/* Public ⇄ manage as an on/off switch (off = 公開檢視, on = 管理模式) — reads as a toggle, not tabs. */
+.id-switch { display: flex; align-items: center; gap: 0.5rem; align-self: center; }
+.id-switch-label { font-size: 0.85rem; color: var(--muted); }
+.switch {
+  position: relative; width: 42px; height: 24px; flex-shrink: 0; padding: 0;
+  border: 1px solid #2a2a33; border-radius: 999px; background: #15151c;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
 }
-.id-toggle button.active { background: #15151c; color: var(--fg); }
+.switch .knob {
+  position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--muted); transition: transform 0.15s, background 0.15s;
+}
+.switch.on { background: var(--accent); border-color: var(--accent); }
+.switch.on .knob { transform: translateX(18px); background: #1a1500; }
+
+/* Add-a-分身 CTA at the top of the 帳號 list (manage view). */
+.id-add-account { display: block; width: 100%; margin-bottom: 0.6rem; border-style: dashed; }
+
+/* Share CTA — under the profile, above the tabs. Caption + 複製連結, in a soft card. */
+.id-share {
+  display: flex; flex-direction: column; align-items: center; gap: 0.55rem;
+  padding: 0.85rem 1rem; text-align: center;
+  background: #15151c; border: 1px solid #2a2a33;
+  border-left: 3px solid var(--accent); border-radius: 0.6rem;
+}
+.id-share-cap { margin: 0; font-size: 0.85rem; line-height: 1.55; color: var(--fg); }
 
 .tabbar { display: flex; gap: 0; border-bottom: 1px solid #2a2a33; }
 .tabbar .tab {
@@ -479,8 +518,13 @@ a.acct-pill:hover { border-color: var(--accent); }
   border-left: 2px solid var(--danger); padding: 0.35rem 0 0.35rem 0.6rem;
   background: rgba(240, 72, 79, 0.09); border-radius: 0 0.4rem 0.4rem 0;
 }
-/* Private rows (owner 管理檢視 only): dimmed, hollow-ring dot, dashed 私密 tag. */
-.tl-item.priv { opacity: 0.68; }
+/* Private rows (owner 管理檢視 only): a subtle gray wash marks them as owner-only, plus the
+   hollow-ring dot + dashed 👁 私密 tag. */
+.tl-item.priv {
+  padding: 0.35rem 0.6rem;
+  background: rgba(255, 255, 255, 0.045);
+  border-radius: 0.4rem;
+}
 
 .acct-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .chip {
@@ -506,3 +550,5 @@ a.chip.recover { text-decoration: none; }
 .id-manage-links { display: flex; flex-direction: column; gap: 0.6rem; padding-top: 0.5rem; }
 .id-foot { display: flex; flex-direction: column; gap: 0.75rem; align-items: center; padding-top: 1rem; text-align: center; }
 .id-foot a { color: var(--accent); }
+.id-foot-cta { width: 100%; display: flex; flex-direction: column; gap: 0.5rem; align-items: center; }
+.id-foot-prompt { margin: 0; font-size: 0.85rem; color: var(--muted); }

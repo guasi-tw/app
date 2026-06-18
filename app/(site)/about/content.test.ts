@@ -4,14 +4,6 @@ import { aboutContent } from "./content";
 const blob = JSON.stringify(aboutContent);
 
 describe("aboutContent — accuracy constraints", () => {
-  it("CTA points to the login route", () => {
-    expect(aboutContent.cta.href).toBe("/login");
-  });
-
-  it("CTA names Google as the login method", () => {
-    expect(aboutContent.cta.buttonLabel).toContain("Google");
-  });
-
   it("lists exactly the three MVP platforms plus a 'more' chip", () => {
     expect(aboutContent.platforms.items).toEqual([
       "Threads",
@@ -39,7 +31,7 @@ describe("aboutContent — accuracy constraints", () => {
   it("has three how-it-works steps in order", () => {
     expect(aboutContent.how.steps.map((s) => s.title)).toEqual([
       "建立正身",
-      "註冊分身",
+      "綁定分身",
       "驗明正身",
     ]);
   });

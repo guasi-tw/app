@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { aboutContent as c } from "./content";
+import { GoogleSignInButton } from "@/app/GoogleSignInButton";
 import styles from "./about.module.css";
 
 export const metadata: Metadata = {
@@ -150,9 +151,7 @@ export default function AboutPage() {
         <section className={`${styles.section} ${styles.gold} ${styles.center}`}>
           <h2 className={styles.ctaTitle}>{c.cta.title}</h2>
           <p className={styles.ctaSub}>{c.cta.subtitle}</p>
-          <a className={styles.ctaButton} href={c.cta.href}>
-            {c.cta.buttonLabel}
-          </a>
+          <GoogleSignInButton block />
           <div className={styles.ctaNote}>{c.cta.note}</div>
         </section>
 

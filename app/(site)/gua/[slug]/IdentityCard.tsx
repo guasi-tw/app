@@ -7,7 +7,7 @@ import { AccountRow } from "./AccountRow";
 import { TimelineList } from "./TimelineList";
 import type { TimelineView } from "./timeline";
 import { ShareLink } from "./ShareLink";
-import { signOutAction, switchAccountAction } from "./actions";
+import { GoogleSignInButton } from "@/app/GoogleSignInButton";
 
 type Props = {
   displayName: string;
@@ -56,6 +56,7 @@ export function IdentityCard({
   // without a navigation — the component owns the view state client-side.
   function selectMode(next: "public" | "manage") {
     setMode(next);
+    setTab("accounts"); // switching view always lands back on the 帳號 tab
     const url = next === "manage" ? `${pathname}?view=manage` : pathname;
     window.history.replaceState(null, "", url);
   }
@@ -63,32 +64,44 @@ export function IdentityCard({
   return (
     <main className="idcard">
       <header className="id-header">
+        {isOwner && !lockManage && (
+          // An on/off switch (not a two-tab control), pinned at the very top above the avatar:
+          // off = 公開檢視, on = 管理模式.
+          <div className="id-switch">
+            <span className="id-switch-label">管理模式</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={mode === "manage"}
+              aria-label="管理模式"
+              className={mode === "manage" ? "switch on" : "switch"}
+              onClick={() => selectMode(mode === "manage" ? "public" : "manage")}
+            >
+              <span className="knob" aria-hidden />
+            </button>
+          </div>
+        )}
         {avatarUrl && <img className="id-avatar" src={avatarUrl} alt="" />}
         <h1 className="id-name">{displayName}</h1>
         {bio && <p className="id-bio">{bio}</p>}
+        {manage && (
+          <a className="btn-secondary sm" href="/settings">編輯個人資料</a>
+        )}
         <span className="id-badge">{count} 個分身</span>
         {lockManage && (
           <div className="banner">🔒 你的正身頁尚未公開（只有你看得到）</div>
         )}
-        {isOwner && !lockManage && (
-          <div className="id-toggle">
-            <button
-              type="button"
-              className={mode === "public" ? "active" : ""}
-              onClick={() => selectMode("public")}
-            >
-              公開檢視
-            </button>
-            <button
-              type="button"
-              className={mode === "manage" ? "active" : ""}
-              onClick={() => selectMode("manage")}
-            >
-              管理檢視
-            </button>
-          </div>
-        )}
       </header>
+
+      {publicUrl && (
+        // Share CTA — the guasi.tw/gua/{slug} link is the user's cross-platform 正身 profile, meant to
+        // be pasted into other platforms' bios. Pinned up here (under the profile, above the tabs) so
+        // it's actually reachable. Shown to everyone viewing a public 正身, not just the owner.
+        <section className="id-share">
+          <p className="id-share-cap">分享連結，讓大家能驗明正身。</p>
+          <ShareLink url={publicUrl} />
+        </section>
+      )}
 
       <nav className="tabbar">
         <button
@@ -121,6 +134,12 @@ export function IdentityCard({
               ⚠ 你的主要帳號已被停用，目前沒有代表帳號。請在下方「恢復·重新驗證」原帳號，或將其他帳號「設為主要」。
             </div>
           )}
+          {manage && (
+            // Add a new 分身 — sits at the top, above the main account.
+            <a className="btn-secondary id-add-account" href="/add">
+              {lockManage ? "＋ 驗證主要帳號" : "＋ 綁定分身"}
+            </a>
+          )}
           <div className="acct-list">
             {accounts.main && <AccountRow account={accounts.main} manage={manage} />}
             {accounts.active.map((a) => (
@@ -134,32 +153,19 @@ export function IdentityCard({
               <AccountRow key={a.id} account={a} manage={manage} />
             ))}
           </div>
-
-          {manage && (
-            <div className="id-manage-links">
-              <a className="btn-secondary" href="/add">
-                {lockManage ? "＋ 驗證主要帳號" : "＋ 註冊分身"}
-              </a>
-              <a className="btn-secondary" href="/settings">編輯個人資料</a>
-              <form action={signOutAction}>
-                <button type="submit" className="btn-secondary" style={{ width: "100%" }}>登出</button>
-              </form>
-              <form action={switchAccountAction}>
-                <button type="submit" className="btn-secondary" style={{ width: "100%" }}>切換帳號</button>
-              </form>
-            </div>
-          )}
         </>
       )}
 
       <footer className="id-foot">
-        {publicUrl && <ShareLink url={publicUrl} />}
         {/* The owner is already on their own 正身 — no self-referential link. */}
         {!isOwner &&
           (viewerLoggedIn ? (
             <a href={ownerHomeUrl ?? "/"}>前往你的正身 →</a>
           ) : (
-            <a href="/login">建立你的正身 →</a>
+            <div className="id-foot-cta">
+              <p className="id-foot-prompt">也想建立自己的正身？</p>
+              <GoogleSignInButton block />
+            </div>
           ))}
       </footer>
     </main>

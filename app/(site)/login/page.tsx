@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { signIn } from "@/lib/auth";
 import { getCurrentUser } from "@/lib/identity/session";
 import { ownerHomePath } from "@/lib/identity/urls";
+import { GoogleSignInButton } from "@/app/GoogleSignInButton";
 
 export default async function LoginPage() {
   // Already logged in → no reason to be on the login page. Send them to their own 正身
@@ -13,16 +13,7 @@ export default async function LoginPage() {
   return (
     <main className="wrap">
       <h1 className="wordmark">我是登入頁</h1>
-      <form
-        action={async () => {
-          "use server";
-          // Land on the post-login dispatcher, which routes returning (provisioned)
-          // 正身 to their /gua page and new users to onboarding.
-          await signIn("google", { redirectTo: "/post-login" });
-        }}
-      >
-        <button type="submit">使用 Google 繼續</button>
-      </form>
+      <GoogleSignInButton block />
     </main>
   );
 }

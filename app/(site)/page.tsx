@@ -1,5 +1,6 @@
 import { signOut } from "@/lib/auth";
 import { getCurrentUser } from "@/lib/identity/session";
+import { GoogleSignInButton } from "@/app/GoogleSignInButton";
 
 export default async function Home() {
   const user = await getCurrentUser();
@@ -23,9 +24,9 @@ export default async function Home() {
           </form>
         </div>
       ) : (
-        <p className="status">
-          <a href="/login">建立你的正身 · 登入</a>
-        </p>
+        <div className="status">
+          <GoogleSignInButton block />
+        </div>
       )}
     </main>
   );
