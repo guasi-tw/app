@@ -16,6 +16,8 @@ export type AccountView = {
   profileUrl: string | null;
   variant: AccountVariant;
   flagged: boolean;
+  /** Trust state — drives the flagged-row warning wording (盜用 vs 停權). */
+  condition: "active" | "banned" | "hacked";
 };
 
 /** The four render buckets for the card. */

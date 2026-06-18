@@ -38,7 +38,11 @@ export function AccountRow({
         {account.profileUrl && !manage && <span className="acct-out" aria-hidden>↗</span>}
       </div>
       {account.flagged && (
-        <p className="acct-warn">⚠ 已回報遭盜用 · 此帳號已非本人</p>
+        <p className="acct-warn">
+          {account.condition === "banned"
+            ? "⚠ 已回報遭停權"
+            : "⚠ 已回報遭盜用 · 此帳號已非本人"}
+        </p>
       )}
       {manage && <ManageChips account={account} />}
     </>

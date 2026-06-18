@@ -20,6 +20,7 @@ function toView(a: LinkedAccount, variant: AccountVariant): AccountView {
     profileUrl: clickable ? adapter?.profileUrl(a.handle) ?? null : null,
     variant,
     flagged: a.condition !== "active",
+    condition: a.condition,
   };
 }
 
