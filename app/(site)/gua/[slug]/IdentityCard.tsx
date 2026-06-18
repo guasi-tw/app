@@ -98,7 +98,7 @@ export function IdentityCard({
         // be pasted into other platforms' bios. Pinned up here (under the profile, above the tabs) so
         // it's actually reachable. Shown to everyone viewing a public 正身, not just the owner.
         <section className="id-share">
-          <p className="id-share-cap">分享正身連結，讓大家能驗明正身。</p>
+          <p className="id-share-cap">分享連結，讓大家能驗明正身。</p>
           <ShareLink url={publicUrl} />
         </section>
       )}
