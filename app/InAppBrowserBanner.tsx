@@ -5,7 +5,7 @@ export function InAppBrowserBanner() {
   return (
     <div className="inapp-banner" role="alert">
       <span>
-        你正在 App 內建瀏覽器中，Google 登入會被擋下。請點右上角選單，選「在外部瀏覽器開啟」（Safari／Chrome）。
+        你正在 App 內建瀏覽器中，Google 登入會被擋下。請點右上角選單，選「使用外部瀏覽器開啟」（Safari／Chrome）。
       </span>
     </div>
   );
