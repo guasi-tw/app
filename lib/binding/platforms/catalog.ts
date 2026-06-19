@@ -1,6 +1,6 @@
 // lib/binding/platforms/catalog.ts
 // Static, presentation-level list of every MVP platform shown in the /add picker — INCLUDING
-// 施工中 platforms that have no adapter yet (e.g. Instagram). `slugEligible` must be known even
+// any 施工中 platform that has no adapter yet. `slugEligible` must be known even
 // without an adapter so the picker can hide slug-ineligible platforms during onboarding: a
 // slug-less user's first bind becomes their main 分身, which must mint a slug. Keep each entry's
 // `slugEligible` in sync with the matching adapter's — guarded by catalog.test.ts.

@@ -61,10 +61,11 @@ The full MVP stack (this is the canonical list; CLAUDE.md carries only the one-l
 guasi-app/
   app/                  # Next.js routes (UI + API)
   lib/
-    adapters/           # PlatformAdapter: threads / instagram / miin  ← pluggable seam
-    verification/       # author-match + auth-code core (platform-agnostic)
-    db/                 # Prisma client + repositories
-    storage/            # Blob wrapper
+    auth/               # Auth.js (Google): providers, callbacks, Prisma adapter
+    binding/            # verification + binding core (auth-code, templates, repo)
+      platforms/        # PlatformAdapter: threads / instagram / miin  ← pluggable seam
+    identity/           # 正身 profile, session, slug/shortRef, avatar (Blob wrapper)
+    db/                 # Prisma client
   prisma/               # schema + migrations
 ```
 

@@ -231,8 +231,19 @@ When the user says **"ship it"**, **"raise a PR"** (or equivalent), run the prep
 the current feature branch — this counts as the user authorizing the commit/push:
 
 1. **Stage + commit** pending work with a clear message (end with the `Co-Authored-By:` trailer).
-2. **Update docs** — refresh any affected `docs/*.md` (esp. [`docs/routes.md`](docs/routes.md) when
-   routes change; see **Docs hygiene**).
+2. **Update docs — a gate, not a nicety.** Every maintained doc whose subject the change touched
+   **must** match the shipped state before the PR opens. Walk the **Docs** list and refresh whatever
+   the change affected — including but **not limited to**:
+   - [`docs/routes.md`](docs/routes.md) — when a route is added/removed/moved or changes auth/chrome.
+   - [`docs/components.md`](docs/components.md) — when a component is added/removed/moved, or changes
+     its Server/Client nature or its consumers. (The model **trusts this doc for quick metadata
+     answers without opening source**, so a stale row silently misleads — keep it exact.)
+   - [`docs/product-decisions.md`](docs/product-decisions.md) + the CLAUDE.md one-liners — when a
+     locked decision changes (update the canonical doc first, then the one-liner).
+   - Any other maintained `docs/*.md` (services, deployment, platform-verification, …) the change bears on.
+
+   If a change touches a doc's subject but you're intentionally *not* updating that doc, say why in the
+   PR. "No docs needed" is a claim to justify, not a default.
 3. **Update devlog** — add/refresh the `vX.Y.Z` entry + TL;DR row (see **Devlog format**); cross off
    done items in [`todo.md`](todo.md). Commit the doc changes.
 4. **Verify** — `npx tsc --noEmit` clean **and** `npx vitest run` green before opening the PR.

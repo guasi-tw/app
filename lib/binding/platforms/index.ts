@@ -7,7 +7,7 @@ import { instagramAdapter } from "./instagram";
 // Adding a platform = add its adapter to this map. (Presentation is separate: also register the
 // platform's glyph + brand color in PlatformIcon — see docs/product-decisions.md "Platform icon
 // brand identity". Icons are intentionally NOT gated on an adapter so 施工中 tiles can still show
-// their brand mark. miin's glyph is a deferred follow-up — see the spec §6.)
+// their brand mark.)
 const ADAPTERS: Partial<Record<string, PlatformAdapter>> = {
   threads: threadsAdapter,
   miin: miinAdapter,
