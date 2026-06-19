@@ -26,15 +26,16 @@ This is purely additive UI. It does not touch parsing, fetching, `resolvePost`, 
    stays at the top; the walkthrough sits underneath for anyone who needs it (it is not collapsed).
 3. **Scope:** **all three** MVP platforms — Threads, Instagram, miin.cc.
 4. **Data model:** new `postUrlHelp: readonly PostUrlStep[]` field on `PlatformAdapter`.
-5. **Image storage:** committed static assets under `public/help/<platform>/step-N.png`, referenced by
-   static path (e.g. `/help/miin/step-1.png`). No `next/image` (the codebase doesn't use it) — plain
+5. **Image storage:** committed static assets under `public/help/<platform>/step-N.webp`, referenced by
+   static path (e.g. `/help/miin/step-1.webp`). No `next/image` (the codebase doesn't use it) — plain
    `<img loading="lazy">`.
 6. **Privacy:** screenshots are captured while posting **from the guasi / a throwaway account**, so the
    visible handle/avatar is the brand itself — nothing personal to redact. EXIF stripped on commit.
-7. **Image ratio (as captured):** **1284 × 500 px landscape, uniform across all 9 images** (3 platforms
-   × 3 steps). Wide focused strips cropped to the relevant control + a little context. Because the ratio
-   is uniform, the CSS pins `aspect-ratio: 1284 / 500` so space is reserved before the lazy image loads
-   (no layout shift); displayed at column width (≈448 × 174px) with `height: auto`.
+7. **Image ratio / format:** captured at 1284 × 500 landscape; **shipped as 900 × 351 WebP** (same
+   ratio, q80), uniform across all 9 images (3 platforms × 3 steps). Wide focused strips cropped to the
+   relevant control + a little context. Because the ratio is uniform, the CSS pins
+   `aspect-ratio: 900 / 351` so space is reserved before the lazy image loads (no layout shift);
+   displayed at column width (≈448 × 174px) with `height: auto`.
 8. **Click highlight:** baked **into the image** by the capture author — a bright **yellow box** drawn
    around the tap target, applied uniformly across all steps so they read as one set. (The shots are
    over dark UIs — Threads/miin/IG-dark — where the yellow box reads clearly.)
@@ -60,7 +61,7 @@ In `lib/binding/platforms/types.ts`:
 export type PostUrlStep = {
   /** 繁中 instruction for this step. */
   text: string;
-  /** Static path under public/, e.g. "/help/miin/step-1.png". */
+  /** Static path under public/, e.g. "/help/miin/step-1.webp". */
   image: string;
   /** Screenshot alt text; defaults to `text` when omitted. */
   alt?: string;
@@ -90,9 +91,8 @@ copy is finalized against the captured screenshots, but the shape and step count
 (Step-1 of Threads/miin highlights the share icon under the post; exact step-2/3 copy is authored
 against the captured `step-2.png` / `step-3.png` during implementation.)
 
-Image files land at `public/help/threads/step-N.png`, `public/help/instagram/step-N.png`,
-`public/help/miin/step-N.png`. Captions (the `text` of each step) are authored to match the final
-shots.
+Image files land at `public/help/<platform>/step-N.webp`. Captions (the `text` of each step) are
+authored to match the final shots.
 
 ### C. Wizard rendering
 
@@ -140,25 +140,26 @@ New classes in the Slice-2 wizard block, matching the dark theme and 28rem colum
   of `.wizard`.
 - `.posturl-help-title` — small, muted heading (sized like a `.hint`/sub-label, not an `h1`).
 - `.posturl-help-steps` — an ordered list with visible step numbers, comfortable `gap` between steps.
-- `.posturl-help-steps li img` — `width: 100%; height: auto; aspect-ratio: 1284 / 500; border-radius:
+- `.posturl-help-steps li img` — `width: 100%; height: auto; aspect-ratio: 900 / 351; border-radius:
   0.6rem; border: 1px solid #2a2a33;` (mirrors `.template`'s framing) so each shot fills the column
   uniformly and reserves its space before the lazy image loads (no layout shift).
 
 Exact values are the implementer's call within the existing design language; no new design tokens.
 
-### E. Image assets (already captured)
+### E. Image assets (captured + optimized)
 
-The 9 display crops exist at `public/help/{threads,instagram,miin}/step-{1,2,3}.png`, each 1284 × 500,
-shot from `@gua.si.tw` with the yellow highlight box baked in. **Only these 9 crops are committed.**
+The 9 shipped images exist at `public/help/{threads,instagram,miin}/step-{1,2,3}.webp`, each 900 × 351
+WebP (q80), shot from `@gua.si.tw` with the yellow highlight box baked in. **Only these 9 `.webp` are
+committed.** Conversion was done with `cwebp -q 80 -resize 900 0` from the 1284 × 500 PNG crops —
+total dropped from ~1.1 MB (PNG) to ~104 KB (WebP); per-image 8–16 KB. Only the 3 images for the
+current platform load per page, lazily, below the fold.
 
-Working files to keep OUT of git:
-- `public/help/<platform>/step-N-org.png` — the full 1284 × 2778 originals (include the status bar;
-  bloat). Add `public/help/**/*-org.png` to `.gitignore`.
-- `public/help/backup/` — duplicate full originals. Add `public/help/backup/` to `.gitignore`.
+Working files to keep OUT of git (all PNGs under `public/help/` are local sources, not shipped):
+- `public/help/<platform>/step-N.png` — the 1284 × 500 PNG crops (WebP sources).
+- `public/help/<platform>/step-N-org.png` — full 1284 × 2778 originals (status bar; bloat).
+- `public/help/backup/` — duplicate full originals.
+- Rule: add **`public/help/**/*.png`** to `.gitignore` (covers all three above).
 - `.DS_Store` — **already** covered by the existing `.gitignore` rule (verified `git check-ignore`).
-
-Optional (nice-to-have, not blocking): run the crops through `pngquant`/`sips` to shave size — IG's
-step is ~132K; the rest ~50–65K. EXIF is already absent from the `sips`-cropped PNGs.
 
 ## Testing
 
@@ -178,7 +179,7 @@ step is ~132K; the rest ~50–65K. EXIF is already absent from the `sips`-croppe
 - `app/(site)/add/[platform]/AddAccountWizard.tsx` — new prop + render block.
 - `app/(site)/add/[platform]/page.tsx` — pass `postUrlHelp` prop.
 - `app/globals.css` — `.posturl-help*` classes.
-- `public/help/{threads,instagram,miin}/step-{1,2,3}.png` — 9 static assets (already captured).
-- `.gitignore` — add `public/help/**/*-org.png` and `public/help/backup/` (keep working files local).
+- `public/help/{threads,instagram,miin}/step-{1,2,3}.webp` — 9 static assets (captured + optimized).
+- `.gitignore` — add `public/help/**/*.png` (keep all PNG working files / sources local).
 - Docs on ship: `docs/routes.md` unaffected (no route change); `docs/devlog.md` + `todo.md` per release
   convention.
