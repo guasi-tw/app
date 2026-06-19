@@ -14,6 +14,7 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 
 | Version | Summary |
 |---------|---------|
+| [v0.20.0](#v0200--miin-platform-glyph-tiled-mini-app-icon-2026-06-18) | **miin platform glyph (tiled mini app-icon).** miin.cc shipped active (v0.16.0) without a glyph — its brand is a **light-on-dark rainbow wordmark, not a square symbol**, so it fell through the "renders nothing" fallback. Resolution: miin treats the **wordmark as its symbol**, so we reproduce its app icon faithfully as the **first *tiled* glyph** (vs the transparent IG/Threads silhouettes). New `PlatformIcon` **`TILE` registry** (third alongside `PATHS`/`BRAND`): a `100×100` SVG = navy `#030037` rounded square + miin's **official wordmark path** (their site SVG, `102×34`), **masked over a `userSpaceOnUse` gradient** so the brand colors show inside the letters. Values **measured from the app-icon PNG** (PCA tilt **−7°**, bg sampled `#030037`) and **tuned live** via a slider mockup in the brainstorming visual companion (gradient lean 5°, spread L=20, 9 stops red→purple). **Key technique:** the gradient lives in *tile* coords, **decoupled** from the −7° letter tilt — so the color bands stay ~horizontal while the letters lean, keeping warm in the bottom-left corner like the real icon (filling the gradient *inside* the rotated group instead made the whole bottom red). `useId()`-unique mask + gradient ids (mirrors the existing gradient-id handling) for multiple instances per page; `fill-rule="evenodd"` preserved for the letter counters. IG/Threads/`BRAND` untouched. 193 tests (presentational; verified visually against the PNG). [Spec](superpowers/specs/2026-06-18-miin-icon-glyph-design.md). |
 | [v0.19.1](#v0191--切換帳號-direct-to-googles-chooser-2026-06-18-1624) | **切換帳號 → straight to Google's chooser.** The account-menu 切換帳號 action used to `signOut({ redirectTo: "/login" })`, so switching took **two clicks** (切換帳號 → then the sign-in button on `/login`). Now `switchAccountAction` does `signOut({ redirect: false })` then `signIn("google", …)` directly — the chooser is already forced globally by the provider's **`prompt=select_account`** (a documented, supported Google OIDC parameter), so it's one click and skips the `/login` hop. `/login` stays as the protected-route-redirect / future-email-picker fallback. No new tests (193). |
 | [v0.19.0](#v0190--homepage-landing-page-2026-06-18-1555) | **Homepage is now the landing page.** `/` was a thin stub (wordmark + lede + login) while the *real* landing page already lived at `/about` (`content.ts`). Promoted the content + CSS to **shared modules** (`landing-content.ts` / `landing.module.css`, exported `landingContent`) and rendered **two views of one source**: `/` = curated **hero (problem hook + one-line value prop) → 3-step how-it-works → live demo card → closing CTA**; `/about` = the same content plus the deeper material (example-post anatomy, 平台中立, 為什麼可信, 為什麼是現在, contact). Extracted the two drift-prone blocks into shared components — **`HowItWorks`** and **`ExampleCard`** (the latter takes `withLiveLink` to swap the share caption for a **看我是小編的正身 →** button → `/gua/gua.si.tw`). Demo card updated to **3 distinct platforms** (Threads + Instagram + miin.cc) to show the cross-platform survival story. The only logged-in/out difference is the CTA, isolated behind a pure **`landingCtaModel`** helper (unit-tested) + thin **`LandingCta`** (logged in → 前往我的正身頁; logged out → Google sign-in); the homepage is **not** redirected for logged-in users — the global header `AccountMenu` already owns "go to my page". To avoid three stacked Google buttons, the **header's sign-in is hidden on `/`** (a `HeaderSignIn` `usePathname` client wrapper) so a logged-out home visitor sees just the hero + closing CTAs. **Search deferred** (empty-index = dead-feeling; collides with anti-enumeration). 193 tests. [Spec](superpowers/specs/2026-06-18-homepage-landing-design.md) · [Plan](superpowers/plans/2026-06-18-homepage-landing.md). |
 | [v0.18.0](#v0180--instagram-adapter-3rd-active-platform-2026-06-18) | **Instagram adapter (3rd active platform).** New self-contained **`instagramAdapter`** (`lib/binding/platforms/instagram.ts`, Approach A — mirrors `threads.ts`, no shared fetch abstraction) reads via **crawler-UA SSR**; registered in the registry → **IG flips 施工中 → live** in `/add`. `parsePostUrl` is the security gate: https-only, host-exact (`instagram.com`/`www.`), scope **`/p/<shortcode>/` only** (`/reel/` rejected), tolerates `?igsh=` and a leading `/<handle>/`. `resolvePost` reads the **authoritative author from the `og:url` canonical path** — **spoof-proven on IG** 2026-06-18 (a spoofed path handle still yields the true author; was Threads-only), with a host-pinning regex + final-host re-validation that **fail closed** off-platform; scans the **decoded body** (untruncated caption) for the namespaced code (`og:description` truncates), `decodeEntities` first since the CJK code label is **hex-entity-encoded** (`我是分身驗證碼：` → `&#x6211;…&#xff1a;`); `displayName` from the `og:title` bare-`@handle`/named forms; retry-once on missing `og:url`. Bio stays unreadable tokenless → **post method only**. Wizard IG note now names the 「新增說明文字……」 caption field. 186 tests. [Spec](superpowers/specs/2026-06-18-instagram-adapter-design.md) · [Plan](superpowers/plans/2026-06-18-instagram-adapter.md). |
@@ -46,6 +47,59 @@ Running log of decisions and learnings for 正身 (tsiànn-sin). Newest entries 
 | [v0.2.0-design](#v020-design--verification-security-model--vercel-stack-lock-in-2026-06-15-0029) | Locked the verification security model (bound 分身 = post author from platform authority; scoped single-use code; manual paste-back primary) and the full MVP stack (all on Vercel: Neon + Auth.js + Google OAuth/email OTP + Vercel Blob). |
 | [v0.1.1-design](#v011-design--snapshot-ledger-status--naming-2026-06-14-2311) | Deepened the design: proof snapshots, append-only ledger, unbinding, timeline, account status management, verification-post growth loop; finalized naming/domain (我是/正身, `guasi.tw`). |
 | [v0.1.0-design](#v010-design--design--pitch-2026-06-14-2054) | Brainstormed the idea into a product + architecture spec, a non-technical pitch, and project context; git initialized. No code yet. |
+
+---
+
+## v0.20.0 — miin platform glyph (tiled mini app-icon) (2026-06-18)
+**Review:** not yet
+**Design docs:**
+- miin platform glyph: [Spec](superpowers/specs/2026-06-18-miin-icon-glyph-design.md)
+
+**What was built:**
+- **miin glyph as the first *tiled* `PlatformIcon`.** miin.cc was active since v0.16.0 but glyph-less:
+  its brand is a light-on-dark **rainbow wordmark, not a square symbol**, so it can't render as a bare
+  `currentColor`/gradient path like IG/Threads. Owner resolution: miin treats the **wordmark as its
+  symbol**, so we reproduce its app icon faithfully.
+- **New `TILE` registry** in `PlatformIcon` (third alongside `PATHS`/`BRAND`). When a platform has a
+  `TILE` entry the component renders a `100×100` square: navy `#030037` rounded rect (`rx 23`) + miin's
+  **official wordmark path** (their site SVG, native `102×34`) **masked over a `userSpaceOnUse` linear
+  gradient**, so the brand colors show inside the letters. Centering/tilt/scale via group transform
+  `translate(50 50.5) rotate(-7) scale(0.9) translate(-51 -17)`. IG/Threads/`BRAND` path unchanged.
+- **Values measured + tuned, not guessed.** Tilt **−7°** (PCA major axis of the mark = −7.15°) and bg
+  `#030037` were sampled from the PNG with PIL/numpy; the gradient (lean 5°, spread L=20, 9 stops
+  red→purple, small warm corner + extra yellow) was tuned **live** in a slider mockup served through
+  the brainstorming visual companion, then locked back as exact numbers.
+- Docs: `product-decisions.md` "Platform icon brand identity" now describes **three** icon treatments
+  (colorful symbol / monochrome / colorful-wordmark→tiled) + the `TILE` registry; CLAUDE.md Locked
+  decision + the component's "WHEN ADDING A PLATFORM" comment updated; `todo.md` miin-glyph crossed off.
+
+**Key technical learnings:**
+- `[insight]` **Decouple the gradient from the letter rotation.** A wordmark glyph reads as "tilted"
+  because the *letters* lean; but the brand's color bands are ~horizontal in **canvas** space. Filling
+  the path with the gradient *inside* the rotated group ties the bands to the −7° tilt → the whole
+  bottom edge goes one color (red smeared across the base). Putting the gradient in **tile coordinates**
+  (`userSpaceOnUse`) over a **masked** rect keeps the bands horizontal while the letters lean, so only
+  the lowest-left letter dips into the warm end — matching the real icon.
+- `[gotcha]` **Map the gradient to the mark's extent, not the whole tile.** The wordmark occupies only
+  the middle ~30% of the tile vertically; a gradient spanning `0..100` makes the letters sample only
+  the green/cyan **middle** of the ramp (reds/purples land in the empty padding). The gradient endpoints
+  must straddle the mark's vertical extent (here `y 30.58..70.42`) for the full ramp to show in the
+  letters.
+- `[note]` `fill-rule="evenodd"` must be carried onto the masked path or the letter counters (holes)
+  fill solid. `useId()`-derived mask **and** gradient ids (colons stripped) avoid duplicate-id
+  collisions when many glyphs render on one page — same reason the existing `BRAND` gradient already
+  does it.
+- `[note]` miin's **official logo path is wider/flatter** (~3:1) than the app-icon's custom lettering
+  (~2.26:1), so proportions aren't pixel-identical — accepted, since we use the official vector rather
+  than tracing the raster.
+
+**Process learnings:**
+- `[insight]` The visual companion can host a **full-document interactive tuner** (sliders + live SVG)
+  — fragments injected via `innerHTML` don't run `<script>`, but a file starting with `<!DOCTYPE` is
+  served as-is. A "Lock values" button whose text carries the live JSON config rides the helper's
+  click-event channel back to the agent, so the exact tuned numbers return without manual transcription.
+- `[note]` The companion server serves sibling assets from the content dir at `/files/<name>`, so the
+  **real PNG can sit beside the SVG reproduction** for direct side-by-side color matching.
 
 ---
 

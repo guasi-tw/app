@@ -124,7 +124,8 @@ Working list of next steps. For current product/identity decisions see [`CLAUDE.
       alongside Slice 5 (Manage) + the 編輯個人資料 surface decision.
   - [x] **miin.cc adapter** — ✅ done (v0.16.0): `miinAdapter` reads via the public `api.miin.cc` JSON
       API; registered in the registry; `/add` picker hides miin during onboarding (slug-ineligible).
-      Icon glyph still deferred (renders via the brand registry fallback).
+      Icon glyph ✅ done (v0.20.0): tiled mini app-icon (dark square + rainbow wordmark) via the new
+      `PlatformIcon` `TILE` registry.
   - [x] **IG adapter** — ✅ done (v0.18.0): `instagramAdapter` reads via crawler-UA SSR (`/p/<sc>/`
       only); author from the `og:url` canonical path (spoof-proven on IG); registered → IG live in `/add`.
       Post method only (bio unreadable tokenless). All 3 MVP platforms now active.

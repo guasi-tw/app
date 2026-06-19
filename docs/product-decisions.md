@@ -147,21 +147,23 @@ the slug. Binding still works and the account persists; only the public URL wait
 Platforms must be **distinguishable at a glance** wherever an account's platform is shown (the add
 picker, the per-platform add page, the Accounts tab, the Timeline). The rule:
 
-- **Each platform renders in its own brand identity.** A platform with a **colorful brand mark** shows
-  in its brand color/gradient (e.g. **Instagram → its diagonal gradient**); a platform whose brand is
-  **monochrome** (e.g. **Threads**) renders in `currentColor` (white on the dark theme). This is what
-  makes IG instantly tellable apart from Threads, rather than two same-colored glyphs.
-- **Single source of truth = `PlatformIcon`** (`app/(site)/gua/[slug]/PlatformIcon.tsx`). Its glyph
-  registry (`PATHS`) and brand-treatment registry (`BRAND`) are **independent of the read-`PlatformAdapter`**
-  — icons must render for platforms that are listed but **not yet implemented** (the 施工中 tiles), which
-  have no adapter. Glyphs come from Simple Icons (CC0 path data); using a brand's own colors for
-  nominative identification is fine (same basis as the glyphs).
+- **Each platform renders in its own brand identity.** Three treatments: a platform with a **colorful
+  symbol** shows in its brand color/gradient (e.g. **Instagram → its diagonal gradient**); a
+  **monochrome** brand (e.g. **Threads**) renders in `currentColor` (white on the dark theme); a
+  **colorful-wordmark** brand (e.g. **miin** — light-on-dark rainbow wordmark, no separate symbol) is
+  reproduced as a **tiled mini app-icon** (dark rounded square + the wordmark masked over a gradient).
+  This is what makes platforms instantly tellable apart rather than same-colored glyphs.
+- **Single source of truth = `PlatformIcon`** (`app/(site)/gua/[slug]/PlatformIcon.tsx`). Its three
+  registries — glyph `PATHS`, brand-treatment `BRAND`, and tiled-glyph `TILE` — are **independent of
+  the read-`PlatformAdapter`**: icons must render for platforms that are listed but **not yet
+  implemented** (the 施工中 tiles), which have no adapter. Path glyphs come from Simple Icons (CC0 path
+  data); using a brand's own colors/wordmark for nominative identification is fine (same basis).
 - **Principle for adding a new platform** — when you add platform support, in addition to the enum +
-  adapter, **register the platform's glyph in `PATHS` and (if its brand is colorful) its color/gradient
-  in `BRAND`.** A monochrome brand needs only the glyph. Until a glyph is registered, `PlatformIcon`
-  renders nothing for that platform (graceful — text label still shows). *(miin.cc currently has no
-  registered glyph — its brand is colorful, but the only assets to hand are a wordmark, which is
-  unsuitable for the square slots; needs a square monogram vector or a `PlatformIcon` image mode.)*
+  adapter, register the platform's icon: a **`PATHS` glyph** (+ its color/gradient in `BRAND` if the
+  symbol is colorful; monochrome needs only the glyph), **or** — if the brand is a colorful wordmark
+  with no square symbol — a **`TILE` entry** (background + mark path + centering/tilt transform +
+  gradient endpoints/stops). Until an icon is registered, `PlatformIcon` renders nothing for that
+  platform (graceful — the text label still shows).
 
 ## Adding a new platform — the standard contract
 
