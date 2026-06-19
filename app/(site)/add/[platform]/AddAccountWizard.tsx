@@ -3,6 +3,7 @@
 
 import { useActionState, useRef, useState } from "react";
 import { createRequestAction, submitProofUrlAction, type SubmitState } from "./actions";
+import type { PostUrlStep } from "@/lib/binding/platforms/types";
 
 type Props = {
   platform: string;
@@ -11,11 +12,12 @@ type Props = {
   template: string;
   postUrlPlaceholder: string;
   composeIntentUrl: string | null;
+  postUrlHelp: readonly PostUrlStep[];
   igNote?: boolean;
   recover?: string | null;
 };
 
-export function AddAccountWizard({ platform, label, rid, template, postUrlPlaceholder, composeIntentUrl, igNote, recover }: Props) {
+export function AddAccountWizard({ platform, label, rid, template, postUrlPlaceholder, composeIntentUrl, postUrlHelp, igNote, recover }: Props) {
   const [state, action, pending] = useActionState<SubmitState, FormData>(submitProofUrlAction, {});
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
@@ -81,17 +83,34 @@ export function AddAccountWizard({ platform, label, rid, template, postUrlPlaceh
           </form>
         </div>
       ) : (
-        <form action={action} className="form paste-form">
-          <label className="label" htmlFor="url">貼文發佈後，把貼文網址貼回這裡</label>
-          <input type="hidden" name="platform" value={platform} />
-          <input type="hidden" name="rid" value={rid} />
-          {recover ? <input type="hidden" name="recover" value={recover} /> : null}
-          <input id="url" name="url" type="url" required placeholder={postUrlPlaceholder} className="input" />
-          {state.error ? <p className="error">{state.error}</p> : null}
-          <button type="submit" className="btn-primary" disabled={pending}>
-            {pending ? "驗證中…" : "驗證並繼續 →"}
-          </button>
-        </form>
+        <>
+          <form action={action} className="form paste-form">
+            <label className="label" htmlFor="url">貼文發佈後，把貼文網址貼回這裡</label>
+            <input type="hidden" name="platform" value={platform} />
+            <input type="hidden" name="rid" value={rid} />
+            {recover ? <input type="hidden" name="recover" value={recover} /> : null}
+            <input id="url" name="url" type="url" required placeholder={postUrlPlaceholder} className="input" />
+            {state.error ? <p className="error">{state.error}</p> : null}
+            <button type="submit" className="btn-primary" disabled={pending}>
+              {pending ? "驗證中…" : "驗證並繼續 →"}
+            </button>
+          </form>
+          {postUrlHelp.length > 0 ? (
+            <section className="posturl-help">
+              <h2 className="posturl-help-title">找不到貼文網址？這樣取得</h2>
+              <ol className="posturl-help-steps">
+                {postUrlHelp.map((s, i) => (
+                  <li key={i}>
+                    <span className="posturl-help-text">{s.text}</span>
+                    {/* The adjacent text already names the step; the screenshot is illustrative, so
+                        it is decorative (empty alt) unless a step supplies its own alt. */}
+                    <img src={s.image} alt={s.alt ?? ""} loading="lazy" />
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : null}
+        </>
       )}
     </div>
   );

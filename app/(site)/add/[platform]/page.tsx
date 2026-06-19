@@ -116,6 +116,7 @@ export default async function AddAccountPage({
         template={template}
         postUrlPlaceholder={adapter.postUrlPlaceholder}
         composeIntentUrl={adapter.composeIntentUrl ? adapter.composeIntentUrl(template) : null}
+        postUrlHelp={adapter.postUrlHelp}
         igNote={platform === "instagram"}
         recover={recover ?? null}
       />

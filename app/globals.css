@@ -5,6 +5,12 @@
   --muted: #8a8a94;
   --accent: #e8b500;
   --danger: #f0484f;
+  /* Heights of the fixed .site-header / .foot (content + their vertical padding + border).
+     Page wrappers reserve top/bottom space from these so content never slides under the
+     fixed chrome. --site-header-h is the taller one (avatar trigger); --site-footer-h is
+     a single text line. */
+  --site-header-h: 3.75rem;
+  --site-footer-h: 2.5rem;
 }
 
 * {
@@ -34,7 +40,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 1.25rem;
-  padding: 2rem;
+  /* clear the fixed header (top) + footer (bottom); keeps content off the chrome */
+  padding: calc(var(--site-header-h) + 1rem) 2rem calc(var(--site-footer-h) + 1rem);
   text-align: center;
 }
 
@@ -362,6 +369,21 @@ body {
 .gate { display: flex; gap: 0.5rem; align-items: flex-start; color: var(--fg); }
 .hint.warn, .warn { color: var(--accent); }
 .url-preview { font-weight: 700; color: var(--fg); word-break: break-all; }
+
+/* Add-wizard: "how to find the post URL" walkthrough (below the submit button). */
+.posturl-help { margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; text-align: left; }
+.posturl-help-title { margin: 0; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.posturl-help-steps { margin: 0; padding-left: 1.4rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.posturl-help-steps li { color: var(--fg); }
+.posturl-help-text { display: block; font-size: 0.85rem; margin-bottom: 0.4rem; }
+.posturl-help-steps li img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 900 / 351;
+  border-radius: 0.6rem;
+  border: 1px solid #2a2a33;
+}
 .picker { width: 100%; max-width: 28rem; display: flex; flex-direction: column; gap: 0.5rem; text-align: left; }
 .picker-row {
   display: flex;
@@ -401,8 +423,8 @@ body {
   width: 100%;
   max-width: 28rem;
   margin: 0 auto;
-  /* top padding clears the fixed global site header */
-  padding: 3.8rem 1.25rem 4rem;
+  /* clear the fixed global site header (top) + footer (bottom) */
+  padding: calc(var(--site-header-h) + 0.8rem) 1.25rem calc(var(--site-footer-h) + 1.5rem);
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
