@@ -31,13 +31,15 @@ This is purely additive UI. It does not touch parsing, fetching, `resolvePost`, 
    `<img loading="lazy">`.
 6. **Privacy:** screenshots are captured while posting **from the guasi / a throwaway account**, so the
    visible handle/avatar is the brand itself — nothing personal to redact. EXIF stripped on commit.
-7. **Image ratio:** **4:5 portrait, exported ~900 × 1125 px** (2× the ~448px wizard column for retina).
-   Bottom-sheet steps are framed to fill 4:5 (sheet + a bit of the post above), not letterboxed strips.
-   The CSS renders at column width with `height: auto`.
-8. **Click highlight:** baked **into the image** by the capture author — a hollow ellipse/ring (no
-   fill, no arrows), ~6–8px stroke in brand gold **`#e8b500`**, with a thin dark edge / soft shadow so
-   it stays visible on Instagram's light menu surfaces as well as the dark Threads/miin shots. Same ring
-   style across all steps so they read as one set.
+7. **Image ratio (as captured):** **1284 × 500 px landscape, uniform across all 9 images** (3 platforms
+   × 3 steps). Wide focused strips cropped to the relevant control + a little context. Because the ratio
+   is uniform, the CSS pins `aspect-ratio: 1284 / 500` so space is reserved before the lazy image loads
+   (no layout shift); displayed at column width (≈448 × 174px) with `height: auto`.
+8. **Click highlight:** baked **into the image** by the capture author — a bright **yellow box** drawn
+   around the tap target, applied uniformly across all steps so they read as one set. (The shots are
+   over dark UIs — Threads/miin/IG-dark — where the yellow box reads clearly.)
+9. **Step count:** **exactly 3 steps per platform** as captured. The data model stays a flexible
+   `PostUrlStep[]` array (not a fixed 3-tuple) so a future platform isn't forced to 3.
 
 ### Out of scope (explicitly)
 
@@ -80,10 +82,13 @@ so a future platform can't silently ship without help steps.
 Each adapter (`threads.ts`, `instagram.ts`, `miin.ts`) declares its own `postUrlHelp` array. The exact
 copy is finalized against the captured screenshots, but the shape and step counts are:
 
-- **Threads** (`threads.ts`): open the post → tap the share / ⋯ control → tap `複製連結`. (~2–3 steps.)
-- **Instagram** (`instagram.ts`): open the post → tap **⋯** (top-right) → tap `複製連結`. (~2–3 steps.)
-- **miin.cc** (`miin.ts`): the **3-tap** sequence the user identified (open the story → open its menu →
-  copy link). (3 steps.) miin is the primary motivator for this feature.
+- **Threads** (`threads.ts`): **3 steps** — tap the share icon under the post → … → copy the link.
+- **Instagram** (`instagram.ts`): **3 steps** — open the share/⋯ control → … → copy the link.
+- **miin.cc** (`miin.ts`): **3 steps** — the 3-tap sequence the user identified (open the story's share
+  control → … → copy link). miin is the primary motivator for this feature.
+
+(Step-1 of Threads/miin highlights the share icon under the post; exact step-2/3 copy is authored
+against the captured `step-2.png` / `step-3.png` during implementation.)
 
 Image files land at `public/help/threads/step-N.png`, `public/help/instagram/step-N.png`,
 `public/help/miin/step-N.png`. Captions (the `text` of each step) are authored to match the final
@@ -135,17 +140,25 @@ New classes in the Slice-2 wizard block, matching the dark theme and 28rem colum
   of `.wizard`.
 - `.posturl-help-title` — small, muted heading (sized like a `.hint`/sub-label, not an `h1`).
 - `.posturl-help-steps` — an ordered list with visible step numbers, comfortable `gap` between steps.
-- `.posturl-help-steps li img` — `width: 100%; height: auto; border-radius: 0.6rem; border: 1px solid
-  #2a2a33;` (mirrors `.template`'s framing) so each shot fills the column uniformly.
+- `.posturl-help-steps li img` — `width: 100%; height: auto; aspect-ratio: 1284 / 500; border-radius:
+  0.6rem; border: 1px solid #2a2a33;` (mirrors `.template`'s framing) so each shot fills the column
+  uniformly and reserves its space before the lazy image loads (no layout shift).
 
 Exact values are the implementer's call within the existing design language; no new design tokens.
 
-### E. Image asset pipeline
+### E. Image assets (already captured)
 
-- Author captures portrait shots from the guasi/throwaway account, crops to **4:5**, bakes the gold
-  highlight ring, and drops them into `public/help/<platform>/`.
-- On commit, any oversized source is downscaled to ~900px wide, compressed, and **EXIF-stripped**
-  (`sips` on macOS — built in, no install). Filenames: `step-1.png`, `step-2.png`, ….
+The 9 display crops exist at `public/help/{threads,instagram,miin}/step-{1,2,3}.png`, each 1284 × 500,
+shot from `@gua.si.tw` with the yellow highlight box baked in. **Only these 9 crops are committed.**
+
+Working files to keep OUT of git:
+- `public/help/<platform>/step-N-org.png` — the full 1284 × 2778 originals (include the status bar;
+  bloat). Add `public/help/**/*-org.png` to `.gitignore`.
+- `public/help/backup/` — duplicate full originals. Add `public/help/backup/` to `.gitignore`.
+- `.DS_Store` — **already** covered by the existing `.gitignore` rule (verified `git check-ignore`).
+
+Optional (nice-to-have, not blocking): run the crops through `pngquant`/`sips` to shave size — IG's
+step is ~132K; the rest ~50–65K. EXIF is already absent from the `sips`-cropped PNGs.
 
 ## Testing
 
@@ -165,6 +178,7 @@ Exact values are the implementer's call within the existing design language; no 
 - `app/(site)/add/[platform]/AddAccountWizard.tsx` — new prop + render block.
 - `app/(site)/add/[platform]/page.tsx` — pass `postUrlHelp` prop.
 - `app/globals.css` — `.posturl-help*` classes.
-- `public/help/{threads,instagram,miin}/step-*.png` — new static assets (author-supplied).
+- `public/help/{threads,instagram,miin}/step-{1,2,3}.png` — 9 static assets (already captured).
+- `.gitignore` — add `public/help/**/*-org.png` and `public/help/backup/` (keep working files local).
 - Docs on ship: `docs/routes.md` unaffected (no route change); `docs/devlog.md` + `todo.md` per release
   convention.
