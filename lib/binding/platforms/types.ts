@@ -34,7 +34,7 @@ export type PostUrlStep = {
   readonly text: string;
   /** Static path under public/, e.g. "/help/miin/step-1.webp". */
   readonly image: string;
-  /** Accessibility label for the screenshot; consumers fall back to a step-numbered label if omitted. */
+  /** Accessibility label for the screenshot; treated as decorative (empty alt) when omitted. */
   readonly alt?: string;
 };
 
