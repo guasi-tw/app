@@ -40,3 +40,5 @@ client_secret_*.apps.googleusercontent.com.json
 
 # Add-wizard help screenshots: only the optimized .webp ship; PNG sources/originals/backup stay local
 public/help/**/*.png
+
+reset*.sh
