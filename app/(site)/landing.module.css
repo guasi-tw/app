@@ -1,8 +1,8 @@
 .page {
   min-height: 100dvh;
   /* clear the fixed global site header (top) + footer (bottom) */
-  padding-top: 3.4rem;
-  padding-bottom: 3.5rem;
+  padding-top: calc(var(--site-header-h) + 0.6rem);
+  padding-bottom: calc(var(--site-footer-h) + 1rem);
 }
 
 .inner {

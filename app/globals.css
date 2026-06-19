@@ -5,6 +5,12 @@
   --muted: #8a8a94;
   --accent: #e8b500;
   --danger: #f0484f;
+  /* Heights of the fixed .site-header / .foot (content + their vertical padding + border).
+     Page wrappers reserve top/bottom space from these so content never slides under the
+     fixed chrome. --site-header-h is the taller one (avatar trigger); --site-footer-h is
+     a single text line. */
+  --site-header-h: 3.75rem;
+  --site-footer-h: 2.5rem;
 }
 
 * {
@@ -34,7 +40,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 1.25rem;
-  padding: 2rem;
+  /* clear the fixed header (top) + footer (bottom); keeps content off the chrome */
+  padding: calc(var(--site-header-h) + 1rem) 2rem calc(var(--site-footer-h) + 1rem);
   text-align: center;
 }
 
@@ -416,8 +423,8 @@ body {
   width: 100%;
   max-width: 28rem;
   margin: 0 auto;
-  /* top padding clears the fixed global site header */
-  padding: 3.8rem 1.25rem 4rem;
+  /* clear the fixed global site header (top) + footer (bottom) */
+  padding: calc(var(--site-header-h) + 0.8rem) 1.25rem calc(var(--site-footer-h) + 1.5rem);
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
