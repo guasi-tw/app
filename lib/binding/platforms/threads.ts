@@ -129,6 +129,11 @@ export const threadsAdapter: PlatformAdapter = {
   hashtag: null, // Threads uses topics, not pasteable #tags (decided 2026-06-16) — omit it
   slugEligible: true, // §A.4 — IG/Threads may mint a slug
   postUrlPlaceholder: "https://www.threads.com/@你的帳號/post/…",
+  postUrlHelp: [
+    { text: "按下圖示", image: "/help/threads/step-1.webp" },
+    { text: "按下圖示", image: "/help/threads/step-2.webp" },
+    { text: "複製完成，回到此處貼上連結", image: "/help/threads/step-3.webp" },
+  ],
   profileUrl: (handle: string) => `https://www.threads.com/@${handle}`,
   parsePostUrl,
   resolvePost,

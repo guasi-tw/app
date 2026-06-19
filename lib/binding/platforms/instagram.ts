@@ -139,6 +139,11 @@ export const instagramAdapter: PlatformAdapter = {
   hashtag: "#guasi", // IG hashtags are pasteable/clickable (unlike Threads topics)
   slugEligible: true, // §A.4 — IG/Threads may mint a slug
   postUrlPlaceholder: "https://www.instagram.com/p/…",
+  postUrlHelp: [
+    { text: "按下圖示", image: "/help/instagram/step-1.webp" },
+    { text: "按下圖示", image: "/help/instagram/step-2.webp" },
+    { text: "複製完成，回到此處貼上連結", image: "/help/instagram/step-3.webp" },
+  ],
   profileUrl: (handle: string) => `https://www.instagram.com/${handle}/`,
   parsePostUrl,
   resolvePost,

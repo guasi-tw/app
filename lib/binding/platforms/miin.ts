@@ -107,6 +107,11 @@ export const miinAdapter: PlatformAdapter = {
   hashtag: "#guasi", // miin supports pasteable hashtags
   slugEligible: false, // a miin handle may not mint a slug (§1 out-of-scope rationale)
   postUrlPlaceholder: "https://miin.cc/story/…",
+  postUrlHelp: [
+    { text: "按下圖示", image: "/help/miin/step-1.webp" },
+    { text: "按下圖示", image: "/help/miin/step-2.webp" },
+    { text: "按下圖示並複製完成，回到此處貼上連結", image: "/help/miin/step-3.webp" },
+  ],
   profileUrl: (handle: string) => `https://miin.cc/user/${handle}`,
   parsePostUrl,
   resolvePost,

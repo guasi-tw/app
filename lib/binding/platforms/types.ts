@@ -28,6 +28,16 @@ export type ResolvedPost = {
   canonicalUrl: string;
 };
 
+/** One step in the per-platform "how to find the post URL" walkthrough (text + screenshot). */
+export type PostUrlStep = {
+  /** 繁中 instruction for this step. */
+  readonly text: string;
+  /** Static path under public/, e.g. "/help/miin/step-1.webp". */
+  readonly image: string;
+  /** Accessibility label for the screenshot; consumers fall back to a step-numbered label if omitted. */
+  readonly alt?: string;
+};
+
 export interface PlatformAdapter {
   readonly key: PlatformKey;
   /** UI label, e.g. "Threads". */
@@ -43,6 +53,8 @@ export interface PlatformAdapter {
   readonly slugEligible: boolean;
   /** Example post URL shown as the paste-input placeholder in the wizard (per-platform, not Threads-only). */
   readonly postUrlPlaceholder: string;
+  /** Ordered walkthrough for finding a post's URL on this platform (text + screenshot per step). */
+  readonly postUrlHelp: readonly PostUrlStep[];
 
   /** Live public profile URL for a stored (bare, no leading @) handle. */
   profileUrl(handle: string): string;
