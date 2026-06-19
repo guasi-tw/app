@@ -1,4 +1,3 @@
-// app/add/[platform]/AddAccountWizard.tsx
 "use client";
 
 import { useActionState, useRef, useState } from "react";

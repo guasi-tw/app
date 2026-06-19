@@ -51,8 +51,9 @@ stripped from the URL.
 | `/api/health` | `app/api/health/route.ts` | Token-gated health check (DB reachability). |
 | `/api/health/imaging` | `app/api/health/imaging/route.ts` | Token-gated imaging (sharp / blob) health check. |
 
-## Shared components (app root)
+## Components
 
-- `app/SiteHeader.tsx` — global top-bar (used by `(site)/layout.tsx` and `not-found.tsx`).
-- `app/SiteFooter.tsx` — global footer (same).
-- `app/layout.tsx` — root layout (`<html>`/`<body>`, fonts, metadata, favicon + OG).
+Component inventory (server/client, consumers, purpose) now lives in its own file:
+[`components.md`](components.md). The root layout `app/layout.tsx` (`<html>`/`<body>`,
+fonts, metadata, favicon + OG) is the one app-root file that's neither a route nor a
+component — it's the document shell wrapping everything here.

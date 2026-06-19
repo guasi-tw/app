@@ -1,4 +1,3 @@
-// app/add/[platform]/confirm/ConfirmForms.tsx
 "use client";
 
 import { useState } from "react";
