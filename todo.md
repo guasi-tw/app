@@ -153,9 +153,9 @@ Working list of next steps. For current product/identity decisions see [`CLAUDE.
   posts so users can skip pasting the URL. Deferred on purpose: manual paste-back is more
   responsive and avoids a business-account + app-review + live-token platform dependency.
   (Spec §6.2 / §11)
-- [ ] **Proof snapshots + third-party archive** — capture self-contained evidence (content +
-  screenshot) and submit the post URL to an archive, so a banned account's proof survives. MVP links
-  to the live post only; the `ProofRecord` snapshot/archive columns are already in place (additive).
+- ~~**Proof snapshots + third-party archive**~~ — **dropped (2026-06-19).** Proof is a link to the
+  live public post; self-contained snapshot/archive capture was cut because trust comes from surviving
+  verified accounts vouching, not a preserved screenshot. See product-decisions.md "Trust & proof model".
 - [ ] **Account-takeover hardening (specced, not built)** — an `audit_log` table
   (`user_id, action, target, created_at`) for investigation, and **notify the owner on binding
   changes** as a compromised-login mitigation (from the identity-backup spec §8/§9). Neither is in the

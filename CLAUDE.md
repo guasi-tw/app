@@ -30,7 +30,7 @@ copy, product framing, scope — should be surfaced, not assumed.
 >
 > Implementation is underway (first code shipped 2026-06-15). Below are only the *stable* facts.
 
-- **Repo:** private GitHub repo **`guasi-tw/app`** (remote wired). Work via PRs off `main`
+- **Repo:** **public** GitHub repo **`guasi-tw/app`** (remote wired). Work via PRs off `main`
   (squash-merge); `main` is the production branch.
 - **Hosting / CI/CD:** **Vercel** (project **`guasi-app`**), domain **https://guasi.tw**. Vercel's
   GitHub integration is the pipeline — **push `main` → production**, **PR → preview**. A post-deploy
@@ -66,7 +66,7 @@ not only in a one-off plan/spec.
 - [`docs/components.md`](docs/components.md) — inventory of every React component: file, Server/Client, where it's used, and purpose, grouped by area (global chrome, landing, add flow, Identity Card, settings). The component-surface companion to `routes.md`.
 - [`docs/email-login-design.md`](docs/email-login-design.md) — maintained design for the **deferred** email-login feature (opaque-`rid` model, OTP throttling, custom DB-session minting). Not yet built; the Google-only MVP is built so it's additive.
 - [`docs/services.md`](docs/services.md) — single inventory of every external service/account (status + role + scope); the "what we use," paired with the cost ledger below.
-- [`docs/operating-costs.md`](docs/operating-costs.md) — running ledger of operational costs (Vercel Pro, domain, future services).
+- [`docs/operating-costs.md`](docs/operating-costs.md) — running ledger of operational costs (Vercel Hobby, domain, future services).
 - [`docs/devlog.md`](docs/devlog.md) — running log of decisions and learnings, newest first.
 
 ## MVP scope (one-liner)
@@ -100,8 +100,9 @@ with proof links.
   [`docs/product-decisions.md`](docs/product-decisions.md) "Platform icon brand identity".
 - **Spec depth:** product + architecture (not full technical spec).
 - **Trust & proof model:** centralized DB for MVP, but persist **immutable `ProofRecord`s** (not
-  just a `verified` flag) so Phase-2 public proofs are additive; **proof snapshot/archive deferred —
-  MVP links to the live post**. Detail → [`docs/product-decisions.md`](docs/product-decisions.md)
+  just a `verified` flag) so a future public-proof layer is additive; **proof = link to the live
+  public post — snapshot/archive dropped** (trust comes from surviving verified accounts vouching,
+  not a preserved screenshot). Detail → [`docs/product-decisions.md`](docs/product-decisions.md)
   "Trust & proof model".
 - **Account status & lifecycle:** **append-only ledger** (bindings/unbindings are permanent events,
   never deletions — public = permanent, private stays private); owner self-service **banned/hacked**
@@ -144,7 +145,7 @@ with proof links.
 ## Open questions / TBD
 - Per-platform post-fetch strategy (oEmbed vs web fetch) and its fragility budget (Threads settled — crawler-UA SSR; IG/miin TBD as they ship).
 - Whether public lookup is queryable by handle, by URL, or both.
-- (Snapshot mechanics → now a Phase-2 deferral, see Locked decisions; auth-code format → shipped: 6-digit, scoped/single-use/expiring.)
+- (Snapshot/archive → **dropped**, see Locked decisions "Trust & proof model" (proof = link to the live post); auth-code format → shipped: 6-digit, scoped/single-use/expiring.)
 
 ## The one principle that drives everything
 
@@ -175,7 +176,7 @@ push pre-emptive verification.
   [`docs/brand-and-voice.md`](docs/brand-and-voice.md).
 - Versioning: three-part semver (`vX.Y.Z`). Releases that ship code get a git tag; design-only
   sessions use `vX.Y.0-design` with no tag.
-- **Git/PRs:** private GitHub remote **`guasi-tw/app`**. Branch off `main` for work, open a PR,
+- **Git/PRs:** public GitHub remote **`guasi-tw/app`**. Branch off `main` for work, open a PR,
   **squash-merge**. Commit/push when the user asks. `main` = production (Vercel deploys it).
 - **Staging: explicit paths only — never `git add -A` / `git add .`.** Blanket staging silently sweeps
   unrelated untracked files into a commit (it once pulled WIP article drafts into a feature PR). `git add`
@@ -274,5 +275,6 @@ Before committing or pushing, scan for:
 - Private personal info beyond what's already public (a personal email/name not meant to ship).
 - Any file not meant to be public (`.env*`, `*.pem`, `*.key`, credential dumps).
 
-The repo is **private**, but treat everything as if it could go public — guasi.tw is a public
-product. CLAUDE.md itself is safe to commit (no secrets).
+The repo is **public** (since 2026-06-19) — everything you commit is world-readable, so this scan is
+load-bearing, not precautionary. guasi.tw is a public product. CLAUDE.md itself is safe to commit (no
+secrets).

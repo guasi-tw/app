@@ -50,11 +50,14 @@ Locked decisions.)
 - **Centralized DB for MVP, but persist *immutable proof records*** — not just a `verified` boolean.
   `ProofRecord` captures the binding as it was at verification time, so **Phase 2 publicly-verifiable
   proofs are additive** (no re-architecture, no backfill).
-- **Proof snapshot — deferred to Phase 2; MVP links to the live post.** The long-term plan is
-  self-contained evidence (post **content + screenshot**) plus a **third-party archive**, because a
-  banned account's post is gone exactly when the proof matters most. **MVP ships link-to-live-post
-  only:** `ProofRecord` stores the canonical `proofPostUrl`; the snapshot/archive columns already exist
-  but sit unused until Phase 2 (**additive — no migration needed then**).
+- **Proof = link to the live public post — no snapshot/archive.** `ProofRecord` stores the canonical
+  `proofPostUrl`; verifiers click through to the original post and check it themselves. Self-contained
+  evidence (screenshot capture + third-party archive) was considered and **dropped** — it isn't what
+  makes the product trustworthy. The trust comes from **surviving verified accounts vouching for a new
+  one**, not from a preserved screenshot; a link-to-live-post keeps the proof model simple and honest
+  (if the post is later edited or removed, the link reflects that). The immutable `ProofRecord` still
+  captures the binding metadata as it was at verification time, so a future publicly-verifiable-proof
+  layer stays additive.
 
 ## Verification & binding
 

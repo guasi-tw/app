@@ -9,7 +9,7 @@ This doc answers one question per platform: **can we read the two things a verif
 ## 1. The model
 
 **Two verification methods:**
-- **Post method (primary).** User publishes a public post containing a scoped auth code; we read the post's **author** + **text**. Doubles as the growth engine (public, links back). Produces an archivable proof artifact (§6.4).
+- **Post method (primary).** User publishes a public post containing a scoped auth code; we read the post's **author** + **text**. Doubles as the growth engine (public, links back). The proof is a **link to that live public post** (no snapshot/archive — see product-decisions.md "Trust & proof model").
 - **Bio method (fallback).** User puts the code in their **profile bio**; we read the profile **owner** + **bio text**. Transient (no durable proof, no marketing) — use only where the post method can't be read.
 
 **Two things every method must read:**
@@ -131,7 +131,6 @@ Meta serves the post under *any* path handle but canonicalizes `og:title`/`og:ur
 
 - [ ] miin **username → userId** resolver (needed only for bio-on-miin) — endpoint not yet identified.
 - [ ] miin API is **unofficial** — secure an official endpoint/blessing via the partnership ask; keep headless as fallback.
-- [ ] **miin proof snapshot (§6.4):** reading the auth code is API-only (light), but the *visual* proof snapshot of a miin post still needs **headless rendering** (or reconstruction from API data) — the API returns data, not a rendered image. So miin avoids the browser for *verification* but may still need it for *evidence capture*.
 - [ ] IG **post** throttling at scale — if retry-on-miss is insufficient, adopt token `instagram_oembed`.
 - [ ] Confirm crawler-UA SSR behavior is stable across regions / Meta changes (re-test periodically).
 - [ ] Decide whether to offer bio-verification at all given it has no durable-proof / growth value (post method preferred everywhere it works).
