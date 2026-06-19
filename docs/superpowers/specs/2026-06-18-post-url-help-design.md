@@ -80,16 +80,18 @@ so a future platform can't silently ship without help steps.
 
 ### B. Per-adapter content
 
-Each adapter (`threads.ts`, `instagram.ts`, `miin.ts`) declares its own `postUrlHelp` array. The exact
-copy is finalized against the captured screenshots, but the shape and step counts are:
+Each adapter (`threads.ts`, `instagram.ts`, `miin.ts`) declares its own `postUrlHelp` array — 3 steps
+each, the screenshot carrying the specificity (which icon to tap, highlighted by the yellow box) and the
+caption staying terse. **Final captions (繁中):**
 
-- **Threads** (`threads.ts`): **3 steps** — tap the share icon under the post → … → copy the link.
-- **Instagram** (`instagram.ts`): **3 steps** — open the share/⋯ control → … → copy the link.
-- **miin.cc** (`miin.ts`): **3 steps** — the 3-tap sequence the user identified (open the story's share
-  control → … → copy link). miin is the primary motivator for this feature.
-
-(Step-1 of Threads/miin highlights the share icon under the post; exact step-2/3 copy is authored
-against the captured `step-2.png` / `step-3.png` during implementation.)
+- **Threads** (`threads.ts`) and **Instagram** (`instagram.ts`) — identical copy:
+  1. `按下圖示` → `step-1.webp`
+  2. `按下圖示` → `step-2.webp`
+  3. `複製完成，回到此處貼上連結` → `step-3.webp`
+- **miin.cc** (`miin.ts`) — the 3-tap sequence (primary motivator):
+  1. `按下圖示` → `step-1.webp`
+  2. `按下圖示` → `step-2.webp`
+  3. `按下圖示並複製完成，回到此處貼上連結` → `step-3.webp`
 
 Image files land at `public/help/<platform>/step-N.webp`. Captions (the `text` of each step) are
 authored to match the final shots.
@@ -116,7 +118,7 @@ paste form / submit button (the last child of `.wizard`):
       {postUrlHelp.map((s, i) => (
         <li key={i}>
           <span className="posturl-help-text">{s.text}</span>
-          <img src={s.image} alt={s.alt ?? s.text} loading="lazy" />
+          <img src={s.image} alt={s.alt ?? `步驟 ${i + 1}：${s.text}`} loading="lazy" />
         </li>
       ))}
     </ol>
@@ -130,7 +132,9 @@ paste form / submit button (the last child of `.wizard`):
   paste form is replaced by the regenerate button, so the URL walkthrough is irrelevant there — render
   the help block only in the non-`state.expired` path (the same branch that contains the paste form).
 - `loading="lazy"` because it sits below the fold.
-- Decorative ring lives in the image; `alt` describes the action for screen readers.
+- Decorative ring lives in the image; `alt` describes the action for screen readers. Steps 1 & 2 share
+  the caption `按下圖示`, so the default `alt` is prefixed with the step number (`步驟 N：…`) to keep the
+  two distinguishable to screen-reader users without changing the visible caption.
 
 ### D. Styling (`app/globals.css`)
 
