@@ -1,7 +1,8 @@
 .page {
   min-height: 100dvh;
-  /* clear the fixed global site header (top) + footer (bottom) */
-  padding-top: calc(var(--site-header-h) + 0.6rem);
+  /* clear the fixed global site header + in-app-browser banner (top) + footer (bottom).
+     --inapp-banner-h is 0 unless an in-app browser is detected (see SiteLayout). */
+  padding-top: calc(var(--site-header-h) + var(--inapp-banner-h) + 0.6rem);
   padding-bottom: calc(var(--site-footer-h) + 1rem);
 }
 
